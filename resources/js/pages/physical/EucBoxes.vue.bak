@@ -1,0 +1,138 @@
+<template>
+  <div class="page">
+    <div class="title-page">
+      <div class="text-center">EUC Management</div>
+    </div>
+
+    <div class="euc-list block" v-if="currentStep === STEP.ITEMS_LIST">
+      <div class="action">
+        <button class="btn-primary" @click.stop="onClickAdd">Add EUC</button>
+      </div>
+
+      <div class="table-content">
+        <data-table2 :getData="getEucLists"
+            :limit="10"
+            :column="4"
+            :widthTable="'100%'"
+            ref="datatable">
+            <th>EUC Box</th>
+            <th>Vehicle Type</th>
+            <th>Platform</th>
+            <th>Action</th>
+          <template slot="body" slot-scope="props">
+            <tr>
+              <td><div class="text">{{ props.item.order }}</div></td>
+              <td><div class="text">{{ props.item.vehicle_type_name }}</div></td>
+              <td><div class="text">{{ props.item.platform }}</div></td>
+              <td class="action">
+                <img src="/images/icons/icon-edit.svg" width="22px" @click.stop="onClickEdit(props.item)">
+                <img src="/images/icons/icon-trash.svg" width="22px" @click.stop="onClickDelete(props.item, props.index)">
+              </td>
+            </tr>
+          </template>
+        </data-table2>
+      </div>
+    </div>
+
+    <euc-form
+      :euc="selectedEuc"
+      @back="handleEucFormBack"
+      @done="handleEucFormFinished"
+      v-if="currentStep === STEP.EUC_FORM"/>
+  </div>
+</template>
+<style lang="scss" scoped>
+.page {
+  margin: auto;
+  width: 80%;
+  .euc-list {
+    .action {
+      margin: 20px 0 10px 0;
+    }
+    .table-content {
+      ::v-deep .box_table {
+        th {
+          text-align: center;
+        }
+        td {
+          text-align: center;
+          &.action {
+            line-height: 38px;
+            img {
+              margin: 0 0 0 10px;
+              cursor: pointer;
+              &:last-child {
+                margin-right: 10px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>
+<script>
+import rf from 'requestfactory'
+import EucForm from './partials/EucForm'
+
+const STEP = {
+  ITEMS_LIST: 'items-list',
+  EUC_FORM: 'euc-form'
+}
+
+export default {
+  components: {
+    EucForm
+  },
+
+  data () {
+    return {
+      STEP,
+      currentStep: STEP.ITEMS_LIST,
+      data: [],
+      selectedEuc: null
+    }
+  },
+
+  methods: {
+    getEucLists(params) {
+      return rf.getRequest('AdminRequest').getEucLists(params)
+    },
+
+    onClickAdd () {
+      this.currentStep = STEP.EUC_FORM
+    },
+
+    onClickEdit (item) {
+      this.selectedEuc = item
+      this.currentStep = STEP.EUC_FORM
+    },
+
+    onClickDelete (record, index) {
+      const callback = () => {
+        rf.getRequest('AdminRequest').deleteEucList({ id: record.id })
+          .then(res => {
+            this.showSuccess('Successfully!')
+            this.$refs.datatable.refresh()
+          })
+          .catch(error => {
+            this.processErrors(error)
+          })
+      }
+
+      this.confirmAction({ callback: callback })
+    },
+
+    handleEucFormBack () {
+      this.currentStep = STEP.ITEMS_LIST
+      this.selectedEuc = null
+    },
+
+    handleEucFormFinished () {
+      this.currentStep = STEP.ITEMS_LIST
+      this.selectedEuc = null
+    }
+  }
+}
+</script>

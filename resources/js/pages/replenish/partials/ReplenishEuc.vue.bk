@@ -1,0 +1,535 @@
+<template>
+  <div class="item-list">
+    <div>
+
+      <div class="action">
+        <div class="select">
+          <select
+              class="input"
+              v-model="selectedEuc">
+            <option :value="item" v-for="(item, idx) in eucList" :key="idx">EUC Box #{{ item.order }}</option>
+          </select>
+        </div>
+        <button class="btn btn-primary mr-2" @click.stop="onClickSubmit">Submit</button>
+        <!-- <button class="btn btn-second" @click.stop="onClickAddNew">Add New</button> -->
+      </div>
+
+      <div class="table-scroller">
+        <table>
+          <thead>
+            <th>No</th>
+            <th>MPN</th>
+            <th>P/N (SSN)</th>
+            <th>Description</th>
+            <th>Batch No</th>
+            <th>Serial No</th>
+            <th>Charge Time</th>
+            <th>Calibration Due/Inspection</th>
+            <th>Load/Hydrostatic Test Due</th>
+            <th>Expiry Date</th>
+            <th>Confirm</th>
+            <th class="mw_140px">Action</th>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in data">
+              <td><div>{{ index + 1 }}</div></td>
+              <td>
+                <input
+                  type="text"
+                  class="input"
+                  :class="{'error': errors.has(`row-${index + 1}.mpn`)}"
+                  name="mpn"
+                  :index="`${index}`"
+                  @input="onChangeMpn"
+                  placeholder="MPN"
+                  :data-vv-scope="`row-${index + 1}`"
+                  @focus="() => { resetErrorByRow(item, index) }"
+                  v-model.trim="item.mpn"
+                  data-vv-validate-on="none"
+                  v-validate="!isEmptyRow(item) ? 'required|integer' : ''" >
+                <span class="invalid-feedback" v-if="errors.has(`row-${index + 1}.mpn`)">
+                  {{ errors.first(`row-${index + 1}.mpn`)}}
+                </span>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="input"
+                  :class="{'error': errors.has(`row-${index + 1}.ssn`)}"
+                  name="ssn"
+                  @input="onChangePartNo"
+                  :index="`${index}`"
+                  placeholder="SSN"
+                  :data-vv-scope="`row-${index + 1}`"
+                  @focus="() => resetErrorByRow(item, index)"
+                  v-model.trim="item.ssn"
+                  data-vv-validate-on="none"
+                  v-validate="!isEmptyRow(item) ? 'required' : ''" >
+                <span class="invalid-feedback" v-if="errors.has(`row-${index + 1}.ssn`)">
+                  {{ errors.first(`row-${index + 1}.ssn`)}}
+                </span>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="input"
+                  :class="{'error': errors.has(`row-${index + 1}.description`)}"
+                  name="description"
+                  placeholder="Description"
+                  :data-vv-scope="`row-${index + 1}`"
+                  @focus="() => resetErrorByRow(item, index)"
+                  v-model.trim="item.description"
+                  data-vv-validate-on="none"
+                  v-validate="''" >
+                <span class="invalid-feedback" v-if="errors.has(`row-${index + 1}.description`)">
+                  {{ errors.first(`row-${index + 1}.description`)}}
+                </span>
+              </td>
+              <td>
+                <div class="radio">
+                  <input type="number"
+                    class="input"
+                    placeholder="Batch No"
+                    name="batch_no"
+                    v-model="item.batch_no"
+                    data-vv-as="batch_no"
+                    data-vv-validate-on="none"
+                    :data-vv-scope="`${item.scope}`"
+                    v-validate="'required|numeric|min_value:0'">
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.batch_no`)">
+                    {{ errors.first(`${item.scope}.batch_no`)}}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <input type="number"
+                    class="input"
+                    placeholder="Serial No"
+                    name="serial_no"
+                    v-model="item.serial_no"
+                    data-vv-as="quantity"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-validate-on="none"
+                    v-validate="'required|numeric|min_value:0'">
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.serial_no`)">
+                    {{ errors.first(`${item.scope}.serial_no`) }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <vue-timepicker
+                    v-model="item.charge_time"
+                    name="charge_time"
+                    v-validate="'required'"
+                    format="HH:mm"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="charge time" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.charge_time`)">
+                    {{ errors.first(`${item.scope}.charge_time`) | objTime2String }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.calibration_due"
+                    name="calibration_due"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="calibration_due" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.calibration_due`)">
+                    {{ errors.first(`${item.scope}.calibration_due`) }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.load_hydrostatic_test_due"
+                    name="load_hydrostatic_test_due"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="load_hydrostatic_test_due" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.load_hydrostatic_test_due`)">
+                    {{ errors.first(`${item.scope}.load_hydrostatic_test_due`) }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.expiry_date"
+                    name="expiry_date"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="expiry_date" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.expiry_date`)">
+                    {{ errors.first(`${item.scope}.expiry_date`) }}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div class="radio">
+                  <label><input type="checkbox" name="confirm" v-model="item.is_confirmed"></label>
+                </div>
+              </td>
+              <td>
+                <div v-if="!isEmptyRow(item)">
+                  <img src="/images/icons/icon-trash.svg" width="25" @click.stop="onClickDelete(item, index)">
+                </div>
+              </td>
+            </tr>
+
+
+            <tr v-for="(item, index) in dataExists">
+              <td><div>{{ index + 1 }}</div></td>
+              <td>
+                <div>{{ item.material_no || (item.spare ? item.spare.material_no : null) }}</div>
+              </td>
+              <td>
+                <div>{{ item.part_no || (item.spare ? item.spare.part_no : null) }}</div>
+              </td>
+              <td>
+                <div>{{ item.name || (item.spare ? item.spare.name : null) }}</div>
+              </td>
+              <td>
+                <div>{{ item.batch_no }}</div>
+              </td>
+              <td>
+                <div>{{ item.serial_no }}</div>
+              </td>
+              <td>
+                <div>{{ item.charge_time | objTime2String }}</div>
+              </td>
+              <td>
+                <div>{{ item.calibration_due | dateFormatter(Const.DATE_PATTERN) }}</div>
+              </td>
+              <td>
+                <div>{{ item.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN) }}</div>
+              </td>
+              <td>
+                <div>{{ item.expiry_date | dateFormatter(Const.DATE_PATTERN) }}</div>
+              </td>
+              <td>
+              </td>
+              <td>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <scan-requester-euc-item-modal :name="scanRequesterEucModal" />
+  </div>
+</template>
+<style lang="scss" scoped>
+  .item-list {
+    .table-scroller {
+      min-height: 200px;
+      tr {
+        td {
+          .input {
+            min-width: 100px;
+          }
+          .radio {
+            label {
+              margin-top: 10px;
+              input {
+                cursor: pointer;
+                width: 50px;
+                height: 1.4em
+              }
+            }
+            ::v-deep .vdp-datepicker {
+              input {
+                min-width: 100px;
+              }
+            };
+          }
+        }
+        &:last-child {
+          // ::v-deep .vdp-datepicker {
+          //   &__calendar {
+          //     top: -290px;
+          //   }
+          // }
+          ::v-deep .time-picker {
+            .dropdown {
+              &:last-child {
+                top: -145px;
+              }
+            }
+          }
+        }
+        &:first-child {
+          ::v-deep .time-picker {
+            .dropdown {
+              &:last-child {
+                top: calc(2.2em + 2px);
+              }
+            }
+          }
+        }
+      }
+    }
+    .action {
+      .select {
+        display: inline-block;
+        width: 200px;
+        margin: 20px 20px 20px 0;
+      }
+      .btn {
+        padding: 13px;
+      }
+    }
+  }
+</style>
+<script>
+import rf from 'requestfactory'
+import Const from 'common/Const'
+import Utils from 'common/Utils'
+import RemoveErrorsMixin from 'common/RemoveErrorsMixin'
+import { isEmpty, chain, includes, head, debounce } from 'lodash'
+import moment from 'moment'
+import Datepicker from 'vuejs-datepicker'
+import VueTimepicker from 'vue2-timepicker'
+import 'vue2-timepicker/dist/VueTimepicker.css'
+import ScanRequesterEucItemModal from './ScanRequesterEucItemModal'
+import EucItems from "../../physical/partials/EucItems";
+
+export default {
+
+  mixins: [RemoveErrorsMixin],
+
+  components: {
+    Datepicker,
+    VueTimepicker,
+    ScanRequesterEucItemModal,
+    EucItems
+  },
+
+  data () {
+    return {
+      data: [],
+      dataExists: [],
+      eucList: [],
+      selectedEuc: {},
+      scanRequesterEucModal: 'scan-requester-euc-modal',
+      Const,
+    }
+  },
+
+  watch: {
+    data: {
+      deep: true,
+      immediate: true,
+      handler (newValue) {
+        const hasEmptyRow = chain(newValue || [])
+          .filter(item => this.isEmptyRow(item))
+          .size()
+          .value()
+
+        if (!hasEmptyRow) {
+          this.addNewItem()
+        }
+      }
+    },
+    selectedEuc: function (value) {
+      this.dataExists = value.spares;
+    }
+  },
+
+  mounted () {
+    this.getEucLists()
+  },
+
+  methods: {
+    addNewItem () {
+      const newItem = {
+        editable: true,
+        unix: Date.now(),
+        mpn: null,
+        ssn: null,
+        description: null,
+        is_confirmed: 0
+      }
+
+      this.data.push(newItem)
+    },
+
+    isEmptyRow(row) {
+      return !row.spare_id && !row.mpn && !row.ssn && !row.description
+    },
+
+    getEucLists () {
+      const params = {
+        no_pagination: true
+      }
+      rf.getRequest('AdminRequest').getEucLists(params)
+        .then(res => {
+          this.eucList = res.data || []
+          this.selectedEuc = head(this.eucList)
+        })
+    },
+
+    getSpares () {
+      const params = {
+        no_pagination: true,
+        search_key: isEmpty(this.inputText) ? null : this.inputText
+      }
+      rf.getRequest('AdminRequest').getSpares(params)
+        .then(res => {
+          const types = [
+            Const.ITEM_TYPE.CONSUMABLE.value,
+            Const.ITEM_TYPE.DURABLE.value,
+            Const.ITEM_TYPE.PERISHABLE.value,
+            Const.ITEM_TYPE.AFES.value
+          ]
+
+          this.data = chain(res.data || [])
+            .filter(item => includes(types, item.type))
+            .value()
+        })
+    },
+
+    onClickAddNew () {
+      this.addNewItem()
+    },
+
+    onChangeMpn (e) {
+      const index = chain(e.target.attributes)
+        .filter(item => item.nodeName === 'index')
+        .map(item => item.nodeValue)
+        .head()
+        .value()
+
+      const record = this.data[parseInt(index)]
+
+      const self = this
+      const fetchData = debounce (function () {
+        rf.getRequest('AdminRequest').getSpareByMpn({ material_no: record.mpn })
+          .then(res => {
+            const data = res.data
+            if (isEmpty(data)) return
+            self.$set(record, 'spare_id', data.id)
+            self.$set(record, 'ssn', data.part_no)
+            self.$set(record, 'description', data.name)
+          })
+          .finally(() => {
+            self.$set(record, 'fetching_mpn', false)
+          })
+      }, 500)
+
+      if (!record.fetching_mpn) {
+        self.$set(record, 'fetching_mpn', true)
+        fetchData()
+      }
+    },
+
+    onChangePartNo (e) {
+      const index = chain(e.target.attributes)
+        .filter(item => item.nodeName === 'index')
+        .map(item => item.nodeValue)
+        .head()
+        .value()
+
+      const record = this.data[parseInt(index)]
+
+      const self = this
+      const fetchData = debounce (function () {
+        rf.getRequest('AdminRequest').getSpareByPartNo({ part_no: record.ssn })
+          .then(res => {
+            const data = res.data
+            if (isEmpty(data)) return
+            self.$set(record, 'spare_id', data.id)
+            self.$set(record, 'mpn', data.material_no)
+            self.$set(record, 'description', data.name)
+          })
+          .finally(() => {
+            self.$set(record, 'fetching_part_no', false)
+          })
+      }, 500)
+
+      if (!record.fetching_part_no) {
+        self.$set(record, 'fetching_part_no', true)
+        fetchData()
+      }
+    },
+
+    resetErrorByRow (item, index) {
+      const scope = `row-${ index + 1 }`
+      this.errors.clear(scope)
+    },
+
+    onClickDelete (row, index) {
+      this.data = chain(this.data)
+        .filter(item => item.unix !== row.unix)
+        .value()
+    },
+
+    async onClickSubmit () {
+      this.resetError()
+
+      const toUTc = (date) => {
+        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null
+      }
+
+      const spares = chain(this.data)
+        .filter(item => !this.isEmptyRow(item))
+        .map(item => {
+          item.spare_id = item.spare_id
+          item.euc_box_id = this.selectedEuc.id
+          item.calibration_due = toUTc(item.calibration_due)
+          item.charge_time = Utils.objTime2String(item.charge_time)
+          item.load_hydrostatic_test_due = toUTc(item.load_hydrostatic_test_due)
+          item.expiry_date = toUTc(item.expiry_date)
+          return item
+        })
+        .value()
+
+      if (!spares.length) {
+        return
+      }
+
+      await Utils.asyncForEach(this.data, async (item, index) => {
+        const scope = `row-${index + 1}.*`
+        this.$validator.validate(scope)
+      })
+
+      if (this.errors.any()) {
+        return
+      }
+
+      const _callback = () => {
+        this.$modal.show(this.scanRequesterEucModal, {
+          data: spares,
+          callback: this.submitRequest
+        })
+      }
+
+      this.confirmAction({ callback: _callback })
+    },
+
+    submitRequest(spares) {
+      rf.getRequest('SpareRequest').replenishManualForEuc({ spares })
+        .then(res => {
+          this.showSuccess('Successfully!')
+          this.$router.push('/inventory')
+        })
+        .catch(error => {
+          this.processAndToastFirstError(error)
+        })
+    }
+  }
+}
+</script>

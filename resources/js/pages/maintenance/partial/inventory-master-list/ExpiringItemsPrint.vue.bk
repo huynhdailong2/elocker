@@ -1,0 +1,213 @@
+<template>
+  <div id="expiring-items-print"
+    :class="{'d-none': !isPrinting, 'd-block': isPrinting}"
+    v-if="isPrinting">
+
+    <div class="container" style="margin: 10px 15px 0">
+      <h2 class="text-center mb-3">
+        <span class="font-weight-bold">Expiring Items Count</span>
+      </h2>
+
+      <div class="mb-3" style="display: flex;justify-content: flex-end;">
+        <button class="btn is-refresh" style="border: 1px solid;border-radius: 0;padding: 10px 6px;background: #ffffff;">Refresh</button>
+        <button class="btn is-expired box" style="border: 1px solid;border-radius: 0;padding: 10px 6px;background: #f21501;">Expired / Less than 1 month</button>
+        <button class="btn is-in-30-days box" style="border: 1px solid;border-radius: 0;padding: 10px 6px;background: #f7bf03;">1 – 2 months to expired</button>
+        <button class="btn is-in-60-days box" style="border: 1px solid;border-radius: 0;padding: 10px 6px;background: #70ad47;">More than 2 months to expired</button>
+      </div>
+
+      <div >
+        <table class="w3-table w3-bordered" style="width: 100%;">
+          <tr>
+            <th style="background-color: #b3c6e7; width: 150px;">Load/Hydrostatic Test Due</th>
+            <th style="background-color: #b3c6e7; width: 150px;">Calibration Due</th>
+            <th style="background-color: #b3c6e7; width: 150px;">Expiring Date</th>
+            <th style="background-color: #b3c6e7;">Item Details</th>
+            <th style="background-color: #b3c6e7;">Item Type</th>
+            <th style="background-color: #b3c6e7;">Part No</th>
+            <th style="background-color: #b3c6e7;">Quantity</th>
+            <th style="background-color: #b3c6e7;">Item Location</th>
+          </tr>
+          <tr v-for="(item, index) in data" :style="{ 'background-color': colorSpare(item) }">
+            <td class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.load_hydrostatic_test_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</td>
+            <td class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.calibration_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</td>
+            <td class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.expiry_date | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</td>
+            <td class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.name }}</td>
+            <td class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ getLabelByType(item.item_type) }}</td>
+            <td class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</td>
+            <td class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</td>
+            <td class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.location }}</td>
+          </tr>
+
+        </table>
+
+<!--        <div class="row" style="background-color: #b3c6e7;">-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Load/Hydrostatic Test Due</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Calibration Due</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Expiring Date</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Item Details</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Item Type</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Part No</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Quantity</div>-->
+<!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Item Location</div>-->
+<!--        </div>-->
+
+<!--        <div class="row is-refresh" v-for="(item, index) in data" :style="{ 'background-color': colorSpare(item) }">-->
+<!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.load_hydrostatic_test_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
+<!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.calibration_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
+<!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.expiry_date | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
+<!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.name }}</div>-->
+<!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ getLabelByType(item.item_type) }}</div>-->
+<!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>-->
+<!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</div>-->
+<!--          <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.location }}</div>-->
+<!--        </div>-->
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import moment from 'moment'
+import {chain} from "lodash";
+import Const from 'common/Const'
+
+const STATE = {
+  1: { point: 1, name: 'Expired', class: 'is-expired', color: '#f21501' },
+  2: { point: 2, name: 'In 30 days', class: 'is-in-30-days', color: '#f7bf03' },
+  3: { point: 3, name: 'In 60 Days', class: 'is-in-60-days', color: '#70ad47' },
+  4: { point: 4, name: 'Refresh', class: 'is-refresh', color: '#ffffff' }
+}
+
+export default {
+  props: {
+    config: {
+      type: Object,
+      default: () => { withoutQty: false }
+    },
+
+    data: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  data() {
+    return {
+      isPrinting: false,
+      current: moment().format('DD-MM-YYYY HH:mm'),
+      Const
+    };
+  },
+
+  methods: {
+    print () {
+      this.isPrinting = true;
+      this.$nextTick(() => {
+        this.isPrinting = false;
+        this.htmlToPaper(() => {
+          this.$emit('CycleCount:closed');
+        });
+      })
+    },
+
+    htmlToPaper (callback) {
+      let
+        name = '_blank',
+        specs = ['fullscreen=yes','titlebar=yes', 'scrollbars=yes'],
+        replace = true,
+        styles = ['/css/print.css'];
+      specs = !!specs.length ? specs.join(',') : '';
+
+      const element = document.getElementById('expiring-items-print');
+
+      if(!element) {
+        this.isPrinting = false;
+        alert(`Element to print #expiring-items-print not found!`);
+        return;
+      }
+
+      const url = '';
+      const win = window.open(url, name, specs, replace);
+
+      win.document.write(`
+        <html>
+          <head>
+            <title>Expiring Items - ${this.current}</title>
+          </head>
+          <body>
+            ${element.innerHTML}
+          </body>
+        </html>
+      `);
+
+      this.addStyles(win, styles);
+
+      setTimeout(() => {
+        win.document.close();
+        win.focus();
+        // win.print();
+        // win.close();
+        callback();
+      }, 2000);
+      return true;
+    },
+
+    addStyles (win, styles) {
+      styles.forEach(style => {
+        let link = win.document.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('type', 'text/css');
+        link.setAttribute('href', style);
+        win.document.getElementsByTagName('head')[0].appendChild(link);
+      });
+    },
+
+    colorSpare (item) {
+      return STATE[item.point].color
+    },
+
+    getLabelByType(type) {
+      let matchType = chain(Const.ITEM_TYPE)
+          .filter((record) => {
+            return record.value == type
+          })
+          .head()
+          .value()
+
+      return matchType ? matchType.name : type;
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+  .note {
+    justify-content: flex-end;
+    .box {
+      border: 1px solid;
+      border-radius: 0;
+      padding: 4px 6px;
+      & + .box {
+        border-left: none;
+      }
+      &.active {
+        box-shadow: 0 0 0 0.2rem rgb(52 144 220 / 25%);
+      }
+    }
+  }
+  .is-refresh {
+    background: #ffffff;
+  }
+  .is-expired {
+    background: #f21501;
+  }
+  .is-in-30-days {
+    background: #f7bf03;
+  }
+  .is-in-60-days {
+    background: #70ad47;
+  }
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+</style>

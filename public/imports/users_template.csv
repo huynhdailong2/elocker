@@ -1,0 +1,6 @@
+username,card_id,employee_id,password,role,dept,email
+Super Admin,12345,20220430,p123123,Super Admin ,Bronco,super_admin@gmail.com
+Administrator,12346,20220431,p123123,Administrator,LMS AS,adminitrator@gmail.com
+Admin Support,12347,20220432,p123123,Admin Support,T&I ,admin_support@gmail.com
+Storeman,12348,20220433,p123123,Storeman,L1,storeman@gmail.com
+Inspector,12349,20220434,p123123,Inspector,L2,inspector@gmail.com

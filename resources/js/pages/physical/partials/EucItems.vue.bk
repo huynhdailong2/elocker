@@ -1,0 +1,387 @@
+<template>
+  <div class="euc-spares mt-4 mb-3">
+    <button class="btn btn-primary" @click.stop="onClickAddItem">Add Item</button>
+    <div class="table-scroller mt-2">
+      <table>
+        <thead>
+          <th>MPN</th>
+          <th>SSN</th>
+          <th>Description</th>
+          <th>Qty OH</th>
+          <th>Batch No</th>
+          <th>Serial No</th>
+          <th>Charge Time</th>
+          <th>Calibration Due/Inspection</th>
+          <th>Load Hydrostatic Test Due</th>
+          <th>Expiry Date</th>
+          <th>Action</th>
+        </thead>
+        <tbody>
+          <template v-if="noData">
+            <tr>
+              <td colspan="11">There is no data.</td>
+            </tr>
+          </template>
+          <template v-else>
+            <tr v-for="(item, index) in data">
+              <td><div>{{ item.material_no || (item.spare ? item.spare.material_no : null) }}</div></td>
+              <td><div>{{ item.part_no || (item.spare ? item.spare.part_no : null) }}</div></td>
+              <td><div>{{ item.name || (item.spare ? item.spare.name : null) }}</div></td>
+              <td>
+                <template v-if="item.editable">
+                  <input type="number"
+                    class="input"
+                    placeholder="Quantity OH"
+                    name="quantity_oh"
+                    v-model="item.input_quantity"
+                    data-vv-as="quantity"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-validate-on="none"
+                    v-validate="'required|numeric|min_value:0'">
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.quantity_oh`)">
+                    {{ errors.first(`${item.scope}.quantity_oh`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.quantity_oh || 0 }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_batch_no">
+                  <input type="number"
+                    class="input"
+                    placeholder="Batch No"
+                    name="batch_no"
+                    v-model="item.batch_no"
+                    data-vv-as="batch no"
+                    data-vv-validate-on="none"
+                    :data-vv-scope="`${item.scope}`"
+                    v-validate="'required|numeric|min_value:0'">
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.batch_no`)">
+                    {{ errors.first(`${item.scope}.batch_no`)}}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.batch_no }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_serial_no">
+                  <input type="number"
+                    class="input"
+                    placeholder="Serial No"
+                    name="serial_no"
+                    v-model="item.serial_no"
+                    data-vv-as="quantity"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-validate-on="none"
+                    v-validate="'required|numeric|min_value:0'">
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.serial_no`)">
+                    {{ errors.first(`${item.scope}.serial_no`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.serial_no }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_charge_time">
+                  <vue-timepicker
+                    v-model="item.charge_time"
+                    name="charge_time"
+                    v-validate="'required'"
+                    format="HH:mm"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="charge time" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.charge_time`)">
+                    {{ errors.first(`${item.scope}.charge_time`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.charge_time | objTime2String }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_calibration_due">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.calibration_due"
+                    name="calibration_due"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="calibration due" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.calibration_due`)">
+                    {{ errors.first(`${item.scope}.calibration_due`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.calibration_due | dateFormatter(Const.DATE_PATTERN) }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_load_hydrostatic_test_due">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.load_hydrostatic_test_due"
+                    name="load_hydrostatic_test_due"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="load hydrostatic test due" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.load_hydrostatic_test_due`)">
+                    {{ errors.first(`${item.scope}.load_hydrostatic_test_due`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN) }}</div>
+                </template>
+              </td>
+              <td>
+                <template v-if="item.editable && item.has_expiry_date">
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.expiry_date"
+                    name="expiry_date"
+                    v-validate="'required'"
+                    :data-vv-scope="`${item.scope}`"
+                    data-vv-as="expiry date" />
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.expiry_date`)">
+                    {{ errors.first(`${item.scope}.expiry_date`) }}
+                  </span>
+                </template>
+
+                <template v-else>
+                  <div>{{ item.expiry_date | dateFormatter(Const.DATE_PATTERN) }}</div>
+                </template>
+              </td>
+              <td>
+                <div v-if="item.editable">
+                  <img class="mr-2" src="/images/icons/icon-cancel.svg" width="20" @click.stop="onCancelItem(item)" />
+                  <img src="/images/icons/icon-save.svg" width="20" @click.stop="onSaveItem(item)" />
+                </div>
+                <div v-else>
+                  <img class="mr-2" src="/images/icons/icon-edit.svg" width="20" @click.stop="onEditItem(item)" />
+                  <img src="/images/icons/icon-trash.svg" width="20" @click.stop="onRemoveItem(item, index)" />
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+    </div>
+
+    <spare-collection-modal
+      :name="spareCollectionModal"
+      :types="types"
+      :state="spareState"
+      @done="handleSelectedSpares" />
+  </div>
+</template>
+<style lang="scss" scoped>
+.euc-spares {
+  .table-scroller {
+    min-height: 200px;
+    table {
+      padding-top: 50px;
+      tr {
+        td {
+          min-width: 135px;
+          vertical-align: middle;
+          .choose-date {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            ::v-deep .vdp-datepicker {
+              input {
+                min-width: 100px;
+                max-width: 120px;
+              }
+            }
+            &.expiry {
+              ::v-deep .vdp-datepicker {
+                &__calendar {
+                  right: 0;
+                }
+              }
+            }
+          }
+          ::v-deep .time-picker {
+            max-width: 80px;
+            input {
+              width: 100%;
+            }
+          }
+        }
+        &:last-child {
+          // ::v-deep .vdp-datepicker {
+          //   &__calendar {
+          //     top: -290px;
+          //   }
+          // }
+          ::v-deep .time-picker {
+            .dropdown {
+              &:last-child {
+                top: -145px;
+              }
+            }
+          }
+        }
+        &:first-child {
+          ::v-deep .vdp-datepicker {
+            &__calendar {
+              top: initial;
+            }
+          }
+          ::v-deep .time-picker {
+            .dropdown {
+              &:last-child {
+                top: calc(2.2em + 2px);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>
+<script>
+import rf from 'requestfactory'
+import { chain, isEmpty, includes, has } from 'lodash'
+import RemoveErrorsMixin from 'common/RemoveErrorsMixin'
+import Const from 'common/Const'
+import Datepicker from 'vuejs-datepicker'
+import SpareCollectionModal from 'components/SpareCollectionModal'
+import VueTimepicker from 'vue2-timepicker'
+import 'vue2-timepicker/dist/VueTimepicker.css'
+import Utils from 'common/Utils'
+
+export default {
+  components: {
+    SpareCollectionModal,
+    Datepicker,
+    VueTimepicker
+  },
+
+  props: {
+    data: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  mixins: [RemoveErrorsMixin],
+
+  data () {
+    return {
+      spareCollectionModal: 'spare-collection-modal',
+      types: [Const.ITEM_TYPE.EUC.value],
+      spareState: Const.ITEM_STATE.ALL_SPARES,
+      Const
+    }
+  },
+
+  computed: {
+    noData () {
+      return isEmpty(this.data)
+    }
+  },
+
+  watch: {
+    data: {
+      deep: true,
+      handler () {
+        this.initData()
+      }
+    }
+  },
+
+  mounted () {
+    this.initData()
+    
+  },
+
+  methods: {
+    initData () {
+      chain(this.data)
+      .each(record => {
+        if (!has(record, 'spare')) {
+          return
+        }
+
+        this.$set(record, 'has_batch_no', record.spare.has_batch_no)
+        this.$set(record, 'has_calibration_due', record.spare.has_calibration_due)
+        this.$set(record, 'has_charge_time', record.spare.has_charge_time)
+        this.$set(record, 'load_hydrostatic_test_due', record.spare.load_hydrostatic_test_due)
+        this.$set(record, 'has_expiry_date', record.spare.has_expiry_date)
+        this.$set(record, 'has_serial_no', record.spare.has_serial_no)
+
+      })
+      .value()
+    },
+
+    onClickAddItem () {
+      const selected = chain(this.data || [])
+        .map(item => item.id)
+        .value()
+
+      this.$modal.show(this.spareCollectionModal, { selected })
+    },
+
+    onEditItem (record) {
+      this.$set(record, 'input_quantity', record.quantity_oh)
+      this.$set(record, 'editable', true)
+    },
+
+    onCancelItem (record) {
+      this.$set(record, 'input_quantity', 0)
+      this.$set(record, 'editable', false)
+    },
+
+    async validateData () {
+      await Utils.asyncForEach(this.data, async (item, index) => {
+        this.errors.clear(item.scope)
+        await this.$validator.validate(`${item.scope}.*`)
+      })
+
+      if (this.errors.any()) {
+        return false
+      }
+
+      return true
+    },
+
+    async onSaveItem (record) {
+      const hasError = await this.validateData()
+      if (!hasError) return
+      this.$set(record, 'quantity_oh', record.input_quantity)
+      this.$set(record, 'editable', false)
+    },
+
+    onRemoveItem (record, index) {
+      const _callback = (index) => {
+        this.data.splice(index, 1)
+      }
+
+      this.confirmAction({ callback: _callback, data: index })
+    },
+
+    handleSelectedSpares (data) {
+      chain(data || [])
+        .each(item => {
+          this.data.push({ ...item, spare_id: item.id })
+        })
+        .value()
+    }
+  }
+}
+</script>

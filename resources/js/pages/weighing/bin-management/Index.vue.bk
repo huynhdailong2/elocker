@@ -1,0 +1,631 @@
+<template>
+  <div id="dashboard" class="page">
+    <div style="overflow: auto;">
+        <div class="title-page">Vehicle Scheduling</div>
+
+        <div class="captions">
+          <div class="sts-good">Good</div>
+          <div class="sts-low">Low</div>
+          <div class="sts-expired">Critical/Expired</div>
+          <div class="sts-unassigned">Unassigned</div>
+        </div>
+    </div>
+
+    <div class="list-shelves">
+      <span>Site Test > Room 1 > </span>
+      <select class="input" v-model="shelf_id" style="width: auto">
+        <option value="">-- Choose --</option>
+        <option :value="SELECTED_ALL">All</option>
+        <option :value="item.id" v-for="(item, index) in shelves" :key="index">{{ item.name }}</option>
+      </select>
+    </div>
+
+    <div class="bin-dashboard">
+      <div class="bin-list">
+        <data-table :getData="getBinsRequests"
+                    :limit="limit"
+                    :column="column"
+                    :widthTable="'100%'"
+                    msgEmptyData=''
+                    @DataTable:finish="onDatatableFinish"
+                    ref="datatable">
+          <template slot="body" slot-scope="props">
+            <tr v-if="props.index < maxRealRow">
+              <td v-for="(record, idxCol) in getRowData(props.index)" :key="idxCol">
+                <div class="bin" :class="[getClassBinStatus(record)]" @click="onClickShowUpdateModal(record)" style="cursor:pointer;">
+                    <div class="bin-id" v-if="record.id">
+                      <span><strong>ID:</strong> {{ record.deviceId }}</span>
+                      <span><strong>Part No.:</strong> {{ record.deviceDescription ? record.deviceDescription.partNumber: '' }}</span>
+                      <span><strong>Name:</strong> {{ record.deviceDescription ? record.deviceDescription.name: '' }}</span>
+                    </div>
+                    <div class="bin-number">{{ record.quantity }}</div>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </data-table>
+      </div>
+    </div>
+
+    <update-bin-modal />
+  </div>
+</template>
+
+<script>
+import rf from 'requestfactory';
+import Const from 'common/Const';
+import { chain, size } from 'lodash'
+import UpdateBinModal from './UpdateBinModal'
+import mqtt from 'mqtt'
+const SELECTED_ALL = 'ALL'
+
+export default {
+
+  components: {
+    UpdateBinModal
+  },
+
+  data() {
+    return {
+      SELECTED_ALL,
+      column: 5,
+      limit: 35,
+      maxRealRow: 0,
+      rows: [],
+
+      interval: null,
+
+      shelf_id: '',
+      shelves: [],
+
+      connection: {
+        host: process.env.MIX_MQTT_HOST,
+        port: process.env.MIX_MQTT_PORT,
+        endpoint: process.env.MIX_MQTT_ENDPOINT,
+        clean: true, // Reserved session
+        connectTimeout: 4000, // Timeout
+        reconnectPeriod: 4000, // Reconnection interval
+        // Certification Information
+        clientId: '',
+        username: '',
+        password: '',
+      },
+      subscriptions: [
+        'device/computed/#',
+        'device/update/#',
+        'device/remove/#',
+      ],
+      client: {
+        connected: false,
+      },
+    }
+  },
+
+  watch: {
+    shelf_id(value, oldValue) {
+      if(value) {
+        this.doUnSubscribe()
+        this.doSubscribe()
+      } else {
+        this.$refs.datatable.rows = []
+      }
+
+      this.$refs.datatable.fetch()
+    }
+  },
+
+  methods: {
+    createConnectionMqtt() {
+      const { host, port, endpoint, ...options } = this.connection
+      const connectUrl = `ws://${host}:${port}${endpoint}`
+
+      try {
+        this.client = mqtt.connect(connectUrl, options)
+      } catch (error) {
+        console.log('mqtt.connect error', error)
+      }
+      this.client.on('connect', () => {
+        console.log('Connection succeeded!')
+      })
+      this.client.on('error', error => {
+        console.log('Connection failed', error)
+      })
+      this.client.on('message', (topic, payload) => {
+        const regexDeviceComputed = `device/computed/${this.shelf_id}`
+        if(regexDeviceComputed == topic) {
+          const payloadJson = JSON.parse(payload.toString())
+          console.log('Received message regexDeviceComputed', topic, payloadJson)
+          this.processTopicDeviceComputed(payloadJson)
+        }
+
+        const regexDeviceUpdate = `device/update/${this.shelf_id}`;
+        console.log(regexDeviceUpdate, topic)
+        if(regexDeviceUpdate == topic) {
+          const payloadJson = JSON.parse(payload.toString())
+          console.log('regexDeviceUpdate', topic, payloadJson)
+          this.processTopicDeviceUpdate(payloadJson)
+        }
+
+        const regexDeviceRemove = `device/remove/${this.shelf_id}`;
+        if(regexDeviceRemove == topic) {
+          const payloadJson = JSON.parse(payload.toString())
+          console.log('regexDeviceRemove', topic, payloadJson)
+
+          this.processTopicDeviceDelete(payloadJson)
+        }
+      })
+    },
+
+    doSubscribe() {
+      const subscribe = this.getTopicsSubscribe()
+      this.client.subscribe(subscribe, {qos:0}, (error, res) => {
+        if (error) {
+          console.log('Subscribe to topics error', error)
+          return
+        }
+        console.log('Subscribe to topics res', res)
+      });
+    },
+
+    doUnSubscribe() {
+      const subscribe = this.getTopicsSubscribe()
+      this.client.unsubscribe(subscribe, error => {
+        if (error) {
+          console.log('Unsubscribe error', error)
+        }
+
+        console.log('Unsubscribe to topics res')
+      })
+    },
+
+    processTopicDeviceComputed(data) {
+      const deviceComputed = this.convertKeyByDeviceId(data)
+
+      this.rows = chain(this.rows)
+          .map(row => {
+            const binData = deviceComputed[row.deviceId]
+            if(binData) {
+              row.weight = binData.weight
+              row.quantity = binData.quantity
+            }
+
+            return row
+          })
+          .value();
+    },
+
+    processTopicDeviceUpdate(data) {
+      const deviceList = this.convertKeyByDeviceId(data['deviceList']);
+      this.rows = chain(this.rows)
+          .map(row => {
+            const binData = deviceList[row.deviceId]
+            if(binData) {
+              row = binData
+            }
+
+            return row
+          })
+          .value();
+    },
+
+    processTopicDeviceDelete(data) {
+      this.rows = chain(this.rows)
+          .filter(row => {
+            return row.deviceId != data.deviceId
+          })
+          .value();
+    },
+
+    convertKeyByDeviceId(data) {
+      const dataConvert = {};
+      data.forEach(item => {
+        dataConvert[item.deviceId] = item;
+      })
+
+      return dataConvert;
+    },
+
+    getTopicsSubscribe() {
+      return this.subscriptions.map(item => {
+        return item.replace('#', this.shelf_id)
+      })
+    },
+
+    getBinsRequests(params) {
+      if(this.shelf_id == SELECTED_ALL) {
+      }
+      else {
+        return rf.getRequest('WeightRequest').getBinsOfShelf(this.shelf_id);
+      }
+    },
+
+    onDatatableFinish() {
+      const refDatatable = this.$refs.datatable;
+      let data = refDatatable.rows;
+      if (window._.size(data) >= this.limit) {
+        this.rows = data
+        this.maxRealRow = Math.ceil(this.rows.length / this.column);
+        return;
+      }
+
+      const binsNotIssued = window._.filter(data, eform => eform.progress_status !== Const.SPARES_REQUEST_STATUS_ISSUED);
+      const binsIssued = window._.filter(data, eform => eform.progress_status === Const.SPARES_REQUEST_STATUS_ISSUED);
+      const sizeBlank = this.limit - window._.size(binsNotIssued) - window._.size(binsIssued);
+
+      const dataBlank = [];
+      let index = 0;
+      while (index < sizeBlank) {
+        dataBlank.push({});
+        index++;
+      }
+
+      data = window._.concat(binsNotIssued, dataBlank, binsIssued);
+      refDatatable.setRows(data);
+      this.rows = data
+      this.maxRealRow = Math.ceil(this.rows.length / this.column);
+    },
+
+    getClassBinStatus(bin) {
+      const currentQuantity = bin.quantity
+      const low = bin.quantityMinThreshold
+      const crit = bin.quantityCritThreshold
+
+      if(currentQuantity <= low && currentQuantity > crit) {
+        return 'sts-low'
+      }
+
+      if(currentQuantity <= crit) {
+        return 'sts-expired'
+      }
+
+      if(currentQuantity > low) {
+        return 'sts-good'
+      }
+
+      return 'sts-unassigned';
+    },
+
+    getRowData (index) {
+      const start = index * this.column
+      const end = start + this.column
+
+      const maxLength = size(this.rows)
+      return chain(this.rows)
+          .slice(start, end < maxLength ? end : maxLength)
+          .map(record => {
+            return record
+          })
+          .value()
+    },
+
+    getSites() {
+      rf.getRequest('WeightRequest').getSites()
+        .then(res => {
+          const site = res.data.sites[0]
+          const room = site['rooms'][0]
+          let shelves = [];
+          chain(room.shelves)
+            .each(shelf => {
+              shelves.push({
+                id: shelf.id,
+                name: shelf.name,
+              })
+            })
+            .value()
+
+          this.shelves = shelves
+        })
+    },
+
+    onClickShowUpdateModal(bin) {
+      if(bin.id) {
+        this.$modal.show('update-bin-modal', { bin: bin })
+      }
+    }
+  },
+  mounted() {
+    this.createConnectionMqtt();
+
+    this.getSites();
+  },
+  beforeDestroy() {
+    this.doUnSubscribe();
+  }
+}
+</script>
+<style lang="scss" scoped>
+
+@mixin overdue-aws () {
+  background: linear-gradient(104.28deg, #7A3D00 1.4%, #C58749 100%);
+}
+
+@mixin pending-fulfillment () {
+  background: linear-gradient(104.04deg, #927A00 0%, #E8CD43 100%);
+}
+
+@mixin spares-fulfilled () {
+  background: linear-gradient(291.63deg, #42FA80 0%, #0FA95F 100%);
+}
+
+@mixin pending-yt3 () {
+  background: linear-gradient(104.04deg, #950062 0%, #E262B7 100%);
+}
+
+@mixin pending-yt5 () {
+  background: linear-gradient(104.04deg, #006D7B 0%, #36BFD1 100%);
+}
+
+@mixin ttc-item () {
+  background: linear-gradient(291.63deg, #ED1D24 0%, #8A0021 100%);
+}
+
+@mixin unassign () {
+  background: linear-gradient(104.04deg, #392470 0%, #A893E1 100%);
+}
+
+@mixin overdue-awl () {
+  background: linear-gradient(343.2deg, #EA9960 0%, #DA5900 100%);
+}
+
+@mixin issued () {
+  background: linear-gradient(343.2deg, #6B6B6B 0%, #000000 100%);
+}
+
+.page {
+  .title-page {
+    float: left;
+  }
+  .captions {
+    float: right;
+    padding: 30px 0;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    div {
+      padding: 10px 20px;
+    }
+  }
+  .sts-good {
+    background: linear-gradient(270deg, #669827 0%, #385810 100%);
+  }
+  .sts-low {
+    background: linear-gradient(270deg, #E1A713 0%, #9B7513 100%);
+  }
+  .sts-expired {
+    background: linear-gradient(270deg, #FF3131 0%, #861313 100%);
+  }
+  .sts-unassigned {
+    background: #212430;
+  }
+}
+
+#dashboard {
+  padding: 40px 45px 30px 45px;
+  overflow: auto;
+
+  .list-shelves {
+    margin-bottom: 10px;
+  }
+
+  .bin-dashboard {
+    margin-left: -8px;
+    margin-right: -8px;
+
+    .bin-list {
+
+      .bin {
+        display: flex;
+        width: calc(100% - 16px);
+        min-width: 200px;
+        max-width: 260px;
+        height: 80px;
+        margin: 0px 8px 16px 8px;
+        padding: 12px 12px;
+        color: #FFFFFF;
+        background: #b0b0b0;
+        box-sizing: border-box;
+        border-radius: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 600;
+        .bin-id {
+          color: #FFFFFF;
+          font-size: 16px;
+          line-height: 20px;
+
+          span {
+            display: block;
+          }
+        }
+        &.overdue-aws {
+          @include overdue-aws();
+        }
+        &.pending-fulfillment {
+          @include pending-fulfillment();
+        }
+        &.spares-fulfilled {
+          @include spares-fulfilled();
+        }
+        &.ttc-item {
+          @include ttc-item();
+        }
+        &.issued {
+          @include issued();
+        }
+        &.unassign {
+          @include unassign();
+        }
+        &.overdue-awl {
+          @include overdue-awl();
+        }
+        &.pending-yt3 {
+          @include pending-yt3();
+        }
+        &.pending-yt5 {
+          @include pending-yt5();
+        }
+        &.empty {
+          font-weight: bold;
+          font-size: 16px;
+          line-height: 20px;
+        }
+
+        &.sts-good {
+          background: linear-gradient(270deg, #669827 0%, #385810 100%);
+        }
+
+        &.sts-low {
+          background: linear-gradient(270deg, #E1A713 0%, #9B7513 100%);
+        }
+
+        &.sts-expired {
+          background: linear-gradient(270deg, #FF3131 0%, #861313 100%);
+        }
+
+        &.sts-unassigned {
+          background: #212430;
+        }
+
+        .bin-number {
+          margin-left: auto;
+          max-width: 35px;
+          font-size: 22px;
+          color: #FFFFFF;
+        }
+
+        .percent {
+          width: 56px;
+          height: 56px;
+          float: right;
+          background: #FFFFFF;
+          font-weight: 600;
+          font-size: 14px;
+          line-height: 20px;
+          text-align: center;
+          color: #20222B;
+          border-radius: 50%;
+          padding: 19px 0px;
+          position: relative;
+
+          span {
+            position: relative;
+            z-index: 3;
+          }
+
+          .md-progress-spinner {
+            position: absolute;
+            z-index: 2;
+            top: 2px;
+            left: 2px;
+
+            ::v-deep .md-progress-spinner-draw {
+              width: 52px !important;
+              height: 52px !important;
+
+              .md-progress-spinner-circle {
+                stroke-width: 5px !important;
+              }
+            }
+
+            &.md-theme-default {
+
+              ::v-deep .md-progress-spinner-draw {
+
+                .md-progress-spinner-circle {
+                  stroke: #ED1D24 !important;
+                }
+              }
+
+              &.max_percent {
+
+                ::v-deep .md-progress-spinner-draw {
+
+                  .md-progress-spinner-circle {
+                    stroke: #21C462 !important;
+                  }
+                }
+              }
+            }
+          }
+
+          &:after {
+            content: "";
+            display: block;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background-color: #FFFFFF;
+            border-radius: 50%;
+            border: 4px solid #ECECEC;
+          }
+        }
+      }
+    }
+    .bin-note {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+
+      .note {
+        width: calc(100% / 3);
+        padding-right: 10px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        line-height: 20px;
+        color: #20222B;
+
+        .block-color {
+          height: 24px;
+          width: 24px;
+          display: inline-block;
+          margin-right: 8px;
+          border-radius: 50%;
+
+          &.overdue-aws {
+            @include overdue-aws();
+          }
+          &.pending-fulfillment {
+            @include pending-fulfillment();
+          }
+          &.spares-fulfilled {
+            @include spares-fulfilled();
+          }
+          &.ttc-item {
+            @include ttc-item();
+          }
+          &.issued {
+            @include issued();
+          }
+          &.unassign {
+            @include unassign();
+            color: #fff;
+          }
+          &.overdue-awl {
+            @include overdue-awl();
+          }
+          &.pending-yt3 {
+            @include pending-yt3();
+          }
+          &.pending-yt5 {
+            @include pending-yt5();
+          }
+        }
+      }
+    }
+  }
+}
+</style>
+<style lang="scss">
+#dashboard {
+  td {
+    border: none;
+    padding: 0;
+  }
+}
+
+</style>

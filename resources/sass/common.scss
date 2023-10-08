@@ -1,0 +1,46 @@
+// Variables
+@import 'variables';
+
+@mixin btn() {
+    border: none;
+    outline: 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 16px;
+    padding: 15px;
+    background: linear-gradient(0deg, #417AF9 0%, #063694 100%);
+    border-radius: 4px;
+    color: #FFFFFF;
+}
+
+@mixin btn-yellow() {
+    @include btn();
+    background-color: #f90;
+}
+
+@mixin btn-delete() {
+    @include btn();
+    background-color: #d03b03;
+}
+
+@mixin rotation() {
+    transform: rotate(-90deg);
+
+    /* Legacy vendor prefixes that you probably don't need... */
+
+    /* Safari */
+    -webkit-transform: rotate(-90deg);
+
+    /* Firefox */
+    -moz-transform: rotate(-90deg);
+
+    /* IE */
+    -ms-transform: rotate(-90deg);
+
+    /* Opera */
+    -o-transform: rotate(-90deg);
+
+    /* Internet Explorer */
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}

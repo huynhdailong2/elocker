@@ -1,0 +1,8 @@
+name,part_no,material_no,location,supplier_email,item_acct,cricode,jom,mat_grp,type,has_batch_no,has_serial_no,has_charge_time,has_calibration_due,has_expiry_date,has_load_hydrostatic_test_due,field2,description
+Item 1,9292,MPN9992,location,,item_acct,cricode,jom,,consumable,1,0,1,1,0,0,,description 1
+Item 2,4343,MPN222,location,,item_acct,cricode,jom,,durable,1,0,1,1,0,0,,description 2
+Item 3,6565,MPN232,location,,item_acct,cricode,jom,,perishable,1,0,1,1,0,0,,description 3
+Item 4,8787,MPN43,location,,item_acct,cricode,jom,,afes,1,0,1,1,0,0,,description 4
+Item 5,232,MPN12,location,,item_acct,cricode,jom,,euc,1,0,1,1,0,0,,description 5
+Item 6,7676,MP6565,location,,item_acct,cricode,jom,,others,1,0,1,1,0,0,,description 6
+Item 7,7766,MP7766,location,,item_acct,cricode,jom,,lifting_equipment,1,0,1,1,0,0,,description 7
