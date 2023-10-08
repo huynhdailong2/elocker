@@ -1,12 +1,12 @@
 {
   "apps": [
     {
-      "name": "amss-inventory-ste-jobs",
+      "name": "elocker-jobs",
       "script": "php artisan queue:work --sleep=3 --tries=5 --timeout=10 --queue=spares_request,default",
       "node_args": ""
     },
     {
-      "name"   : "amss-inventory-ste-schedule",
+      "name"   : "elocker-schedule",
       "script" : "./scheduler.js"
     }
   ]
