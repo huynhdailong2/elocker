@@ -168,7 +168,7 @@
     </template>
 
     <div style="justify-content: end;" class="actions mt-3 ">
-      <button class="btn-primary" @click.stop="onClickSave">Save</button>
+      <button class="btn-primary" @click.stop="onSaveData">Save</button>
     </div>
   </div>
 </template>
@@ -428,6 +428,10 @@ export default {
 
     onDeleteItem(id) {
       this.items = this.items.filter((i) => i.spare_id !== id);
+    },
+
+    onSaveData() {
+      console.log(this.items);
     },
   },
 };

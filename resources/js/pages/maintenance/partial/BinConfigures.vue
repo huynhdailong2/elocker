@@ -186,7 +186,7 @@
 <style lang="scss" scoped>
 .bin-configures {
   .table-scroller {
-    // min-height: 250px;
+    min-height: 250px;
     table {
       // margin-bottom: 80px;
       tr {
