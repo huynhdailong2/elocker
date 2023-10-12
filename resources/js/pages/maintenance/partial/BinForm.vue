@@ -121,6 +121,7 @@
       ref="binConfigures"
       v-if="visibleBinConfigure"
     />
+
     <div class="actions">
       <button @click="onAddItem" class="btn-primary">
         Add
@@ -145,15 +146,9 @@
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ item.spare_name }}</td>
-              <td>
-                <input type="text" class="input" v-model="item.quantity" />
-              </td>
-              <td>
-                <input type="text" class="input" v-model="item.min" />
-              </td>
-              <td>
-                <input type="text" class="input" v-model="item.max" />
-              </td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.min }}</td>
+              <td>{{ item.max }}</td>
               <td>
                 <img
                   src="/images/icons/icon-cancel.svg"
@@ -168,7 +163,7 @@
     </template>
 
     <div style="justify-content: end;" class="actions mt-3 ">
-      <button class="btn-primary" @click.stop="onSaveData">Save</button>
+      <button class="btn-primary" @click="onSaveData">Save</button>
     </div>
   </div>
 </template>
@@ -394,22 +389,18 @@ export default {
         (item) => item.spare_id === spare.id
       );
 
-      const quantityToAdd = parseInt(this.inputForm.quantity) || 0;
-      const minToAdd = parseInt(this.inputForm.min) || 1;
-      const maxToAdd = parseInt(this.inputForm.max) || 1;
-
       if (existingItem) {
-        // If the item already exists, increment its quantity, min, and max
-        existingItem.quantity += quantityToAdd;
-        existingItem.min += minToAdd;
-        existingItem.max += maxToAdd;
+        existingItem.quantity = this.inputForm.quantity;
+        existingItem.min = this.inputForm.min;
+        existingItem.max = this.inputForm.max;
       } else {
-        // If the item doesn't exist, add it to the items array
         this.items.push({
           ...this.inputForm,
           spare_name: spare.name,
         });
       }
+
+      this.updateListQuantitiesMinMax();
 
       // Reset the input form
       this.inputForm = {
@@ -422,6 +413,25 @@ export default {
       };
     },
 
+    updateListQuantitiesMinMax() {
+      if (this.items.length > 0) {
+        const totalQuantity = this.items.reduce(
+          (acc, item) => item.quantity,
+          0
+        );
+        const minValues = this.items.map((item) => item.min);
+        const maxValues = this.items.map((item) => item.max);
+        const min = Math.min(...minValues);
+        const max = Math.max(...maxValues);
+
+        this.items.forEach((item) => {
+          item.quantity = totalQuantity;
+          item.min = min;
+          item.max = max;
+        });
+      }
+    },
+
     onClearList() {
       this.items = [];
     },
@@ -431,7 +441,11 @@ export default {
     },
 
     onSaveData() {
-      console.log(this.items);
+      const data = {
+        ...this.items[0],
+        spare_id: this.items.map((i) => i.spare_id),
+      };
+      return rf.getRequest("AdminRequest").updateBin(data);
     },
   },
 };

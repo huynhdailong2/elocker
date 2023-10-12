@@ -707,7 +707,6 @@ class AdminService extends BaseService
         $spareId = array_get($params, 'spare_id', null);
         $bin = Bin::with('configures', 'spares')->find($params['id']);
         $bin->spares()->sync($spareId);
-
         if (!in_array($bin->spare_id, $spareId)) {
 
             ReturnSpare::query()
