@@ -596,6 +596,9 @@ class AdminService extends BaseService
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
             ->leftJoin('clusters', 'clusters.id', 'shelfs.cluster_id')
             ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
+            ->when(!empty($params['bin_id']),function ($query) use ($params){
+                $query->where('id', $params['bin_id']);
+            })
             ->when(!empty($params['cluster_id']), function ($query) use ($params) {
                 $query->where('shelfs.cluster_id', $params['cluster_id']);
             })
@@ -657,7 +660,12 @@ class AdminService extends BaseService
                     ELSE "Available" END) AS status_lbl'
             ))->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
     }
-
+    public function getBinId($params){
+        $bin =Bin::findOrFail($params);
+        $bin->spares;
+        $bin->configures;
+        return $bin;
+    }
     public function getBinsSummary($params)
     {
         $paginator = $this->getBins($params);
@@ -706,7 +714,8 @@ class AdminService extends BaseService
     {
         $spareId = array_get($params, 'spare_id', null);
         $bin = Bin::with('configures', 'spares')->find($params['id']);
-        $bin->spares()->sync($spareId);
+        $bin->spares()->detach();
+        $bin->spares()->syncWithoutDetaching($spareId);
         if (!in_array($bin->spare_id, $spareId)) {
 
             ReturnSpare::query()
@@ -741,7 +750,7 @@ class AdminService extends BaseService
 
         $this->saveBinConfigures($bin, $params);
 
-        return $bin;
+        return $bin->refresh();
     }
 
     private function saveBinConfigures($bin, $params)
@@ -784,6 +793,7 @@ class AdminService extends BaseService
         BinConfigure::where('bin_id', $bin->id)
             ->whereNotIn('id', $configureIds)
             ->delete();
+            return true;
     }
 
     public function unassignedBin($binId)

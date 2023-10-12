@@ -145,7 +145,7 @@
           <tbody>
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.spare_name }}</td>
+              <td>{{ item.name }}</td>
               <td>{{ item.quantity }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
@@ -272,6 +272,15 @@ export default {
       quantity: this.data.quantity ?? 1,
     };
     this.initConfigures();
+    console.log(this.data);
+    rf.getRequest("AdminRequest").getBinId(this.data.id);
+    this.items = this.data.spares.map((i) => ({
+      ...i,
+      spare_id: i.id,
+      quantity: this.data.quantity,
+      min: this.data.min,
+      max: this.data.max,
+    }));
 
     this.getSpares();
   },
@@ -325,6 +334,7 @@ export default {
       rf.getRequest("AdminRequest")
         .getSpares(params)
         .then((res) => {
+          console.log(res.data);
           this.spares = chain(res.data || [])
             // .filter(item => item.type !== Const.ITEM_TYPE.EUC.value)
             .map((item) => {
@@ -396,21 +406,21 @@ export default {
       } else {
         this.items.push({
           ...this.inputForm,
-          spare_name: spare.name,
+          name: spare.name,
         });
       }
 
       this.updateListQuantitiesMinMax();
 
       // Reset the input form
-      this.inputForm = {
-        ...this.inputForm,
-        ...this.data,
-        critical: this.data.critical || 0,
-        min: this.data.min || 1,
-        max: this.data.max || 1,
-        quantity: this.data.quantity || 1,
-      };
+      // this.inputForm = {
+      //   ...this.inputForm,
+      //   ...this.data,
+      //   critical: this.data.critical || 0,
+      //   min: this.data.min || 1,
+      //   max: this.data.max || 1,
+      //   quantity: this.data.quantity || 1,
+      // };
     },
 
     updateListQuantitiesMinMax() {
@@ -443,9 +453,16 @@ export default {
     onSaveData() {
       const data = {
         ...this.items[0],
+        ...this.inputForm,
         spare_id: this.items.map((i) => i.spare_id),
       };
-      return rf.getRequest("AdminRequest").updateBin(data);
+      return rf
+        .getRequest("AdminRequest")
+        .updateBin(data)
+        .then(() => {
+          this.showSuccess("Successfully!");
+        })
+        .catch(() => this.processErrors("Fail"));
     },
   },
 };

@@ -119,6 +119,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
 
         Route::group(['prefix' => 'bins'], function() {
             Route::get('/', 'API\AdminAPIController@getBins');
+             Route::get('/{id}', 'API\AdminAPIController@getBinId');
             Route::get('/dashboard', 'API\AdminAPIController@getBinsSummary');
             Route::put('/update', 'API\AdminAPIController@updateBin');
             Route::put('/unassigned', 'API\AdminAPIController@unassignedBin');

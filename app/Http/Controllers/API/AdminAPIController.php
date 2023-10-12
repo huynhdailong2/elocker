@@ -445,6 +445,11 @@ class AdminAPIController extends BaseController
             $data = $this->adminService->getBins($params);
             return $data;
     }
+    public function getBinId(int $id)
+    {
+            $data = $this->adminService->getBinId($id);
+            return $data;
+    }
 
     public function getBinsSummary(Request $request)
     {

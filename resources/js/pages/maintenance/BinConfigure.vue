@@ -119,33 +119,46 @@
             <td>
               <div class="text">{{ props.item.drawer_name }}</div>
             </td>
+
             <td>
-              <div class="ml-2">{{ props.item.spare_name }}</div>
+              <span
+                v-for="(item, index) in props.item.spares"
+                :key="index"
+                class="ml-2"
+              >
+                {{ item.name }}
+                <span v-if="index !== props.item.spares.length - 1">,</span>
+              </span>
             </td>
-            <td>
+
+            <!-- <td>
               <div class="text-center">
                 {{ getLabelByType(props.item.type) }}
               </div>
-            </td>
-            <td>
+            </td> -->
+
+            <!-- <td>
               <div class="text">
                 {{
                   getValue(props.item, "calibration_due")
                     | dateFormatter("YYYY-MM-DD")
                 }}
               </div>
-            </td>
-            <td>
+            </td> -->
+
+            <!-- <td>
               <div class="text">
                 {{
                   getValue(props.item, "expiry_date")
                     | dateFormatter("YYYY-MM-DD")
                 }}
               </div>
-            </td>
-            <td>
+            </td> -->
+
+            <!-- <td>
               <div class="text">{{ props.item.part_no }}</div>
-            </td>
+            </td> -->
+
             <td class="action">
               <div class="text-center">
                 <template v-if="props.item.is_drawer">
