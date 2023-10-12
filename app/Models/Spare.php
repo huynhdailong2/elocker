@@ -67,4 +67,8 @@ class Spare extends Model
     {
         $this->attributes['has_load_hydrostatic_test_due'] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
     }
+    public function bins()
+    {
+        return $this->belongsToMany(Bin::class);
+    }
 }

@@ -62,10 +62,10 @@
           <th class="text-center">Bin</th>
           <th class="text-center">Drawer</th>
           <th class="ml-2">Item Name</th>
-          <th class="text-center">Item Type</th>
+          <!-- <th class="text-center">Item Type</th>
           <th class="text-center">Calibration Due/Inspection</th>
           <th class="text-center">Expiry Date</th>
-          <th class="text-center">Item P/N</th>
+          <th class="text-center">Item P/N</th> -->
           <th class="text-center">Is Drawer</th>
           <th class="text-center">Is Failed</th>
           <th>Action</th>
@@ -78,10 +78,10 @@
             <td><div class="text">{{ props.item.bin }}</div></td>
             <td><div class="text">{{ props.item.drawer_name }}</div></td>
             <td><div class="ml-2">{{ props.item.spare_name }}</div></td>
-            <td><div class="text-center">{{ getLabelByType(props.item.type) }}</div></td>
+            <!-- <td><div class="text-center">{{ getLabelByType(props.item.type) }}</div></td>
             <td><div class="text">{{ getValue(props.item, 'calibration_due') | dateFormatter('YYYY-MM-DD') }}</div></td>
             <td><div class="text">{{ getValue(props.item, 'expiry_date') | dateFormatter('YYYY-MM-DD') }}</div></td>
-            <td><div class="text">{{ props.item.part_no }}</div></td>
+            <td><div class="text">{{ props.item.part_no }}</div></td> -->
             <td class="action">
               <div class="text-center">
                 <template v-if="props.item.is_drawer">

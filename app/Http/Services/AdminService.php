@@ -44,17 +44,17 @@ class AdminService extends BaseService
     public function getTorqueWrenchAreas($params)
     {
         $rawData = TorqueWrenchArea::when(!empty($params['q']), function ($query) use ($params) {
-                return $query->where('area', 'LIKE', '%' . $params['q'] . '%');
-            })
+            return $query->where('area', 'LIKE', '%' . $params['q'] . '%');
+        })
             ->when(
-            !empty($params['no_pagination']),
-            function ($query) {
-                return $query->get();
-            },
-            function ($query) use ($params) {
-                return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
-            }
-        );
+                !empty($params['no_pagination']),
+                function ($query) {
+                    return $query->get();
+                },
+                function ($query) use ($params) {
+                    return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+                }
+            );
 
         $transform = function ($record) {
             $record->torque_value = floatval($record->torque_value);
@@ -94,7 +94,7 @@ class AdminService extends BaseService
         $torqueWrenchArea = TorqueWrenchArea::find($torqueWrenchAreaId);
         // Check delete torqueWrenchArea
         $canDeleteTorqueWrenchArea = $this->canDeleteTorqueWrenchArea($torqueWrenchAreaId);
-        if($canDeleteTorqueWrenchArea) {
+        if ($canDeleteTorqueWrenchArea) {
             $torqueWrenchArea->forceDelete();
         }
 
@@ -137,8 +137,11 @@ class AdminService extends BaseService
                     return $query->orderBy('id', 'asc');
                 }
             )
-            ->select('shelfs.*', 'clusters.name as cluster_name',
-                DB::raw('(CASE WHEN shelfs.type = "' . Consts::SHELF_TYPE_MAIN . '" THEN "Main Cabinet" 
+            ->select(
+                'shelfs.*',
+                'clusters.name as cluster_name',
+                DB::raw(
+                    '(CASE WHEN shelfs.type = "' . Consts::SHELF_TYPE_MAIN . '" THEN "Main Cabinet" 
                     ELSE "Sub Cabinet" END) AS shelf_type'
                 )
             )
@@ -164,7 +167,7 @@ class AdminService extends BaseService
         $shelf = new Shelf;
         $shelf = $this->saveData($shelf, $params);
 
-         $this->saveBinsConfigure($shelf);
+        $this->saveBinsConfigure($shelf);
         $this->forceOnlyOneMainCabinet($shelf);
 
         $params = [
@@ -203,7 +206,7 @@ class AdminService extends BaseService
         $shelf = Shelf::find($params['id']);
         $shelf = $this->saveData($shelf, $params);
 
-         $this->saveBinsConfigure($shelf);
+        $this->saveBinsConfigure($shelf);
         $this->forceOnlyOneMainCabinet($shelf);
 
         $params = [
@@ -228,7 +231,7 @@ class AdminService extends BaseService
         $shelf = Shelf::find($shelfId);
         // Check delete shelf
         $canDeleteShelf = $this->canDeleteShelf($shelfId);
-        if($canDeleteShelf) {
+        if ($canDeleteShelf) {
             $shelf->delete();
 
             Bin::where('shelf_id', $shelf->id)->delete();
@@ -240,28 +243,28 @@ class AdminService extends BaseService
     private function canDeleteShelf($shelfId)
     {
         $binIds = Bin::select('id')->where('shelf_id', $shelfId)->pluck('id')->all();
-        if(count($binIds)) {
+        if (count($binIds)) {
             // Check bin is containing the issue_cards
             $countUseInIssueCard = IssueCard::whereIn('bin_id', $binIds)->count();
-            if($countUseInIssueCard) {
+            if ($countUseInIssueCard) {
                 throw new Exception('Bin is containing the issue card, cannot delete it');
             }
 
             // Check bin is containing the replenishment_spares
             $countUseInReplenishmentSpare = ReplenishmentSpare::whereIn('bin_id', $binIds)->count();
-            if($countUseInReplenishmentSpare) {
+            if ($countUseInReplenishmentSpare) {
                 throw new Exception('Bin is containing the replenishment spares, cannot delete it');
             }
 
             // Check bin is containing the return_spares
             $countUseInReturnSpare = ReturnSpare::whereIn('bin_id', $binIds)->count();
-            if($countUseInReturnSpare) {
+            if ($countUseInReturnSpare) {
                 throw new Exception('Bin is containing the return spares, cannot delete it');
             }
 
             // Check bin is containing the write_offs
             $countUseInWriteOff = WriteOff::whereIn('bin_id', $binIds)->count();
-            if($countUseInWriteOff) {
+            if ($countUseInWriteOff) {
                 throw new Exception('Bin is containing the write off, cannot delete it');
             }
         }
@@ -333,8 +336,8 @@ class AdminService extends BaseService
     public function getSparesAssignedBin($params = [])
     {
         // If params does not have excludeBinIds
-        if(! Arr::get($params, 'excludeBinIds')) {
-//            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
+        if (!Arr::get($params, 'excludeBinIds')) {
+            //            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
             $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
         }
 
@@ -401,7 +404,8 @@ class AdminService extends BaseService
             );
     }
 
-    public function getEucAssignedBox($params = []) {
+    public function getEucAssignedBox($params = [])
+    {
         // Does not get empty bin
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
 
@@ -409,18 +413,18 @@ class AdminService extends BaseService
             ->join('spares', 'spares.id', 'euc_box_spares.spare_id')
             ->where('spares.type', Consts::SPARE_TYPE_EUC)
             ->when(isset($params['ignore_overdue_item']) && $params['ignore_overdue_item'] == true, function ($query) use ($params) {
-                $query->where(function($subQuery) {
+                $query->where(function ($subQuery) {
                     // Do not get overdue items by calibration_due
                     $subQuery->whereNull('euc_box_spares.calibration_due')
                         ->orWhere('euc_box_spares.calibration_due', '>=', Carbon::now()->format('Y-m-d'));
                 })
                     // Do not get overdue items by expiry_date
-                    ->where(function($subQuery) {
+                    ->where(function ($subQuery) {
                         $subQuery->whereNull('euc_box_spares.expiry_date')
                             ->orWhere('euc_box_spares.expiry_date', '>=', Carbon::now()->format('Y-m-d'));
                     })
                     // Do not get overdue items by load_hydrostatic_test_due
-                    ->where(function($subQuery) {
+                    ->where(function ($subQuery) {
                         $subQuery->whereNull('euc_box_spares.load_hydrostatic_test_due')
                             ->orWhere('euc_box_spares.load_hydrostatic_test_due', '>=', Carbon::now()->format('Y-m-d'));
                     });
@@ -436,47 +440,47 @@ class AdminService extends BaseService
 
     public function getItemsForIssuing($params = [])
     {
-//        $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
+        //        $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
         $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
         $sparesInBin = $this->getSparesAssignedBin($params);
         $eucboxes = $this->getEucAssignedBox($params);
-//        $eucboxes = EucBoxSpare::join('euc_boxes', 'euc_boxes.id', 'euc_box_spares.euc_box_id')
-//            ->join('spares', 'spares.id', 'euc_box_spares.spare_id')
-//            ->where('spares.type', Consts::SPARE_TYPE_EUC)
-//            ->when(isset($params['ignore_overdue_item']) && $params['ignore_overdue_item'] == true, function ($query) use ($params) {
-//                $query->where(function($subQuery) {
-//                    // Do not get overdue items by calibration_due
-//                    $subQuery->whereNull('euc_box_spares.calibration_due')
-//                        ->orWhere('euc_box_spares.calibration_due', '>=', Carbon::now()->format('Y-m-d'));
-//                    })
-//                    // Do not get overdue items by expiry_date
-//                    ->where(function($subQuery) {
-//                        $subQuery->whereNull('euc_box_spares.expiry_date')
-//                            ->orWhere('euc_box_spares.expiry_date', '>=', Carbon::now()->format('Y-m-d'));
-//                    })
-//                    // Do not get overdue items by load_hydrostatic_test_due
-//                    ->where(function($subQuery) {
-//                        $subQuery->whereNull('euc_box_spares.load_hydrostatic_test_due')
-//                            ->orWhere('euc_box_spares.load_hydrostatic_test_due', '>=', Carbon::now()->format('Y-m-d'));
-//                    });
-//            })
-//            ->select('spares.*', 'euc_box_spares.*', 'euc_boxes.order as euc_box_order')
-//            ->get();
+        //        $eucboxes = EucBoxSpare::join('euc_boxes', 'euc_boxes.id', 'euc_box_spares.euc_box_id')
+        //            ->join('spares', 'spares.id', 'euc_box_spares.spare_id')
+        //            ->where('spares.type', Consts::SPARE_TYPE_EUC)
+        //            ->when(isset($params['ignore_overdue_item']) && $params['ignore_overdue_item'] == true, function ($query) use ($params) {
+        //                $query->where(function($subQuery) {
+        //                    // Do not get overdue items by calibration_due
+        //                    $subQuery->whereNull('euc_box_spares.calibration_due')
+        //                        ->orWhere('euc_box_spares.calibration_due', '>=', Carbon::now()->format('Y-m-d'));
+        //                    })
+        //                    // Do not get overdue items by expiry_date
+        //                    ->where(function($subQuery) {
+        //                        $subQuery->whereNull('euc_box_spares.expiry_date')
+        //                            ->orWhere('euc_box_spares.expiry_date', '>=', Carbon::now()->format('Y-m-d'));
+        //                    })
+        //                    // Do not get overdue items by load_hydrostatic_test_due
+        //                    ->where(function($subQuery) {
+        //                        $subQuery->whereNull('euc_box_spares.load_hydrostatic_test_due')
+        //                            ->orWhere('euc_box_spares.load_hydrostatic_test_due', '>=', Carbon::now()->format('Y-m-d'));
+        //                    });
+        //            })
+        //            ->select('spares.*', 'euc_box_spares.*', 'euc_boxes.order as euc_box_order')
+        //            ->get();
 
-        $sparesInBinNotOverdue = $sparesInBin->filter(function($item, $key) {
-            if($item->configures->count()) {
+        $sparesInBinNotOverdue = $sparesInBin->filter(function ($item, $key) {
+            if ($item->configures->count()) {
                 $now = Carbon::now();
                 $configure = $item->configures->first();
 
-                if($configure->has_calibration_due && $configure->calibration_due) {
+                if ($configure->has_calibration_due && $configure->calibration_due) {
                     return Carbon::parse($configure->calibration_due)->greaterThanOrEqualTo($now);
                 }
 
-                if($configure->has_expiry_date && $configure->expiry_date) {
+                if ($configure->has_expiry_date && $configure->expiry_date) {
                     return Carbon::parse($configure->expiry_date)->greaterThanOrEqualTo($now);
                 }
 
-                if($configure->has_load_hydrostatic_test_due && $configure->load_hydrostatic_test_due) {
+                if ($configure->has_load_hydrostatic_test_due && $configure->load_hydrostatic_test_due) {
                     return Carbon::parse($configure->load_hydrostatic_test_due)->greaterThanOrEqualTo($now);
                 }
             };
@@ -495,12 +499,12 @@ class AdminService extends BaseService
         if ($isStrict) {
             unset($items['spare_eucs']);
         }
-//        if ($isStrict && $type == Consts::SPARE_TYPE_EUC) {
-//            unset($items['spare_bins']);
-//        }
-//        if ($isStrict && $type !== Consts::SPARE_TYPE_EUC) {
-//            unset($items['spare_eucs']);
-//        }
+        //        if ($isStrict && $type == Consts::SPARE_TYPE_EUC) {
+        //            unset($items['spare_bins']);
+        //        }
+        //        if ($isStrict && $type !== Consts::SPARE_TYPE_EUC) {
+        //            unset($items['spare_eucs']);
+        //        }
         return $items;
     }
 
@@ -552,7 +556,7 @@ class AdminService extends BaseService
 
         $data = [];
         foreach (json_decode($userAccesses, true) as $value) {
-            $data[] = [ 'spare_id' => $spare->id, 'role' => $value];
+            $data[] = ['spare_id' => $spare->id, 'role' => $value];
         }
 
         $this->saveManyData(
@@ -588,9 +592,8 @@ class AdminService extends BaseService
 
     public function getBins($params)
     {
-        return Bin::with('configures')
+        return Bin::with('configures', 'spares')
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-            ->leftJoin('spares', 'spares.id', 'bins.spare_id')
             ->leftJoin('clusters', 'clusters.id', 'shelfs.cluster_id')
             ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
             ->when(!empty($params['cluster_id']), function ($query) use ($params) {
@@ -607,14 +610,13 @@ class AdminService extends BaseService
             })
             ->when(!empty($params['status']), function ($query) use ($params) {
                 // Where column is_failed = 1
-                if($params['status'] == 'is_failed') {
+                if ($params['status'] == 'is_failed') {
                     $query->where('is_failed', 1);
                 }
                 // Where column status
                 else {
                     $query->where('status', $params['status']);
                 }
-
             })
             ->when(!is_null(Arr::get($params, 'is_drawer')), function ($query) use ($params) {
                 $query->where('is_drawer', $params['is_drawer']);
@@ -629,12 +631,12 @@ class AdminService extends BaseService
                 $searchKey = Utils::escapeLike($params['search_key']);
 
                 $query->where(function ($subQuery) use ($searchKey) {
-                        $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
                         ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
                         ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%")
                         ->orWhere('bins.drawer_name', 'LIKE', "%{$searchKey}%")
                         ->orWhere('bin_configures.serial_no', 'LIKE', "%{$searchKey}%");
-                    });
+                });
             })
             ->when(
                 !empty($params['sort']) && !empty($params['sort_type']),
@@ -646,15 +648,14 @@ class AdminService extends BaseService
                         ->orderBy('bin', 'asc');
                 }
             )
-            ->select('clusters.*','bins.*', 'shelfs.name as shelf_name', 'spares.name as spare_name', 'spares.part_no', 'spares.material_no', 'spares.type', 'spares.has_batch_no', 'spares.has_serial_no', 'spares.has_charge_time', 'spares.has_calibration_due', 'spares.has_expiry_date', 'spares.has_load_hydrostatic_test_due')
+            ->select('clusters.*', 'bins.*', 'shelfs.name as shelf_name')
             ->addSelect('bins.bin as bin_name')
             ->addSelect('clusters.name as cluster_name', 'clusters.id as cluster_id', 'clusters.code', 'clusters.is_rfid')
             ->addSelect(DB::raw(
                 '(CASE WHEN bins.quantity <= 0 THEN "Unavailable"
                     WHEN bins.status = "' . Consts::BIN_STATUS_UNASSIGNED . '" THEN "Unassigned"
                     ELSE "Available" END) AS status_lbl'
-            ))
-            ->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+            ))->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
     }
 
     public function getBinsSummary($params)
@@ -669,7 +670,7 @@ class AdminService extends BaseService
         $loanHistories = IssueCard::whereIn('id', $spareIds)
             ->get()
             ->mapWithKeys(function ($record) {
-                return [ $record->spare_id => true ];
+                return [$record->spare_id => true];
             });
 
         $now = now()->startOfDay();
@@ -704,11 +705,11 @@ class AdminService extends BaseService
     public function updateBin($params)
     {
         $spareId = array_get($params, 'spare_id', null);
+        $bin = Bin::with('configures', 'spares')->find($params['id']);
+        $bin->spares()->sync($spareId);
 
-        $bin = Bin::find($params['id']);
+        if (!in_array($bin->spare_id, $spareId)) {
 
-        // Write off all bin in return_spares
-        if ($bin->spare_id != $spareId) {
             ReturnSpare::query()
                 ->where('bin_id', $bin->id)
                 ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
@@ -718,22 +719,13 @@ class AdminService extends BaseService
                     ]
                 );
         }
-        // $existed = $bin->spare_id !== $spareId && $spareId && SpareUtils::existsInBin($spareId);
 
-        // if ($existed) {
-        //     throw new Exception('The item will be put in another bin.');
-        // }
-
-        if(!Arr::get($params, 'critical')) {
+        if (!Arr::get($params, 'critical')) {
             $params['critical'] = 0;
         }
         if (!$bin->quantity_oh) {
             $params['quantity_oh'] = $params['quantity'];
         } else {
-//            $params['quantity_oh'] = BigNumber::new($bin->quantity_oh)
-//                ->add($params['quantity'])
-//                ->sub($bin->quantity)
-//                ->toString();
 
             $quantityOh = BigNumber::new($bin->quantity_oh)
                 ->add($params['quantity'])
@@ -743,6 +735,7 @@ class AdminService extends BaseService
 
             $params['quantity_oh'] = $quantityOh < 0 ? $params['quantity'] : $quantityOh;
         }
+        $params['spare_id'] = json_encode($params['spare_id']);
         $params['status'] = !!$spareId ? Consts::BIN_STATUS_ASSIGNED : Consts::BIN_STATUS_UNASSIGNED;
 
         $bin = $this->saveData($bin, $params);
@@ -797,7 +790,7 @@ class AdminService extends BaseService
     public function unassignedBin($binId)
     {
         $binIsIssuing = $this->checkBinIsIssuing($binId);
-        if($binIsIssuing) {
+        if ($binIsIssuing) {
             throw ValidationException::withMessages(
                 [
                     'bin' => ['Can not remove this spare because it is currently being issuing!']
@@ -827,9 +820,9 @@ class AdminService extends BaseService
     {
         $binIsIssuing = IssueCard::query()
             ->where('bin_id', $binId)
-            ->where(function($query) {
+            ->where(function ($query) {
                 return $query->whereNull('returned')
-                ->orWhereNotIn('returned', [Consts::RETURNED_TYPE_LINK_MO, Consts::RETURNED_TYPE_ALL]);
+                    ->orWhereNotIn('returned', [Consts::RETURNED_TYPE_LINK_MO, Consts::RETURNED_TYPE_ALL]);
             })
             ->count();
 
@@ -845,15 +838,15 @@ class AdminService extends BaseService
             ->when(!empty($params['card_num']), function ($query) use ($params) {
                 $query->where('job_cards.card_num', $params['card_num']);
             })
-            ->when(isset($params['is_active']), function($query) use($params) {
+            ->when(isset($params['is_active']), function ($query) use ($params) {
                 $query->where('job_cards.is_active', $params['is_active']);
             })
-            ->when(isset($params['search_key']), function($query) use($params) {
+            ->when(isset($params['search_key']), function ($query) use ($params) {
                 $searchKey = Utils::escapeLike($params['search_key']);
                 $query->where(function ($subQuery) use ($searchKey) {
                     $subQuery->where('job_cards.card_num', 'LIKE', "%{$searchKey}%");
-//                        ->orWhere('job_cards.wo', 'LIKE', "%{$searchKey}%")
-//                        ->orWhere('job_cards.platform', 'LIKE', "%{$searchKey}%");
+                    //                        ->orWhere('job_cards.wo', 'LIKE', "%{$searchKey}%")
+                    //                        ->orWhere('job_cards.platform', 'LIKE', "%{$searchKey}%");
                 });
             })
             ->when(
@@ -891,10 +884,10 @@ class AdminService extends BaseService
     {
         // Check job card is exists
         $cardNum = Arr::get($params, 'card_num');
-        if($cardNum) {
+        if ($cardNum) {
             $jobCard = JobCard::where('card_num', $cardNum)->first();
             // Job card was inactivated
-            if($jobCard && $jobCard->is_active == 0) {
+            if ($jobCard && $jobCard->is_active == 0) {
                 throw new Exception('Job Card can not create, because this Job Card is closed');
             }
         }
@@ -943,14 +936,14 @@ class AdminService extends BaseService
     public function getVehicleTypes($params)
     {
         return VehicleType::when(
-                !empty($params['sort']) && !empty($params['sort_type']),
-                function ($query) use ($params) {
-                    return $query->orderBy($params['sort'], $params['sort_type']);
-                },
-                function ($query) {
-                    return $query->orderBy('updated_at', 'desc');
-                }
-            )
+            !empty($params['sort']) && !empty($params['sort_type']),
+            function ($query) use ($params) {
+                return $query->orderBy($params['sort'], $params['sort_type']);
+            },
+            function ($query) {
+                return $query->orderBy('updated_at', 'desc');
+            }
+        )
             ->when(
                 !empty($params['no_pagination']),
                 function ($query) {
@@ -1003,7 +996,8 @@ class AdminService extends BaseService
             // ->when(!empty($params['is_opened']), function ($query) {
             //     $query->where('vehicles.status', Consts::VEHICLE_STATUS_OPENED);
             // })
-            ->when(empty($statusList),
+            ->when(
+                empty($statusList),
                 function ($query) {
                     $query->where('vehicles.status', Consts::VEHICLE_STATUS_OPENED);
                 },
@@ -1315,11 +1309,11 @@ class AdminService extends BaseService
     private function saveEucBoxSpares($euc, $params)
     {
         $paramSpares = array_get($params, 'spares', []);
-        if(count($paramSpares)) {
+        if (count($paramSpares)) {
             $serialNumbers = array_column($paramSpares, 'serial_no');
             $spareIds = array_column($paramSpares, 'spare_id');
             $serialNumberUnique = array_unique($serialNumbers);
-            if(count($serialNumberUnique) != count($serialNumbers)) {
+            if (count($serialNumberUnique) != count($serialNumbers)) {
                 throw new Exception('Duplicate Serial No');
             }
 
@@ -1332,7 +1326,7 @@ class AdminService extends BaseService
 
             collect($paramSpares)->map(function ($record) use ($euc, $collectUecBoxSpares) {
                 $collectUecBoxSpares->filter(function ($uecBoxSpare) use ($record) {
-                    if(
+                    if (
                         $uecBoxSpare->spare_id != $record['spare_id'] &&
                         $uecBoxSpare->serial_no == $record['serial_no']
                     ) {
@@ -1368,7 +1362,8 @@ class AdminService extends BaseService
         return true;
     }
 
-    private function saveReplenishEucBox($euc, $spares) {
+    private function saveReplenishEucBox($euc, $spares)
+    {
         foreach ($spares as $spare) {
             ReplenishEucBox::create(
                 [
@@ -1379,17 +1374,17 @@ class AdminService extends BaseService
                     'is_confirmed' => 0,
                 ]
             )->save();
-//            ReplenishEucBox::firstOrCreate(
-//                [
-//                    'euc_box_id' => $euc->id,
-//                    'spare_id' => Arr::get($spare, 'spare_id'),
-//                    'requester_id' => Arr::get($spare, 'requester_id'),
-//                    'receiver_id' => Auth::id(),
-//                ],
-//                [
-//                    'is_confirmed' => 0,
-//                ],
-//            );
+            //            ReplenishEucBox::firstOrCreate(
+            //                [
+            //                    'euc_box_id' => $euc->id,
+            //                    'spare_id' => Arr::get($spare, 'spare_id'),
+            //                    'requester_id' => Arr::get($spare, 'requester_id'),
+            //                    'receiver_id' => Auth::id(),
+            //                ],
+            //                [
+            //                    'is_confirmed' => 0,
+            //                ],
+            //            );
         }
     }
 
@@ -1408,14 +1403,14 @@ class AdminService extends BaseService
         $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
 
         $rawData = PolManagement::when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery
-                        ->where('material_number', 'LIKE', "%{$searchKey}%")
-//                        ->orwhere('card_number', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('type', 'LIKE', "%{$searchKey}%");
-                });
-            })
+            $searchKey = Utils::escapeLike($params['search_key']);
+            $query->where(function ($subQuery) use ($searchKey) {
+                $subQuery
+                    ->where('material_number', 'LIKE', "%{$searchKey}%")
+                    //                        ->orwhere('card_number', 'LIKE', "%{$searchKey}%")
+                    ->orWhere('type', 'LIKE', "%{$searchKey}%");
+            });
+        })
             ->when(!empty($params['types']), function ($query) use ($params) {
                 return $query->whereIn('type', $params['types']);
             })
@@ -1485,8 +1480,13 @@ class AdminService extends BaseService
                 }
             )
             ->select(
-                'pol_managements.*', 'pol_managements.type as item_type', 'pol_histories.*', 'issuer.name as issuer_name', 'receiver.name as receiver_name',
-                'requester.name as requester_name', 'receiver_requested.name as receiver_requested_name'
+                'pol_managements.*',
+                'pol_managements.type as item_type',
+                'pol_histories.*',
+                'issuer.name as issuer_name',
+                'receiver.name as receiver_name',
+                'requester.name as requester_name',
+                'receiver_requested.name as receiver_requested_name'
             )
             ->when(
                 $noPagination,
@@ -1692,7 +1692,7 @@ class AdminService extends BaseService
         if (empty($spareIds)) {
             return null;
         }
-//        $excludeBinIds = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
+        //        $excludeBinIds = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
         $excludeBinIds = $this->getNotWorkingSpareIds();
 
         $suggestBins = [];
@@ -1708,26 +1708,26 @@ class AdminService extends BaseService
                 ]
             )->first();
 
-            if($bin) {
+            if ($bin) {
                 $suggestBins[] = $bin;
                 $excludeBinIds[] = $bin->id;
             }
         }
 
         return $suggestBins;
-//        return $this->getSparesAssignedBin([
-//            'excludeBinIds' => $excludeBinIds,
-//            'spareIds'      => $spareIds,
-//            'limit'         => 1,
-//            'ignore_empty'  => true
-//        ])->first();
+        //        return $this->getSparesAssignedBin([
+        //            'excludeBinIds' => $excludeBinIds,
+        //            'spareIds'      => $spareIds,
+        //            'limit'         => 1,
+        //            'ignore_empty'  => true
+        //        ])->first();
     }
 
 
 
     public function getItemsForReplenish($params = [])
     {
-//        $params['binIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
+        //        $params['binIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
         $params['binIds'] = $this->getNotWorkingSpareIds();
         $params['type'] = Consts::SPARE_TYPE_CONSUMABLE;
         $sparesInBin = $this->getSparesAssignedBin($params);
@@ -1746,12 +1746,12 @@ class AdminService extends BaseService
 
         $bin = Bin::find($binId);
         // If bin does not exist
-        if(!$bin) {
+        if (!$bin) {
             throw new Exception('Bin does not exist');
         }
 
         // Case lock processing
-        if($value) {
+        if ($value) {
             $this->lockBinProcessing($bin, $params);
         }
         // Case unlock processing
@@ -1778,7 +1778,7 @@ class AdminService extends BaseService
         $userId = Arr::get($params, 'user_id');
 
         // If bin is processing
-        if($bin->is_processing && $bin->process_by != $userId) {
+        if ($bin->is_processing && $bin->process_by != $userId) {
             $user = User::find($bin->process_by);
             throw new Exception('Bin is locked by ' . $user->name);
         }
@@ -1798,7 +1798,7 @@ class AdminService extends BaseService
         $userId = Arr::get($params, 'user_id');
 
         // If bin is processing
-        if($bin->is_processing && $bin->process_by != $userId) {
+        if ($bin->is_processing && $bin->process_by != $userId) {
             $user = User::find($bin->process_by);
             throw new Exception('Bin is locked by ' . $user->name);
         }

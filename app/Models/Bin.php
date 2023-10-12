@@ -23,7 +23,7 @@ class Bin extends Model
         'row',
         'bin',
         'drawer_name',
-        'spare_id',
+        // 'spare_id',
         'quantity',
         'quantity_oh',
         'status',
@@ -43,10 +43,11 @@ class Bin extends Model
         return $this->hasMany('App\Models\BinConfigure');
     }
 
-    public function spare()
+    public function spares()
     {
-        return $this->belongsTo(Spare::class);
+        return $this->belongsToMany(Spare::class);
     }
+
 
     public function cluster()
     {

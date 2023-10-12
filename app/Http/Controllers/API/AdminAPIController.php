@@ -441,14 +441,9 @@ class AdminAPIController extends BaseController
 
     public function getBins(Request $request)
     {
-        try {
-            $params = $request->all();
+        $params = $request->all();
             $data = $this->adminService->getBins($params);
-            return $this->sendResponse($data);
-        } catch (Exception $ex) {
-            logger()->error($ex);
-            return $this->sendError($ex);
-        }
+            return $data;
     }
 
     public function getBinsSummary(Request $request)
@@ -463,13 +458,12 @@ class AdminAPIController extends BaseController
         }
     }
 
-    public function updateBin(BinFormRequest $request)
+    public function updateBin(Request $request)
     {
         DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->adminService->updateBin($params);
-            DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollBack();
