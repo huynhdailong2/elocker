@@ -34,11 +34,11 @@ class TakingTransactionAPIController extends BaseController
             'total_qty' => 'numeric',
         ]);
 
-        DB::beginTransaction();
+        // DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->spareService->takingTransaction($params);
-            DB::commit();
+            // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollBack();
@@ -65,6 +65,26 @@ class TakingTransactionAPIController extends BaseController
             $params = $request->all();
             $data = $this->spareService->createWeighingTransaction($params);
             DB::commit();
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            DB::rollBack();
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
+    public function createTransaction(Request $request)
+    {
+        $request->validate([
+            'type' => 'in:'.Consts::TAKING_TRANSACTION_TYPE_ISSUE .','. Consts::TAKING_TRANSACTION_TYPE_REPLENISH.','. Consts::TAKING_TRANSACTION_TYPE_RETURN,
+            // 'user_id'   => 'required',
+            'total_qty' => 'numeric',
+        ]);
+
+        // DB::beginTransaction();
+        try {
+            $params = $request->all();
+            $data = $this->spareService->createTransaction($params);
+            // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollBack();

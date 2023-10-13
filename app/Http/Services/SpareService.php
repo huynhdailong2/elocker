@@ -80,9 +80,9 @@ class SpareService extends BaseService
 
             $spare = Spare::find($value['spare_id']);
             $type = ($spare->type == Consts::SPARE_TYPE_EUC && !Arr::get(
-                    $value,
-                    'bin_id'
-                )) ? Consts::SPARE_TYPE_EUC : '';
+                $value,
+                'bin_id'
+            )) ? Consts::SPARE_TYPE_EUC : '';
             switch ($type) {
                 case Consts::SPARE_TYPE_EUC:
                     $value['bin_id'] = null;
@@ -159,24 +159,24 @@ class SpareService extends BaseService
 
     public function deleteLinkMO($params)
     {
-//        $issueCard = IssueCard::where('id', $params['id'])
-//            ->where('returned', Consts::RETURNED_TYPE_LINK_MO)
-//            ->first();
-//
-//        if ($issueCard) {
-//            // Delete issue card
-//            $issueCard->delete();
-//
-//            // Delete tracking mo
-//            TrackingMo::where('issue_card_id', $params['id'])
-//                ->delete();
-//        }
-//
-//        return $issueCard;
+        //        $issueCard = IssueCard::where('id', $params['id'])
+        //            ->where('returned', Consts::RETURNED_TYPE_LINK_MO)
+        //            ->first();
+        //
+        //        if ($issueCard) {
+        //            // Delete issue card
+        //            $issueCard->delete();
+        //
+        //            // Delete tracking mo
+        //            TrackingMo::where('issue_card_id', $params['id'])
+        //                ->delete();
+        //        }
+        //
+        //        return $issueCard;
         $trackingMo = TrackingMo::query()
             ->where('id', $params['id'])
             ->first();
-        if($trackingMo) {
+        if ($trackingMo) {
             $trackingMo->delete();
 
             IssueCard::query()
@@ -288,11 +288,11 @@ class SpareService extends BaseService
     {
         $rs = [];
         $replenishment = Replenishment::create([
-                                                   'uuid' => Utils::currentMilliseconds(),
-                                                   'type' => Consts::REPLENISHMENT_TYPE_MANUAL,
-                                                   'created_by' => Auth::id(),
-                                                   'updated_by' => Auth::id(),
-                                               ]);
+            'uuid' => Utils::currentMilliseconds(),
+            'type' => Consts::REPLENISHMENT_TYPE_MANUAL,
+            'created_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+        ]);
 
         $spares = array_get($params, 'spares', []);
         foreach ($spares as $value) {
@@ -402,11 +402,11 @@ class SpareService extends BaseService
     public function replenishAuto($params)
     {
         $replenishment = Replenishment::create([
-                                                   'uuid' => Utils::currentMilliseconds(),
-                                                   'type' => Consts::REPLENISHMENT_TYPE_AUTO,
-                                                   'created_by' => Auth::id(),
-                                                   'updated_by' => Auth::id(),
-                                               ]);
+            'uuid' => Utils::currentMilliseconds(),
+            'type' => Consts::REPLENISHMENT_TYPE_AUTO,
+            'created_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+        ]);
 
         $spares = array_get($params, 'spares', []);
         foreach ($spares as $value) {
@@ -506,8 +506,8 @@ class SpareService extends BaseService
                             // Quantity of spare per bin always 1
                             $bin->quantity_oh = 1;
                             $bin->quantity = 1;
-//                        $bin->quantity_oh = BigNumber::new($bin->quantity_oh)->add($item->quantity)->toString();
-//                        $bin->quantity = BigNumber::new($bin->quantity)->add($item->quantity)->toString();
+                            //                        $bin->quantity_oh = BigNumber::new($bin->quantity_oh)->add($item->quantity)->toString();
+                            //                        $bin->quantity = BigNumber::new($bin->quantity)->add($item->quantity)->toString();
                             $bin->save();
 
                             // Remove bin in remain bins
@@ -563,17 +563,17 @@ class SpareService extends BaseService
         foreach ($spares as $value) {
             if (empty($value['spare_id'])) {
                 $spare = Spare::create([
-                                           'type' => Consts::SPARE_TYPE_EUC,
-                                           'part_no' => array_get($value, 'ssn', null),
-                                           'material_no' => array_get($value, 'mpn', null),
-                                           'name' => array_get($value, 'description', null),
-                                           'has_batch_no' => !empty($value['batch_no']),
-                                           'has_serial_no' => !empty($value['serial_no']),
-                                           'has_charge_time' => !empty($value['charge_time']),
-                                           'has_calibration_due' => !empty($value['calibration_due']),
-                                           'has_expiry_date' => !empty($value['expiry_date']),
-                                           'has_load_hydrostatic_test_due' => !empty($value['load_hydrostatic_test_due'])
-                                       ]);
+                    'type' => Consts::SPARE_TYPE_EUC,
+                    'part_no' => array_get($value, 'ssn', null),
+                    'material_no' => array_get($value, 'mpn', null),
+                    'name' => array_get($value, 'description', null),
+                    'has_batch_no' => !empty($value['batch_no']),
+                    'has_serial_no' => !empty($value['serial_no']),
+                    'has_charge_time' => !empty($value['charge_time']),
+                    'has_calibration_due' => !empty($value['calibration_due']),
+                    'has_expiry_date' => !empty($value['expiry_date']),
+                    'has_load_hydrostatic_test_due' => !empty($value['load_hydrostatic_test_due'])
+                ]);
                 $value['spare_id'] = $spare->id;
             }
 
@@ -596,8 +596,8 @@ class SpareService extends BaseService
     public function generateCycleCount($params = [])
     {
         $cycleCount = CycleCount::create([
-                                             'uuid' => Utils::currentMilliseconds()
-                                         ]);
+            'uuid' => Utils::currentMilliseconds()
+        ]);
 
         $types = collect($params)->pluck('type')->toArray();
         $mapSpares = $this->getSpares($types)->groupBy('type');
@@ -617,9 +617,9 @@ class SpareService extends BaseService
 
         collect($result)->each(function ($record) use ($cycleCount) {
             CycleCountSpare::create([
-                                        'cycle_count_id' => $cycleCount->id,
-                                        'spare_id' => $record['spare_id']
-                                    ]);
+                'cycle_count_id' => $cycleCount->id,
+                'spare_id' => $record['spare_id']
+            ]);
         });
 
         return [
@@ -695,34 +695,34 @@ class SpareService extends BaseService
         ];
 
         $issueCardHistories = $this->getIssueCardHistories([
-                                                               'no_pagination' => Consts::TRUE,
-                                                               'ignore_returned' => Consts::TRUE,
-                                                               'types' => $types,
-                                                               'user_id' => $userId,
-                                                               'cluster_id' => Arr::get($params, 'cluster_id'),
-                                                           ]);
+            'no_pagination' => Consts::TRUE,
+            'ignore_returned' => Consts::TRUE,
+            'types' => $types,
+            'user_id' => $userId,
+            'cluster_id' => Arr::get($params, 'cluster_id'),
+        ]);
 
-//        $handedOverSpares = ReturnSpare::join('bins', 'bins.id', 'return_spares.bin_id')
-//            ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-//            ->join('spares', 'spares.id', 'bins.spare_id')
-//            ->when($types, function ($query) use ($types) {
-//                $query->whereIn('spares.type', $types);
-//            })
-//            ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-//                $query->where('bins.cluster_id', $params['cluster_id']);
-//            })
-//            ->where('return_spares.type', Consts::HAND_OVER)
-//            ->where('return_spares.receiver_id', $userId)
-//            ->whereColumn('return_spares.quantity', '<>', 'return_spares.quantity_returned_store')
-//            ->select(
-//                'return_spares.*', 'return_spares.id as return_spare_id', 'spares.name as spare_name', 'spares.part_no',
-//                'spares.material_no', 'bins.row', 'bins.bin', 'shelfs.name as shelf_name', 'spares.type as spare_type'
-//            )
-//            ->addSelect('bins.bin as bin_name', 'bins.drawer_name')
-//            ->addSelect(DB::raw('0 as returned_quantity'))
-//            ->get();
+        //        $handedOverSpares = ReturnSpare::join('bins', 'bins.id', 'return_spares.bin_id')
+        //            ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
+        //            ->join('spares', 'spares.id', 'bins.spare_id')
+        //            ->when($types, function ($query) use ($types) {
+        //                $query->whereIn('spares.type', $types);
+        //            })
+        //            ->when(!empty($params['cluster_id']), function ($query) use ($params) {
+        //                $query->where('bins.cluster_id', $params['cluster_id']);
+        //            })
+        //            ->where('return_spares.type', Consts::HAND_OVER)
+        //            ->where('return_spares.receiver_id', $userId)
+        //            ->whereColumn('return_spares.quantity', '<>', 'return_spares.quantity_returned_store')
+        //            ->select(
+        //                'return_spares.*', 'return_spares.id as return_spare_id', 'spares.name as spare_name', 'spares.part_no',
+        //                'spares.material_no', 'bins.row', 'bins.bin', 'shelfs.name as shelf_name', 'spares.type as spare_type'
+        //            )
+        //            ->addSelect('bins.bin as bin_name', 'bins.drawer_name')
+        //            ->addSelect(DB::raw('0 as returned_quantity'))
+        //            ->get();
 
-//        return $handedOverSpares->concat($issueCardHistories);
+        //        return $handedOverSpares->concat($issueCardHistories);
         return $issueCardHistories;
     }
 
@@ -743,7 +743,7 @@ class SpareService extends BaseService
 
             //unlock bin
             $bin = Bin::find($return->bin_id);
-            if(!empty($bin)) {
+            if (!empty($bin)) {
                 $bin->is_processing = 0;
                 $bin->process_time = null;
                 $bin->process_by = null;
@@ -890,16 +890,16 @@ class SpareService extends BaseService
                 continue;
             }
 
-//            if (empty($map[$record->bin_id])) {
+            //            if (empty($map[$record->bin_id])) {
             if (empty($map[$record->bin_id . "_" . $record->spare_id])) {
                 $result->push($record);
                 continue;
             }
 
-//            $returned = collect($map[$record->bin_id])->first();
+            //            $returned = collect($map[$record->bin_id])->first();
             $returned = collect($map[$record->bin_id . "_" . $record->spare_id])->first();
             $lastReturnSpareState = Arr::get($returned, 'return_spares_state');
-            if(in_array($lastReturnSpareState, $expiresState)) {
+            if (in_array($lastReturnSpareState, $expiresState)) {
                 $returned->has_expiry_date = 1;
                 $returned->expiry_date = Carbon::now()->subDay();
             }
@@ -933,7 +933,7 @@ class SpareService extends BaseService
             ->join('spares', 'spares.id', 'return_spares.spare_id')
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
             ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-//            ->whereIn('return_spares.state', $expiresState)
+            //            ->whereIn('return_spares.state', $expiresState)
             ->when(!empty($params['search_key']), function ($query) use ($params) {
                 $searchKey = Utils::escapeLike($params['search_key']);
 
@@ -941,7 +941,7 @@ class SpareService extends BaseService
                     $subQuery->where('spares.part_no', 'LIKE', "%{$searchKey}%");
                 });
             })
-            ->where(function($subQuery) {
+            ->where(function ($subQuery) {
                 /** @var Builder $subQuery */
                 $subQuery->whereNull('return_spares.write_off')
                     ->orWhere('return_spares.write_off', Consts::FALSE);
@@ -959,11 +959,11 @@ class SpareService extends BaseService
                 'clusters.name as cluster_name',
                 'return_spares.state AS return_spares_state',
             )
-//            ->addSelect($hasExpiryDateColumn)
-//            ->addSelect($expiryDateColumn)
+            //            ->addSelect($hasExpiryDateColumn)
+            //            ->addSelect($expiryDateColumn)
             ->orderBy('return_spares.id', 'DESC')
             ->get()
-//            ->groupBy('bin_id');
+            //            ->groupBy('bin_id');
             ->groupBy(function ($item) {
                 return $item['bin_id'] . "_" . $item['spare_id'];
             });
@@ -1008,12 +1008,12 @@ class SpareService extends BaseService
     private function getSpareExpiringPoint($expiryDate)
     {
         $timeList = collect([
-                                ['day' => 0, 'point' => 1, 'name' => 'Expired'],
-                                ['day' => 14, 'point' => 1, 'name' => 'Expired'],
-                                ['day' => 30, 'point' => 2, 'name' => 'In 30 days'],
-                                ['day' => 90, 'point' => 3, 'name' => 'In 60 Days'],
-                                ['day' => 100, 'point' => 4, 'name' => 'Refresh']
-                            ]);
+            ['day' => 0, 'point' => 1, 'name' => 'Expired'],
+            ['day' => 14, 'point' => 1, 'name' => 'Expired'],
+            ['day' => 30, 'point' => 2, 'name' => 'In 30 days'],
+            ['day' => 90, 'point' => 3, 'name' => 'In 60 Days'],
+            ['day' => 100, 'point' => 4, 'name' => 'Refresh']
+        ]);
 
         if (!$expiryDate) {
             return $timeList->last()['point'];
@@ -1053,16 +1053,16 @@ class SpareService extends BaseService
             $query = IssueCard::join('job_cards', 'job_cards.id', "$fromTableName.job_card_id");
         }
 
-//        $rawData = IssueCard::join('job_cards', 'job_cards.id', 'issue_cards.job_card_id')
+        //        $rawData = IssueCard::join('job_cards', 'job_cards.id', 'issue_cards.job_card_id')
         $rawData = $query
             ->join('vehicles', 'vehicles.id', 'job_cards.vehicle_id')
             ->join('users as issuer', 'issuer.id', "$fromTableName.issuer_id")
             ->join('users as taker', 'taker.id', "$fromTableName.taker_id")
             ->join('spares', 'spares.id', "$fromTableName.spare_id")
-//            ->join('bins', function($join) {
-//                $join->on('bins.id', '=', 'issue_cards.bin_id')
-//                    ->on('bins.spare_id', '=', 'issue_cards.spare_id');
-//            })
+            //            ->join('bins', function($join) {
+            //                $join->on('bins.id', '=', 'issue_cards.bin_id')
+            //                    ->on('bins.spare_id', '=', 'issue_cards.spare_id');
+            //            })
             ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', "$fromTableName.torque_wrench_area_id")
             // ->where(function ($query) {
             //     $query->whereNull('issue_cards.returned')
@@ -1222,9 +1222,9 @@ class SpareService extends BaseService
             Consts::RETURN_SPARE_STATE_FINISHED
         ];
 
-        $returned = collect(Arr::get($sparesExpiredReturns, $record->bin_id. "_" .$record->spare_id))->first();
+        $returned = collect(Arr::get($sparesExpiredReturns, $record->bin_id . "_" . $record->spare_id))->first();
         $lastReturnSpareState = Arr::get($returned, 'return_spares_state');
-        if(in_array($lastReturnSpareState, $expiresState)) {
+        if (in_array($lastReturnSpareState, $expiresState)) {
             $returned->has_expiry_date = 1;
             $returned->expiry_date = Carbon::now()->subDay();
         }
@@ -1265,7 +1265,7 @@ class SpareService extends BaseService
             case Consts::SPARE_TYPE_CONSUMABLE:
                 return 'I';
             default:
-                if($record->issued_quantity - $record->returned_quantity == 0) {
+                if ($record->issued_quantity - $record->returned_quantity == 0) {
                     return 'R';
                 }
 
@@ -1293,16 +1293,16 @@ class SpareService extends BaseService
     public function getSparesTorqueWrench($params = [])
     {
         $params = array_merge([
-                                  'torque_wrench' => Consts::TRUE,
-                                  'types' => [
-                                      Consts::SPARE_TYPE_TORQUE_WRENCH
-                                  ],
-                                  'returned_type' => [
-                                      Consts::RETURNED_TYPE_PARTIAL,
-                                      Consts::RETURNED_TYPE_ALL,
-                                      Consts::RETURNED_TYPE_LINK_MO,
-                                  ]
-                              ], $params);
+            'torque_wrench' => Consts::TRUE,
+            'types' => [
+                Consts::SPARE_TYPE_TORQUE_WRENCH
+            ],
+            'returned_type' => [
+                Consts::RETURNED_TYPE_PARTIAL,
+                Consts::RETURNED_TYPE_ALL,
+                Consts::RETURNED_TYPE_LINK_MO,
+            ]
+        ], $params);
         return $this->getIssueCardsBuilder($params);
     }
 
@@ -1467,7 +1467,7 @@ class SpareService extends BaseService
         $returnedSpareCurrent = ReturnSpare::query()
             ->where('id', $returnSpareId)
             ->first();
-        if($returnedSpareCurrent->write_off == Consts::TRUE) {
+        if ($returnedSpareCurrent->write_off == Consts::TRUE) {
             return;
         }
 
@@ -1475,7 +1475,7 @@ class SpareService extends BaseService
             ->where('bin_id', $returnedSpareCurrent->bin_id)
             ->where('spare_id', $returnedSpareCurrent->spare_id)
             ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
-            ->where(function($subQuery) {
+            ->where(function ($subQuery) {
                 /** @var Builder $subQuery */
                 $subQuery->whereNull('return_spares.write_off')
                     ->orWhere('return_spares.write_off', Consts::FALSE);
@@ -1499,22 +1499,22 @@ class SpareService extends BaseService
             $bin = Bin::query()->where('id', $returnedSpare->bin_id)->first();
             $bin->quantity_oh = $bin->quantity;
 
-//            if ($returnedSpare->state === Consts::RETURN_SPARE_STATE_DAMAGE) {
-//                BinConfigure::query()
-//                    ->where('bin_id', $returnedSpare->bin_id)->delete();
-//
-//                $bin->fill(
-//                    [
-//                        'spare_id' => null,
-//                        'status' => Consts::BIN_STATUS_UNASSIGNED,
-//                        'quantity' => null,
-//                        'quantity_oh' => null,
-//                        'min' => null,
-//                        'max' => null,
-//                        'critical' => null,
-//                    ]
-//                );
-//            }
+            //            if ($returnedSpare->state === Consts::RETURN_SPARE_STATE_DAMAGE) {
+            //                BinConfigure::query()
+            //                    ->where('bin_id', $returnedSpare->bin_id)->delete();
+            //
+            //                $bin->fill(
+            //                    [
+            //                        'spare_id' => null,
+            //                        'status' => Consts::BIN_STATUS_UNASSIGNED,
+            //                        'quantity' => null,
+            //                        'quantity_oh' => null,
+            //                        'min' => null,
+            //                        'max' => null,
+            //                        'critical' => null,
+            //                    ]
+            //                );
+            //            }
 
             $bin->save();
         }
@@ -1531,16 +1531,16 @@ class SpareService extends BaseService
         $writeOff->save();
         $writeOff->delete();
 
-//        ReturnSpare::where('id', $writeOff->return_spare_id)
-//            ->update([
-//                         'write_off' => Consts::FALSE
-//                     ]);
-//
-//        $bin = Bin::findOrFail($writeOff->bin_id);
-//        $bin->quantity_oh = BigNumber::new($bin->quantity_oh ?? 0)
-//            ->add($writeOff->quantity)
-//            ->toString();
-//        $bin->save();
+        //        ReturnSpare::where('id', $writeOff->return_spare_id)
+        //            ->update([
+        //                         'write_off' => Consts::FALSE
+        //                     ]);
+        //
+        //        $bin = Bin::findOrFail($writeOff->bin_id);
+        //        $bin->quantity_oh = BigNumber::new($bin->quantity_oh ?? 0)
+        //            ->add($writeOff->quantity)
+        //            ->toString();
+        //        $bin->save();
 
         return $writeOff;
     }
@@ -1923,7 +1923,7 @@ class SpareService extends BaseService
         $dryRun && $this->updateTotalQtyInTransaction($takerId, $typeTransaction, count($spares));
 
         $excludeBinIds = $this->adminService->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
-//        $excludeBinIds = $this->adminService->getNotWorkingSpareIds();
+        //        $excludeBinIds = $this->adminService->getNotWorkingSpareIds();
         $spareNoBin = $spareIssued = [];
 
         foreach ($spares as $value) {
@@ -1933,21 +1933,21 @@ class SpareService extends BaseService
             $userId = Arr::get($value, 'taker_id');
             $binId = Arr::get($value, 'bin_id');
             $binQ = $this->selectBinsBySpareId([
-                                                   'bin_id' => $binId,
-                                                   'spare_id' => $spareId,
-                                                   'quantity' => $quantity,
-                                                   'cluster_id' => $clusterId,
-                                                   'exclude_ids' => $excludeBinIds,
-                                                   'ignore_empty' => true,
-                                               ]);
+                'bin_id' => $binId,
+                'spare_id' => $spareId,
+                'quantity' => $quantity,
+                'cluster_id' => $clusterId,
+                'exclude_ids' => $excludeBinIds,
+                'ignore_empty' => true,
+            ]);
             if (!$binQ->count()) {
                 $binQ = $this->selectBinsBySpareId([
-                                                       'spare_id' => $spareId,
-                                                       'quantity' => $quantity,
-                                                       'cluster_id' => $clusterId,
-                                                       'exclude_ids' => $excludeBinIds,
-                                                       'ignore_empty' => true,
-                                                   ]);
+                    'spare_id' => $spareId,
+                    'quantity' => $quantity,
+                    'cluster_id' => $clusterId,
+                    'exclude_ids' => $excludeBinIds,
+                    'ignore_empty' => true,
+                ]);
             }
             $binsUpdate = clone $binQ;
             $bins = $binQ->get();
@@ -2100,9 +2100,9 @@ class SpareService extends BaseService
         $totalQty = Arr::get($params, 'total_qty', 0);
         $transaction = $this->getCurrentTakingTransaction($params);
         if (!$transaction) {
-//            if ($totalQty <= 0) {
-//                return [];
-//            }
+            //            if ($totalQty <= 0) {
+            //                return [];
+            //            }
 
             $transaction = new TakingTransaction;
             $params['remain_qty'] = 0;
@@ -2113,8 +2113,8 @@ class SpareService extends BaseService
         $transaction->remain_bins = json_decode($transaction->remain_bins, true);
         return [
             'transaction' => $transaction,
-//            'bins' => $this->suggestBinsFromTakingTransaction($transaction, $clusterId),
-//            'bins' => $this->suggestBinsByClusterId($clusterId, $transaction->remain_qty),
+            //            'bins' => $this->suggestBinsFromTakingTransaction($transaction, $clusterId),
+            //            'bins' => $this->suggestBinsByClusterId($clusterId, $transaction->remain_qty),
         ];
     }
 
@@ -2213,23 +2213,23 @@ class SpareService extends BaseService
     private function suggestBinsFromTakingTransaction($takingTransaction, $clusterId)
     {
         return $takingTransaction->remain_bins;
-//        $suggestBins = [];
-//        $nextBin = null;
-//        if($clusterId) {
-//            $remainBins = json_decode($takingTransaction->remain_bins);
-//            foreach ($remainBins as $bin) {
-//                if($bin->cluster_id == $clusterId) {
-//                    $suggestBins[] = $bin;
-//                } elseif(!$nextBin) {
-//                    $nextBin = $bin;
-//                }
-//            }
-//        }
-//
-//        if($nextBin) {
-//            $suggestBins[] = $nextBin;
-//        }
-//        return $suggestBins;
+        //        $suggestBins = [];
+        //        $nextBin = null;
+        //        if($clusterId) {
+        //            $remainBins = json_decode($takingTransaction->remain_bins);
+        //            foreach ($remainBins as $bin) {
+        //                if($bin->cluster_id == $clusterId) {
+        //                    $suggestBins[] = $bin;
+        //                } elseif(!$nextBin) {
+        //                    $nextBin = $bin;
+        //                }
+        //            }
+        //        }
+        //
+        //        if($nextBin) {
+        //            $suggestBins[] = $nextBin;
+        //        }
+        //        return $suggestBins;
     }
 
     private function suggestBinsByClusterId($clusterId, $quantity)
@@ -2287,11 +2287,11 @@ class SpareService extends BaseService
             $clusterId = Arr::get($value, 'cluster_id');
             $quantity = Arr::get($value, 'quantity'); // Always value = 1
             $binQ = $this->selectBinsBySpareId([
-                                                   'spare_id' => $spareId,
-                                                   'quantity' => $quantity, // Get number of the record
-                                                   'cluster_id' => $clusterId,
-                                                   'only_empty' => true,
-                                               ]);
+                'spare_id' => $spareId,
+                'quantity' => $quantity, // Get number of the record
+                'cluster_id' => $clusterId,
+                'only_empty' => true,
+            ]);
             if (!$currentClusterId) {
                 $currentClusterId = $clusterId;
             }
@@ -2301,20 +2301,20 @@ class SpareService extends BaseService
 
             $dryRun || $binsUpdate->update(['quantity' => 1, 'quantity_oh' => 1]); // quantity of spare per bin always 1
 
-//            if ($bins->count() < $value['quantity']) {
-//                $remainQty = $value['quantity'] - $selectedTotal;
-//                $emptyBinQ = $this->selectEmptyBins($clusterId, $remainQty);
-//                $binsUpdate = clone $emptyBinQ;
-//                $emptyBins = $emptyBinQ->get();
-//                $defaultBinInfo = ['spare_id' => $spareId, 'min' => 1, 'max' => 1, 'critical' => 0];
-//                // quantity of spare per bin always 1
-//                $dryRun || $binsUpdate->update(array_merge($defaultBinInfo, [
-//                    'quantity'    => 1,
-//                    'quantity_oh' => 1,
-//                    'status'      => Consts::BIN_STATUS_ASSIGNED,
-//                ]));
-//                $bins = $bins->merge($emptyBins);
-//            }
+            //            if ($bins->count() < $value['quantity']) {
+            //                $remainQty = $value['quantity'] - $selectedTotal;
+            //                $emptyBinQ = $this->selectEmptyBins($clusterId, $remainQty);
+            //                $binsUpdate = clone $emptyBinQ;
+            //                $emptyBins = $emptyBinQ->get();
+            //                $defaultBinInfo = ['spare_id' => $spareId, 'min' => 1, 'max' => 1, 'critical' => 0];
+            //                // quantity of spare per bin always 1
+            //                $dryRun || $binsUpdate->update(array_merge($defaultBinInfo, [
+            //                    'quantity'    => 1,
+            //                    'quantity_oh' => 1,
+            //                    'status'      => Consts::BIN_STATUS_ASSIGNED,
+            //                ]));
+            //                $bins = $bins->merge($emptyBins);
+            //            }
 
             $configures = Arr::get($value, 'configures', []);
             if ($configures) {
@@ -2443,7 +2443,7 @@ class SpareService extends BaseService
             $oldBin = null;
             if ($issueCard && $issueCard->bin_id) {
                 $oldBin = Bin::where('bins.id', $issueCard->bin_id)->where('bins.quantity_oh', 0)
-//                    ->where('is_failed', Consts::BIN_IS_FAILED_NO)
+                    //                    ->where('is_failed', Consts::BIN_IS_FAILED_NO)
                     ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
                     ->leftJoin('shelfs', 'shelfs.id', 'bins.shelf_id')
                     ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
@@ -2482,7 +2482,8 @@ class SpareService extends BaseService
 
                 $quantity = $oldBin ? $quantity - 1 : $quantity;
                 if ($oldBin) {
-                    $dryRun || $oldBin->update(['quantity' => 1, 'quantity_oh' => 1]
+                    $dryRun || $oldBin->update(
+                        ['quantity' => 1, 'quantity_oh' => 1]
                     ); // quantity of spare per bin always 1
                     $oldBin->spare_name = $spare ? $spare->name : '';
                     $oldBin->issue_card_id = $item['issue_card_id'];
@@ -2496,19 +2497,19 @@ class SpareService extends BaseService
             }
 
             // Case return data from return_spares with type = handover
-//            if ($quantity > 0) {
-//                $binQ = $this->selectBinsBySpareId([
-//                    'spare_id'   => $item['spare_id'],
-//                    'quantity'   => $quantity,
-//                    'cluster_id' => $item['cluster_id'],
-//                    'only_empty' => true,
-//                    'exclude_ids' => $issueCard ? [$issueCard->bin_id] : null,
-//                ]);
-//                $binsUpdate = clone $binQ;
-//                $bins = $binQ->get();
-//                $dryRun || $binsUpdate->update(['quantity' => 1, 'quantity_oh' => 1]); // quantity of spare per bin always 1
-//                $oldBin && $bins->prepend($oldBin);
-//            }
+            //            if ($quantity > 0) {
+            //                $binQ = $this->selectBinsBySpareId([
+            //                    'spare_id'   => $item['spare_id'],
+            //                    'quantity'   => $quantity,
+            //                    'cluster_id' => $item['cluster_id'],
+            //                    'only_empty' => true,
+            //                    'exclude_ids' => $issueCard ? [$issueCard->bin_id] : null,
+            //                ]);
+            //                $binsUpdate = clone $binQ;
+            //                $bins = $binQ->get();
+            //                $dryRun || $binsUpdate->update(['quantity' => 1, 'quantity_oh' => 1]); // quantity of spare per bin always 1
+            //                $oldBin && $bins->prepend($oldBin);
+            //            }
 
             foreach ($bins as $bin) {
                 $return = new ReturnSpare;
@@ -2518,7 +2519,7 @@ class SpareService extends BaseService
                     'spare_id' => $item['spare_id'],
                     'state' => $item['state'],
                     'quantity' => 1,
-//                    'handover_id' => Auth::id(),
+                    //                    'handover_id' => Auth::id(),
                     'handover_id' => $userId ?? Auth::id(),
                 ]);
 
@@ -2819,7 +2820,7 @@ class SpareService extends BaseService
             ->when($status, function ($query) use ($status) {
                 $status = strtolower(Utils::escapeLike($status));
                 // Do not select any records
-                if($status == 'pending') {
+                if ($status == 'pending') {
                     $query->where('return_spares.id', '<', 0);
                 }
             });
@@ -2848,19 +2849,19 @@ class SpareService extends BaseService
             })
             ->when($status, function ($query) use ($status) {
                 $status = strtolower(Utils::escapeLike($status));
-                if($status == 'pending') {
+                if ($status == 'pending') {
                     $query->whereColumn('issue_cards.quantity', '!=', 'issue_cards.returned_quantity')
-                        ->orWhere(function($subQuery) {
+                        ->orWhere(function ($subQuery) {
                             $subQuery->whereNull('issue_cards.quantity')
-                            ->whereNotNull('issue_cards.returned_quantity');
+                                ->whereNotNull('issue_cards.returned_quantity');
                         })
-                        ->orWhere(function($subQuery) {
+                        ->orWhere(function ($subQuery) {
                             $subQuery->whereNull('issue_cards.returned_quantity')
                                 ->whereNotNull('issue_cards.quantity');
                         });
                 }
-                if($status == 'returned') {
-                    $query->whereColumn('issue_cards.quantity','issue_cards.returned_quantity');
+                if ($status == 'returned') {
+                    $query->whereColumn('issue_cards.quantity', 'issue_cards.returned_quantity');
                 }
             })
             ->select(
@@ -2880,5 +2881,31 @@ class SpareService extends BaseService
                     DB::raw('IF(issue_cards.quantity = issue_cards.returned_quantity, "Returned", "Pending") AS status'),
                 ]
             );
+    }
+    public function createTransaction($request)
+    {
+        $taking_transaction = TakingTransaction::create([
+            'hardware_port' => $request['hardware_port'],
+            'name' => $request['name'],
+            'part_number' => $request['part_number'],
+            'port_id' => $request['port_id'],
+            'total_qty' => $request['total_qty'],
+            'qty' => $request['qty'],
+            'status' => $request['status'],
+            'item_id' => $request['item_id'],
+            'pre_qty' => $request['pre_qty'],
+            'changed_qty' => $request['changed_qty'],
+            'user_id' => $request['user']['id'],
+            'type' => $request['type'],
+            'remain_qty' => 1,
+            'cabinet_id' => $request['location']['cabinet']['id'],
+            'bin_id' => $request['location']['bin']['id'],
+            'spare_id' => $request['item']['id'],
+        ]);
+        $taking_transaction->makeHidden(['bin', 'cabinet']);
+        $taking_transaction->location;
+        $taking_transaction->item;
+        $taking_transaction->user;
+        return $taking_transaction;
     }
 }

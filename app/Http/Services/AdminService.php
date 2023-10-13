@@ -596,7 +596,7 @@ class AdminService extends BaseService
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
             ->leftJoin('clusters', 'clusters.id', 'shelfs.cluster_id')
             ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
-            ->when(!empty($params['bin_id']),function ($query) use ($params){
+            ->when(!empty($params['bin_id']), function ($query) use ($params) {
                 $query->where('id', $params['bin_id']);
             })
             ->when(!empty($params['cluster_id']), function ($query) use ($params) {
@@ -660,8 +660,9 @@ class AdminService extends BaseService
                     ELSE "Available" END) AS status_lbl'
             ))->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
     }
-    public function getBinId($params){
-        $bin =Bin::findOrFail($params);
+    public function getBinId($params)
+    {
+        $bin = Bin::findOrFail($params);
         $bin->spares;
         $bin->configures;
         return $bin;
@@ -767,6 +768,7 @@ class AdminService extends BaseService
             $configures = [$first];
         }
 
+
         $configureIds = [];
 
         foreach ($configures as $index => $value) {
@@ -793,7 +795,7 @@ class AdminService extends BaseService
         BinConfigure::where('bin_id', $bin->id)
             ->whereNotIn('id', $configureIds)
             ->delete();
-            return true;
+        return true;
     }
 
     public function unassignedBin($binId)

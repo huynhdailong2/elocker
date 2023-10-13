@@ -206,6 +206,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
     Route::group(['prefix' => 'taking-transaction'], function() {
         Route::post('/', 'API\TakingTransactionAPIController@takingTransaction');
         Route::post('/create-weighing-trans', 'API\TakingTransactionAPIController@createWeighingTransaction');
+        Route::post('/create', 'API\TakingTransactionAPIController@createTransaction');
     });
 
     Route::group(['prefix' => 'cycle-count'], function() {

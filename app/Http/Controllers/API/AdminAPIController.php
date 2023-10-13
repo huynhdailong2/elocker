@@ -469,6 +469,7 @@ class AdminAPIController extends BaseController
         try {
             $params = $request->all();
             $data = $this->adminService->updateBin($params);
+            DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollBack();

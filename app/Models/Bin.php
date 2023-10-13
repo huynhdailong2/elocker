@@ -6,15 +6,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * @property int spare_id
- * @property ?int quantity
- * @property ?int quantity_oh
- * @property ?int min
- * @property ?int max
- * @property ?int critical
- * @property string status
- */
+// /**
+//  * @property int spare_id
+//  * @property ?int quantity
+//  * @property ?int quantity_oh
+//  * @property ?int min
+//  * @property ?int max
+//  * @property ?int critical
+//  * @property string status
+//  */
 class Bin extends Model
 {
     protected $fillable = [
