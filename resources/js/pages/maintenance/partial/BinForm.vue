@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-4">
           <label>Item Name</label>
-          <!-- <select
+          <select
             class="input"
             v-model="inputForm.spare_id"
             name="spare_id"
@@ -16,17 +16,22 @@
               :value="item.id"
               v-for="(item, index) in spares"
               :key="index"
-              >{{ item.name }}</option
+              :class="{ 'bluetext':  data.spares.map(i => i.id).includes(item.id) }"
             >
-          </select> -->
-          <v-select
+              <p>
+                {{ item.name }}
+              </p>
+            </option>
+          </select>
+
+          <!-- <v-select
             class="input style-chooser"
             name="spare_id"
             v-model="inputForm.spare_id"
             :disabled="!!inputForm.is_drawer"
             :reduce="(spare) => spare.code"
             :options="spares"
-          ></v-select>
+          ></v-select> -->
           <span class="invalid-feedback" v-if="errors.has('spare_id')">
             {{ errors.first("spare_id") }}
           </span>
@@ -41,8 +46,9 @@
             :disabled="disableQuantity"
             v-model="inputForm.quantity"
             v-validate="
-              `required|numeric|min_value:${inputForm.min ||
-                0}|max_value:${inputForm.max || 1000}`
+              `required|numeric|min_value:${inputForm.min || 0}|max_value:${
+                inputForm.max || 1000
+              }`
             "
           />
           <span class="invalid-feedback" v-if="errors.has('quantity')">
@@ -123,12 +129,8 @@
     />
 
     <div class="actions">
-      <button @click="onAddItem" class="btn-primary">
-        Add
-      </button>
-      <button @click="onClearList" class="btn-primary">
-        Clear
-      </button>
+      <button @click="onAddItem" class="btn-primary">Add</button>
+      <button @click="onClearList" class="btn-primary">Clear</button>
     </div>
 
     <template>
@@ -162,7 +164,7 @@
       </div>
     </template>
 
-    <div style="justify-content: end;" class="actions mt-3 ">
+    <div style="justify-content: end" class="actions mt-3">
       <button class="btn-primary" @click="onSaveData">Save</button>
     </div>
   </div>
@@ -205,7 +207,8 @@ export default {
       items: [],
     };
   },
-
+  
+  
   computed: {
     showConfigures() {
       return !isEmpty(this.inputForm.configures);
@@ -249,7 +252,7 @@ export default {
       };
     },
 
-    "inputForm.quantity": debounce(function() {
+    "inputForm.quantity": debounce(function () {
       this.initConfigures();
 
       const limit = parseInt(this.inputForm.quantity) || 0;
@@ -272,7 +275,7 @@ export default {
       quantity: this.data.quantity ?? 1,
     };
     this.initConfigures();
-    console.log(this.data);
+    console.log("check",this.data);
     rf.getRequest("AdminRequest").getBinId(this.data.id);
     this.items = this.data.spares.map((i) => ({
       ...i,
@@ -334,7 +337,7 @@ export default {
       rf.getRequest("AdminRequest")
         .getSpares(params)
         .then((res) => {
-          console.log(res.data);
+          console.log("getSpares", res.data);
           this.spares = chain(res.data || [])
             // .filter(item => item.type !== Const.ITEM_TYPE.EUC.value)
             .map((item) => {
@@ -467,6 +470,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss" scoped>
 .input-form {
   width: 100%;
@@ -505,9 +509,14 @@ export default {
   margin-bottom: 24px;
 }
 </style>
+
 <style>
 .style-chooser input.vs__search {
   border: none !important;
+}
+.bluetext {
+  background-color: #6cb2eb;
+  border-bottom: 1px solid #ccc;
 }
 .style-chooser .vs__selected,
 .style-chooser .vs__search::placeholder,

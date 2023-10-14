@@ -13,38 +13,36 @@
             :value="item.id"
             v-for="(item, index) in clusters"
             :key="index"
-            >{{ item.name }}</option
           >
+            {{ item.name }}
+          </option>
         </select>
       </div>
       <div class="option">
         <label>Shelf:</label>
         <select class="input" v-model="filters.shelf_id">
           <option value="">All</option>
-          <option
-            :value="item.id"
-            v-for="(item, index) in shelfs"
-            :key="index"
-            >{{ item.name }}</option
-          >
+          <option :value="item.id" v-for="(item, index) in shelfs" :key="index">
+            {{ item.name }}
+          </option>
         </select>
       </div>
       <div class="option">
         <label>Row:</label>
         <select class="input" v-model="filters.row">
           <option value="">All</option>
-          <option :value="item" v-for="(item, index) in rows" :key="index">{{
-            item
-          }}</option>
+          <option :value="item" v-for="(item, index) in rows" :key="index">
+            {{ item }}
+          </option>
         </select>
       </div>
       <div class="option">
         <label>Bin:</label>
         <select class="input" v-model="filters.bin">
           <option value="">All</option>
-          <option :value="item" v-for="(item, index) in bins" :key="index">{{
-            item
-          }}</option>
+          <option :value="item" v-for="(item, index) in bins" :key="index">
+            {{ item }}
+          </option>
         </select>
       </div>
       <div class="option">
@@ -55,8 +53,9 @@
             :value="item.value"
             v-for="(item, index) in statusList"
             :key="index"
-            >{{ item.name }}</option
           >
+            {{ item.name }}
+          </option>
         </select>
       </div>
       <div class="option">
@@ -67,8 +66,9 @@
             :value="item.value"
             v-for="(item, index) in drawerStatuses"
             :key="index"
-            >{{ item.name }}</option
           >
+            {{ item.name }}
+          </option>
         </select>
       </div>
       <div class="option">
@@ -121,13 +121,16 @@
             </td>
 
             <td>
-              <span
-                v-for="(item, index) in props.item.spares"
-                :key="index"
-                class="ml-2"
-              >
-                {{ item.name }}
-                <span v-if="index !== props.item.spares.length - 1">,</span>
+              <span class="ml-2" v-if="props.item.spares.length > 4">
+                {{
+                  props.item.spares
+                    .slice(0, 4)
+                    .map((item) => item.name)
+                    .join(", ")
+                }}, ...
+              </span>
+              <span class="ml-2" v-else>
+                {{ props.item.spares.map((item) => item.name).join(", ") }}
               </span>
             </td>
 
@@ -355,14 +358,14 @@ export default {
   watch: {
     filters: {
       deep: true,
-      handler: debounce(function() {
+      handler: debounce(function () {
         this.$refs.datatable.refresh();
       }, 300),
     },
 
     searchKey: {
       deep: true,
-      handler: debounce(function() {
+      handler: debounce(function () {
         this.$refs.datatable.refresh();
       }, 300),
     },
