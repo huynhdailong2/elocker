@@ -48,12 +48,16 @@ class TakingTransaction extends Model
     {
         return $this->belongsTo(Shelf::class, 'cabinet_id');
     }
-    public function item()
+    public function spare()
     {
         return $this->belongsTo(Spare::class, 'spare_id');
     }
+    // public function searchSpare(){
+    //     return $this->hasMany(Spare::class, 'spare_id');
+    // }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    
 }

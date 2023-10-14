@@ -1038,7 +1038,7 @@ class SpareService extends BaseService
         $types = array_get($params, 'types', null);
         $wo = array_get($params, 'wo', null);
         $issuedDate = array_get($params, 'issued_date', null);
-        $expiredDate = array_get($params, 'expired_date', null);
+        // $expiredDate = array_get($params, 'expired_date', null);
         $torqueWrench = array_get($params, 'torque_wrench', Consts::FALSE);
         $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
         $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
@@ -1306,17 +1306,7 @@ class SpareService extends BaseService
         return $this->getIssueCardsBuilder($params);
     }
 
-    public function getReportByTnx($params = [])
-    {
-        // $params = array_merge($params, [
-        //     'types' => [
-        //         Consts::SPARE_TYPE_DURABLE,
-        //         Consts::SPARE_TYPE_PERISHABLE,
-        //         Consts::SPARE_TYPE_AFES
-        //     ]
-        // ]);
-        return $this->getIssueCardsBuilder($params);
-    }
+    
 
     public function getReportByLoan($params = [])
     {
@@ -2904,8 +2894,52 @@ class SpareService extends BaseService
         ]);
         $taking_transaction->makeHidden(['bin', 'cabinet']);
         $taking_transaction->location;
-        $taking_transaction->item;
+        $taking_transaction->spare;
         $taking_transaction->user;
         return $taking_transaction;
+    }
+    public function getReportByTnx($request = [])
+    {
+        $search_key = isset($request['search_key'])?$request['search_key'] :'';
+        $date = isset($request['issued_date'])?$request['issued_date'] :[];
+        $dateee = json_decode($date, true);
+        $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
+        $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
+        $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
+        $transactions = TakingTransaction::with('user','spare','bin');
+        if(!empty($date)){
+            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        }
+        if (!empty($search_key)) {
+            $transactions->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                      ->orWhereHas('spare', function ($subquery) use ($search_key) {
+                          $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                      });
+            });
+        }
+
+        if (!empty($cluster_id)) {
+            $transactions->whereHas('cabinet', function ($query) use ($cluster_id) {
+                $query->where('cluster_id', $cluster_id);
+            });
+        }
+
+        if (!empty($shelf_id)) {
+            $transactions->whereHas('cabinet', function ($query) use ($shelf_id) {
+                $query->where('id', $shelf_id);
+            });
+        }
+
+        if (!empty($bin_id)) {
+            $transactions->whereHas('bin', function ($query) use ($bin_id) {
+                $query->where('id', $bin_id);
+            });
+        }
+        $perPage = $request['limit'];
+        $page = $request['page'];
+        $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
+        return $paginatedTransactions;
+
     }
 }
