@@ -782,7 +782,8 @@ class AdminService extends BaseService
                 $configure = BinConfigure::findOrFail($value['id']);
             }
 
-            $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
+            // $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
+            $value['charge_time'] = $value['charge_time'];
             $value['calibration_due'] = empty($value['has_calibration_due']) ? null : $value['calibration_due'];
             $value['expiry_date'] = empty($value['has_expiry_date']) ? null : $value['expiry_date'];
             $value['load_hydrostatic_test_due'] = empty($value['has_load_hydrostatic_test_due']) ? null : $value['load_hydrostatic_test_due'];

@@ -4,19 +4,27 @@
       <table>
         <thead>
           <th class="no">S/N</th>
-          <th v-if="spare.has_batch_no">Batch Number</th>
+          <!-- <th v-if="spare.has_batch_no">Batch Number</th>
           <th v-if="spare.has_serial_no">Serial Number</th>
           <th v-if="spare.has_charge_time">Charge Time</th>
           <th v-if="spare.has_calibration_due">Calibration Due/Inspection</th>
           <th v-if="spare.has_load_hydrostatic_test_due">
             Load/Hydrostatic Test Due
           </th>
-          <th v-if="spare.has_expiry_date">Expiry Date</th>
+          <th v-if="spare.has_expiry_date">Expiry Date</th> -->
+          <th>Batch Number</th>
+          <th >Serial Number</th>
+          <th >Charge Time</th>
+          <!-- <th >Calibration Due/Inspection</th> -->
+          <th >
+            Load/Hydrostatic Test Due
+          </th>
+          <!-- <th>Expiry Date</th> -->
         </thead>
         <tbody>
           <tr v-for="(item, index) in data">
             <td>{{ index + 1 }}</td>
-            <td v-if="spare.has_batch_no">
+            <td>
               <input
                 type="text"
                 class="input"
@@ -35,7 +43,7 @@
                 {{ errors.first(`${item.scope}.batch_no`) }}
               </span>
             </td>
-            <td v-if="spare.has_serial_no">
+            <td>
               <input
                 type="text"
                 class="input"
@@ -54,7 +62,7 @@
                 {{ errors.first(`${item.scope}.serial_no`) }}
               </span>
             </td>
-            <td v-if="spare.has_charge_time">
+            <td>
               <div class="choose-time">
                 <label class="checkbox-container">
                   <input type="checkbox" v-model="item.has_charge_time" />
@@ -90,7 +98,7 @@
                 {{ errors.first(`${item.scope}.charge_time`) }}
               </span>
             </td>
-            <td v-if="spare.has_calibration_due">
+            <!-- <td>
               <div class="choose-date">
                 <label class="checkbox-container">
                   <input type="checkbox" v-model="item.has_calibration_due" />
@@ -117,8 +125,8 @@
               >
                 {{ errors.first(`${item.scope}.calibration_due`) }}
               </span>
-            </td>
-            <td v-if="spare.has_load_hydrostatic_test_due">
+            </td> -->
+            <td>
               <div class="choose-date">
                 <label class="checkbox-container">
                   <input
@@ -151,7 +159,7 @@
                 {{ errors.first(`${item.scope}.load_hydrostatic_test_due`) }}
               </span>
             </td>
-            <td v-if="spare.has_expiry_date">
+            <!-- <td>
               <div class="choose-date expiry">
                 <label class="checkbox-container">
                   <input type="checkbox" v-model="item.has_expiry_date" />
@@ -176,7 +184,7 @@
               >
                 {{ errors.first(`${item.scope}.expiry_date`) }}
               </span>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>

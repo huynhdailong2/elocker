@@ -125,7 +125,7 @@
       :spare="inputForm"
       :data="inputForm.configures"
       ref="binConfigures"
-      v-if="visibleBinConfigure"
+      v-if="inputForm.spare_id"
     />
 
     <div class="actions">
@@ -195,7 +195,7 @@ export default {
 
   data() {
     return {
-      inputForm: {
+            inputForm: {
         spare_id: null,
         min: null,
         max: null,
@@ -269,13 +269,14 @@ export default {
     this.inputForm = {
       ...this.inputForm,
       ...this.data,
+      spare_id: this.data.spares.length > 0 ? this.data.spares[0].id : null,
       critical: this.data.critical ?? 0,
       min: this.data.min ?? 1,
       max: this.data.max ?? 1,
       quantity: this.data.quantity ?? 1,
+
     };
-    this.initConfigures();
-    console.log("check",this.data);
+    // this.initConfigures();
     rf.getRequest("AdminRequest").getBinId(this.data.id);
     this.items = this.data.spares.map((i) => ({
       ...i,
@@ -458,13 +459,17 @@ export default {
         ...this.items[0],
         ...this.inputForm,
         spare_id: this.items.map((i) => i.spare_id),
+        configures: this.inputForm.configures.map(i => ({
+          ...i,
+          charge_time:i.has_charge_time ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}` : null
+        }))
       };
       return rf
         .getRequest("AdminRequest")
         .updateBin(data)
         .then(() => {
           this.showSuccess("Successfully!");
-        })
+                  })
         .catch(() => this.processErrors("Fail"));
     },
   },
