@@ -16,7 +16,6 @@ class CreateBinSpareTable extends Migration
         Schema::create('bin_spare', function (Blueprint $table) {
             $table->unsignedBigInteger('bin_id');
             $table->unsignedBigInteger('spare_id');
-            // Các cột thông tin bổ sung khác
             $table->timestamps();
 
             $table->foreign('bin_id')->references('id')->on('bins')->onDelete('cascade');

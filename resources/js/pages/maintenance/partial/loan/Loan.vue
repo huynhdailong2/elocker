@@ -47,25 +47,31 @@
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
+          <th class="text-center">Trans ID</th>
           <th class="text-center">WO/Svc#</th>
           <th class="text-center">Loan Date</th>
           <th class="text-center">Return Date</th>
           <th class="text-center">Vehicle</th>
           <th class="text-center">Platform</th>
+          <th class="text-center">Location</th>
+          <th class="text-center">Item type</th>
           <th class="text-center">Item Details</th>
           <th class="text-center">Part No</th>
 <!--          <th class="text-center">Area Use</th>-->
           <th class="text-center">Loan Qty</th>
           <th class="text-center">Returned Qty</th>
           <th class="text-center">Qty</th>
-          <th class="text-center">Loan By</th>
-          <th class="text-center">Loan To</th>
+          <th class="text-center">By</th>
 <!--          <th class="text-center">Trans</th>-->
           <th class="text-center">Load/Hydrostatic Test Due</th>
           <th class="text-center">Calibration / Inspection Due</th>
+          <th class="text-center">Trans</th>
           <th class="text-center">Expiry Date</th>
         <template slot="body" slot-scope="props">
           <tr :class="{'bg-green': props.item.fully_returned, 'bg-red': props.item.expired_return_time }">
+            <td :title="props.item.wo" >
+              <div class="text ellipsis">{{ props.item.id }}</div>
+            </td>
             <td :title="props.item.wo" >
               <div class="text ellipsis">{{ props.item.card_num }}</div>
             </td>
@@ -77,6 +83,12 @@
             </td>
             <td :title="props.item.vehicle_num" >
               <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
+            </td>
+            <td :title="props.item.platform" >
+              <div class="text ellipsis">{{ props.item.platform }}</div>
+            </td>
+            <td :title="props.item.platform" >
+              <div class="text ellipsis">{{ props.item.platform }}</div>
             </td>
             <td :title="props.item.platform" >
               <div class="text ellipsis">{{ props.item.platform }}</div>
@@ -102,9 +114,9 @@
             <td :title="props.item.issued_by" >
               <div class="text ellipsis">{{ props.item.issued_by }}</div>
             </td>
-            <td :title="props.item.issued_to" >
+            <!-- <td :title="props.item.issued_to" >
               <div class="text ellipsis">{{ props.item.issued_to }}</div>
-            </td>
+            </td> -->
 <!--            <td :title="props.item.tnx" >-->
 <!--              <div class="text ellipsis">{{ props.item.tnx }}</div>-->
 <!--            </td>-->
@@ -116,6 +128,9 @@
             </td>
             <td class="mw_110px maw_145x" :title="props.item.calibration_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')" >
               <div class="text ellipsis">{{ props.item.calibration_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
+            </td>
+            <td class="mw_110px maw_145x" :title="props.item.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')" >
+              <div class="text ellipsis">{{ props.item.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
             </td>
             <td class="mw_110px maw_145x" :title="props.item.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')" >
               <div class="text ellipsis">{{ props.item.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>

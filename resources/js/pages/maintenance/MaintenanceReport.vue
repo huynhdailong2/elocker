@@ -152,7 +152,7 @@ export default {
       this.$router.replace({ query: { tab: val } }).catch(err => {})
     }
   },
-
-  methods: {}
+  
+methods: {}
 }
 </script>

@@ -18,9 +18,62 @@
       <div class="col-4 filter">
         <div class="form-group">
           <label class="w-100 input-title text-white">Search</label>
-          <input type="text" class="input" placeholder="Search Part No ..." v-model="inputSearch" />
+          <input type="text" class="input" placeholder="Search Trans ID, Part No ..." v-model="inputSearch" />
         </div>
       </div>
+
+    </div>
+    <div class="d-flex ju-center">
+      <div class="col-4">
+        <div class="form-group">
+          <div class="option">
+            <label>Cluster:</label>
+            <select class="input"  
+            v-model="cluster_id"
+            name="cluster_id"
+            >
+              <option value="">All</option>
+              <option 
+              v-for="cluster in clusters" :value="cluster.id" :key="cluster.id">
+                {{ cluster.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="form-group">
+          <div class="option">
+            <label>Shelf:</label>
+            <select class="input"  v-model="shelf_id"
+            name="shelf_id"
+            >
+              <option value="">All</option>
+              <option 
+              v-for="shelf in shelfs" :value="shelf.id" :key="shelf.id">
+                {{ shelf.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="form-group">
+          <div class="option">
+            <label>Bin:</label>
+            <select class="input"  v-model="bin_id"
+            name="bin_id"
+            >
+              <option value="">All</option>
+              <option 
+              v-for="bin in bins" :value="bin.id" :key="bin.id">
+                {{ bin.bin_name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="text-center mb-2 cpx-2">
       <button class="btn btn-primary" :disabled="disabled" @click.stop="onClickGenerate">Generate</button>
@@ -244,13 +297,28 @@ export default {
     SendReportToEmailModal,
     Datepicker
   },
-
+  mounted() {
+    this.getClusters();
+    this.getShelfs();
+    this.getBins();
+  },
+  created() {
+    this.getClusters();
+    this.getShelfs();
+    this.getBins();
+  },
   data() {
     return {
       printData: [],
+      clusters: [],
+      shelfs: [],
+      bins: [],
       tnxFrom: moment().subtract(30, 'days').toDate(),
       tnxTo: moment().toDate(),
       inputSearch: null,
+      cluster_id :'',
+      shelf_id :'',
+      bin_id :'',
     }
   },
 
@@ -277,6 +345,9 @@ export default {
     getSparesReportByTnx(params) {
       params = {
         ...params,
+        cluster_id:this.cluster_id,
+        shelf_id:this.shelf_id,
+        bin_id:this.bin_id,
         issued_date: {
           start: this.tnxFromFormat,
           end: this.tnxToFormat
@@ -284,6 +355,19 @@ export default {
         search_key: this.inputSearch,
       }
       return rf.getRequest('SpareRequest').getSparesReportByTnx(params)
+    },
+
+    getClusters(params) {
+      rf.getRequest('AdminRequest').getClusters(params).then(res => this.clusters = res.data.data)
+    },
+    getShelfs(params) {
+      rf.getRequest('AdminRequest').getShelfs(params).then(res => this.shelfs = res.data.data)
+    },
+    getBins(params) {
+      rf.getRequest('AdminRequest').getBins(params).then(res => {
+        console.log("🚀 ~ file: TnxListing.vue:367 ~ getBins ~ res:", res.data)
+        return this.bins = res.data
+      })
     },
 
     onDataTableFinished() {

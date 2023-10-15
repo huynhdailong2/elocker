@@ -32,6 +32,9 @@ class Spare extends Model
         'description',
         'auditor'
     ];
+    protected $hidden = [
+        'location'
+    ];
 
     public function userAccessingSpares()
     {

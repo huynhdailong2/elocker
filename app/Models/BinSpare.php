@@ -12,4 +12,5 @@ class BinSpare extends Model
         'bin_id',
         'spare_id',
     ];
+    public $timestamps = true;
 }
