@@ -4,10 +4,22 @@
       <div class="row">
         <div class="col-4">
           <label>Item Name</label>
-          <select class="input" v-model="inputForm.spare_id" name="spare_id" :disabled="!!inputForm.is_drawer"
-            data-vv-as="spare" v-validate="'required'">
-            <option :value="item.id" v-for="(item, index) in spares" :key="index"
-              :class="{ 'bluetext': data.spares.map(i => i.id).includes(item.id) }">
+          <select
+            class="input"
+            v-model="inputForm.spare_id"
+            name="spare_id"
+            :disabled="!!inputForm.is_drawer"
+            data-vv-as="spare"
+            v-validate="'required'"
+          >
+            <option
+              :value="item.id"
+              v-for="(item, index) in spares"
+              :key="index"
+              :class="{
+                bluetext: data.spares.map((i) => i.id).includes(item.id),
+              }"
+            >
               <p>
                 {{ item.name }}
               </p>
@@ -28,10 +40,19 @@
         </div>
         <div class="col-4">
           <label>Quantity</label>
-          <input type="text" class="input" name="quantity" placeholder="Quantity" :disabled="disableQuantity"
-            v-model="inputForm.quantity" v-validate="`required|numeric|min_value:${inputForm.min || 0}|max_value:${inputForm.max || 1000
+          <input
+            type="text"
+            class="input"
+            name="quantity"
+            placeholder="Quantity"
+            :disabled="disableQuantity"
+            v-model="inputForm.quantity"
+            v-validate="
+              `required|numeric|min_value:${inputForm.min || 0}|max_value:${
+                inputForm.max || 1000
               }`
-              " />
+            "
+          />
           <span class="invalid-feedback" v-if="errors.has('quantity')">
             {{ errors.first("quantity") }}
           </span>
@@ -41,24 +62,44 @@
       <div class="row">
         <div class="col-4">
           <label>Critical</label>
-          <input type="text" class="input" name="critical" placeholder="Critical" v-model.trim="inputForm.critical"
-            v-validate="'numeric|min_value:0'" />
+          <input
+            type="text"
+            class="input"
+            name="critical"
+            placeholder="Critical"
+            v-model.trim="inputForm.critical"
+            v-validate="'numeric|min_value:0'"
+          />
           <span class="invalid-feedback" v-if="errors.has('critical')">
             {{ errors.first("critical") }}
           </span>
         </div>
         <div class="col-4">
           <label>Minimum Quantity</label>
-          <input type="text" class="input" name="min" data-vv-as="minimum quantity" placeholder="Minimum Quantity"
-            v-model.trim="inputForm.min" v-validate="'required|numeric|min_value:0'" />
+          <input
+            type="text"
+            class="input"
+            name="min"
+            data-vv-as="minimum quantity"
+            placeholder="Minimum Quantity"
+            v-model.trim="inputForm.min"
+            v-validate="'required|numeric|min_value:0'"
+          />
           <span class="invalid-feedback" v-if="errors.has('min')">
             {{ errors.first("min") }}
           </span>
         </div>
         <div class="col-4">
           <label>Maximum Quantity</label>
-          <input type="text" class="input" name="max" data-vv-as="maximum quantity" placeholder="Maximum Quantity"
-            v-model.trim="inputForm.max" v-validate="`required|numeric|min_value:${inputForm.min}`" />
+          <input
+            type="text"
+            class="input"
+            name="max"
+            data-vv-as="maximum quantity"
+            placeholder="Maximum Quantity"
+            v-model.trim="inputForm.max"
+            v-validate="`required|numeric|min_value:${inputForm.min}`"
+          />
           <span class="invalid-feedback" v-if="errors.has('max')">
             {{ errors.first("max") }}
           </span>
@@ -68,8 +109,13 @@
       <div class="row">
         <div class="col-12">
           <label class="name">Description</label>
-          <textarea class="textarea" placeholder="Description" name="description" v-model.trim="inputForm.description"
-            v-validate="'max:190'" />
+          <textarea
+            class="textarea"
+            placeholder="Description"
+            name="description"
+            v-model.trim="inputForm.description"
+            v-validate="'max:190'"
+          />
           <span class="invalid-feedback" v-if="errors.has('description')">
             {{ errors.first("description") }}
           </span>
@@ -77,12 +123,22 @@
       </div>
     </div>
 
-    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" v-if="inputForm.spare_id" />
+    <bin-configures
+      :spare="inputForm"
+      :data="inputForm.configures"
+      ref="binConfigures"
+      v-if="inputForm.spare_id"
+    />
 
     <div class="actions">
       <button @click="onAddItem" class="btn-primary">Add</button>
-      <button @click="onClearList" class="btn-primary"
-        style="background: none;border-radius: 5px;border: 2px solid white;">Clear</button>
+      <button
+        @click="onClearList"
+        class="btn-primary"
+        style="background: none; border-radius: 5px; border: 2px solid white"
+      >
+        Clear
+      </button>
     </div>
 
     <template>
@@ -104,29 +160,11 @@
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
               <td>
-                <img src="/images/icons/icon-cancel.svg" width="22px" @click="onDeleteItem(item.spare_id)" />
-                <!-- <div>
-                  <button @click="showDeleteModal(item)">Delete Item</button>
-                  <div class="modal" :class="{ 'show': item.showConfirmation }" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title">Confirm Deletion</h5>
-                          <button type="button" class="close" @click="cancelDelete(item)">
-                            <span>&times;</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          Are you sure you want to delete it?
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-primary" @click="deleteItem(item.spare_id)">OK</button>
-                          <button type="button" class="btn btn-secondary" @click="cancelDelete(item)">NO</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div> -->
+                <img
+                  src="/images/icons/icon-cancel.svg"
+                  width="22px"
+                  @click="showDeleteModal(item)"
+                />
               </td>
             </tr>
           </tbody>
@@ -135,7 +173,7 @@
     </template>
 
     <div style="justify-content: end" class="actions mt-3">
-      <button class="btn-primary" @click="onSaveData">Save</button>
+      <button class="btn-primary" @click.stop="onSaveData">Save</button>
     </div>
   </div>
 </template>
@@ -173,12 +211,11 @@ export default {
         description: null,
         configures: [],
       },
-      // showConfirmation: false,
+      showConfirmation: false,
       spares: [],
       items: [],
     };
   },
-
 
   computed: {
     showConfigures() {
@@ -245,7 +282,6 @@ export default {
       min: this.data.min ?? 1,
       max: this.data.max ?? 1,
       quantity: this.data.quantity ?? 1,
-
     };
     // this.initConfigures();
     rf.getRequest("AdminRequest").getBinId(this.data.id);
@@ -261,17 +297,13 @@ export default {
   },
 
   methods: {
-    // showDeleteModal(item) {
-    //   item.showConfirmation = true;
-    // },
-    // deleteItem(id) {
-    //   // Perform the delete operation
-    //   this.items = this.items.filter((i) => i.spare_id !== id);
-    //   item.showConfirmation = false; // Close the modal
-    // },
-    // cancelDelete(item) {
-    //   item.showConfirmation = false; // Close the modal
-    // },
+    showDeleteModal(item) {
+      const _handler = () => {
+        this.items = this.items.filter((i) => i.spare_id !== item.id);
+      };
+      this.confirmAction({ callback: _handler, message: "Do you want to delete?" });
+    },
+
     initConfigures() {
       // const limit = parseInt(this.inputForm.quantity) || 0
       const limit = 1;
@@ -334,45 +366,45 @@ export default {
         });
     },
 
-    async onClickSave() {
-      this.resetError();
+    // async onClickSave() {
+    //   this.resetError();
 
-      await this.$validator.validateAll();
+    //   await this.$validator.validateAll();
 
-      if (this.$refs.binConfigures) {
-        await this.$refs.binConfigures.validateData();
-      }
+    //   if (this.$refs.binConfigures) {
+    //     await this.$refs.binConfigures.validateData();
+    //   }
 
-      if (this.errors.any()) {
-        return;
-      }
+    //   if (this.errors.any()) {
+    //     return;
+    //   }
 
-      const toUTc = (date) => {
-        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
-      };
+    //   const toUTc = (date) => {
+    //     return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
+    //   };
 
-      chain(this.inputForm.configures)
-        .each((item) => {
-          (item.charge_time = Utils.objTime2String(item.input_charge_time)),
-            (item.calibration_due = toUTc(item.calibration_due));
-          item.expiry_date = toUTc(item.expiry_date);
-          item.load_hydrostatic_test_due = toUTc(
-            item.load_hydrostatic_test_due
-          );
-        })
-        .value();
+    //   chain(this.inputForm.configures)
+    //     .each((item) => {
+    //       (item.charge_time = Utils.objTime2String(item.input_charge_time)),
+    //         (item.calibration_due = toUTc(item.calibration_due));
+    //       item.expiry_date = toUTc(item.expiry_date);
+    //       item.load_hydrostatic_test_due = toUTc(
+    //         item.load_hydrostatic_test_due
+    //       );
+    //     })
+    //     .value();
 
-      this.submitRequest(this.inputForm)
-        .then((res) => {
-          this.showSuccess("Successfully!");
-          this.inputForm = {};
-          this.resetError();
-          this.$emit("item:saved", res.data);
-        })
-        .catch((error) => {
-          this.processErrors(error);
-        });
-    },
+    //   this.submitRequest(this.inputForm)
+    //     .then((res) => {
+    //       this.showSuccess("Successfully!");
+    //       this.inputForm = {};
+    //       this.resetError();
+    //       this.$emit("item:saved", res.data);
+    //     })
+    //     .catch((error) => {
+    //       this.processErrors(error);
+    //     });
+    // },
 
     submitRequest(data) {
       const params = cloneDeep(data);
@@ -433,27 +465,27 @@ export default {
       this.items = [];
     },
 
-    onDeleteItem(id) {
-      this.items = this.items.filter((i) => i.spare_id !== id);
-    },
-
     onSaveData() {
       const data = {
         ...this.items[0],
         ...this.inputForm,
         spare_id: this.items.map((i) => i.spare_id),
-        configures: this.inputForm.configures.map(i => ({
+        configures: this.inputForm.configures.map((i) => ({
           ...i,
-          charge_time: i.has_charge_time ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}` : null
-        }))
+          charge_time: i.has_charge_time
+            ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
+            : null,
+        })),
       };
+      
       return rf
-        .getRequest("AdminRequest")
-        .updateBin(data)
-        .then(() => {
-          this.showSuccess("Successfully!");
-        })
-        .catch(() => this.processErrors("Fail"));
+      .getRequest("AdminRequest")
+      .updateBin(data)
+      .then((res) => {
+        this.showSuccess("Successfully!");
+        this.$emit("item:saved", res.data);
+      })
+      .catch(() => this.processErrors("Fail"));
     },
   },
 };

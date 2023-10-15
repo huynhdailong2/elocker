@@ -3,7 +3,7 @@
     :name="name"
     :width="'70%'"
     height="auto"
-    :clickToClose="false"
+    :clickToClose="true"
     @before-open="beforeOpen"
     class="custom-modal"
   >
