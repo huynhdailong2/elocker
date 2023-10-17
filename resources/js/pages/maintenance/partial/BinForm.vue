@@ -148,8 +148,14 @@
             <th>SN</th>
             <th>Item Name</th>
             <th>Qty</th>
+            <th>Critical</th>
             <th>Min</th>
             <th>Max</th>
+            <th>Desc</th>
+            <th>Batch</th>
+            <th>Serial</th>
+            <th>Charge Time</th>
+            <th>Load/Hydrostatic Test Due</th>
             <th>Actions</th>
           </thead>
           <tbody>
@@ -157,8 +163,42 @@
               <td>{{ index + 1 }}</td>
               <td>{{ item.name }}</td>
               <td>{{ item.quantity }}</td>
+              <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
+              <td>{{ item.description }}</td>
+              <template v-if="item.configures.length > 0">
+                <td>{{ item.configures[0].batch_no}}</td>
+                <td>{{ item.configures[0].serial_no}}</td>
+                <td>
+                  <vue-timepicker
+                    :name="'charge_time-' + index"
+                    v-validate="'required'"
+                    v-model="item.configures[0].charge_time"
+                    :class="{ error: errors.has(`${item.scope}.charge_time`) }"
+                    format="HH:mm"
+                  />
+                </td>  
+                <!-- <td>{{ item.configures[0].load_hydrostatic_test_due}}</td> -->
+                <td>     
+                  <datepicker
+                  format="dd/MM/yyyy"
+                  input-class="form-control date-selector"
+                  v-model="item.configures[0].load_hydrostatic_test_due"
+                  :disabled-dates="{ to: yesterday }"
+                  name="load_hydrostatic_test_due"
+                  v-validate="'required'"
+                  data-vv-as="calibration due"
+                  v-if="item.configures[0].has_load_hydrostatic_test_due"
+                />
+              </td>
+              </template>
+              <template v-else>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </template>
               <td>
                 <img
                   src="/images/icons/icon-cancel.svg"
@@ -173,7 +213,8 @@
     </template>
 
     <div style="justify-content: end" class="actions mt-3">
-      <button class="btn-primary" @click.stop="onSaveData">Save</button>
+      <button class="btn-primary" @click.stop="onClickSave">Save</button>
+      <button class="btn-primary" @click.stop="onLog">Log List Item</button>
     </div>
   </div>
 </template>
@@ -186,10 +227,15 @@ import Const from "common/Const";
 import Utils from "common/Utils";
 import { chain, cloneDeep, isEmpty, times, size, debounce } from "lodash";
 import BinConfigures from "./BinConfigures";
+import Datepicker from "vuejs-datepicker";
+import VueTimepicker from "vue2-timepicker";
+import "vue2-timepicker/dist/VueTimepicker.css";
 
 export default {
   components: {
     BinConfigures,
+    VueTimepicker,
+    Datepicker,
   },
 
   props: {
@@ -211,9 +257,9 @@ export default {
         description: null,
         configures: [],
       },
-      showConfirmation: false,
       spares: [],
       items: [],
+      listSpares: [], 
     };
   },
 
@@ -278,22 +324,25 @@ export default {
       ...this.inputForm,
       ...this.data,
       spare_id: this.data.spares.length > 0 ? this.data.spares[0].id : null,
-      critical: this.data.critical ?? 0,
-      min: this.data.min ?? 1,
-      max: this.data.max ?? 1,
-      quantity: this.data.quantity ?? 1,
+      critical: this.data.critical || 1,
+      description: this.data.spares[0].description || null,
+      min: this.data.min || 1,
+      max: this.data.max || 1,
+      quantity: this.data.quantity || 1,
     };
-    // this.initConfigures();
+    this.initConfigures();
     rf.getRequest("AdminRequest").getBinId(this.data.id);
     this.items = this.data.spares.map((i) => ({
       ...i,
       spare_id: i.id,
       quantity: this.data.quantity,
+      critical: this.data.critical,
       min: this.data.min,
       max: this.data.max,
+      configures: this.data.configures
     }));
-
     this.getSpares();
+    console.log(this.data.listSpares)
   },
 
   methods: {
@@ -302,6 +351,18 @@ export default {
         this.items = this.items.filter((i) => i.spare_id !== item.id);
       };
       this.confirmAction({ callback: _handler, message: "Do you want to delete?" });
+    },
+
+    resetForm() {
+      this.inputForm = {
+        spare_id: null,
+        min: 1,
+        max: 1,
+        critical: 1,
+        description: null,
+        quantity: 1,
+        configures: [],
+      };
     },
 
     initConfigures() {
@@ -352,7 +413,7 @@ export default {
       rf.getRequest("AdminRequest")
         .getSpares(params)
         .then((res) => {
-          console.log("getSpares", res.data);
+          this.listSpares = res.data
           this.spares = chain(res.data || [])
             // .filter(item => item.type !== Const.ITEM_TYPE.EUC.value)
             .map((item) => {
@@ -363,48 +424,50 @@ export default {
               };
             })
             .value();
+        }).catch((error) => {
+          this.processErrors(error);
         });
     },
 
-    // async onClickSave() {
-    //   this.resetError();
+    async onClickSave() {
+      this.resetError();
 
-    //   await this.$validator.validateAll();
+      await this.$validator.validateAll();
 
-    //   if (this.$refs.binConfigures) {
-    //     await this.$refs.binConfigures.validateData();
-    //   }
+      if (this.$refs.binConfigures) {
+        await this.$refs.binConfigures.validateData();
+      }
 
-    //   if (this.errors.any()) {
-    //     return;
-    //   }
+      if (this.errors.any()) {
+        return;
+      }
 
-    //   const toUTc = (date) => {
-    //     return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
-    //   };
+      const toUTc = (date) => {
+        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
+      };
 
-    //   chain(this.inputForm.configures)
-    //     .each((item) => {
-    //       (item.charge_time = Utils.objTime2String(item.input_charge_time)),
-    //         (item.calibration_due = toUTc(item.calibration_due));
-    //       item.expiry_date = toUTc(item.expiry_date);
-    //       item.load_hydrostatic_test_due = toUTc(
-    //         item.load_hydrostatic_test_due
-    //       );
-    //     })
-    //     .value();
+      chain(this.inputForm.configures)
+        .each((item) => {
+          (item.charge_time = Utils.objTime2String(item.input_charge_time)),
+            (item.calibration_due = toUTc(item.calibration_due));
+          item.expiry_date = toUTc(item.expiry_date);
+          item.load_hydrostatic_test_due = toUTc(
+            item.load_hydrostatic_test_due
+          );
+        })
+        .value();
 
-    //   this.submitRequest(this.inputForm)
-    //     .then((res) => {
-    //       this.showSuccess("Successfully!");
-    //       this.inputForm = {};
-    //       this.resetError();
-    //       this.$emit("item:saved", res.data);
-    //     })
-    //     .catch((error) => {
-    //       this.processErrors(error);
-    //     });
-    // },
+      this.submitRequest(this.inputForm)
+        .then((res) => {
+          this.showSuccess("Successfully!");
+          this.resetError();
+          this.resetForm();
+          this.$emit("item:saved", res.data);
+        })
+        .catch((error) => {
+          this.processErrors(error);
+        });
+    },
 
     submitRequest(data) {
       const params = cloneDeep(data);
@@ -416,30 +479,16 @@ export default {
       const existingItem = this.items.find(
         (item) => item.spare_id === spare.id
       );
-
       if (existingItem) {
-        existingItem.quantity = this.inputForm.quantity;
-        existingItem.min = this.inputForm.min;
-        existingItem.max = this.inputForm.max;
         this.showError("Duplicated! This item was added!");
       } else {
         this.items.push({
           ...this.inputForm,
           name: spare.name,
         });
+        this.updateListQuantitiesMinMax();
+        this.resetForm()
       }
-
-      this.updateListQuantitiesMinMax();
-
-      // Reset the input form
-      // this.inputForm = {
-      //   ...this.inputForm,
-      //   ...this.data,
-      //   critical: this.data.critical || 0,
-      //   min: this.data.min || 1,
-      //   max: this.data.max || 1,
-      //   quantity: this.data.quantity || 1,
-      // };
     },
 
     updateListQuantitiesMinMax() {
@@ -465,28 +514,32 @@ export default {
       this.items = [];
     },
 
-    onSaveData() {
-      const data = {
-        ...this.items[0],
-        ...this.inputForm,
-        spare_id: this.items.map((i) => i.spare_id),
-        configures: this.inputForm.configures.map((i) => ({
-          ...i,
-          charge_time: i.has_charge_time
-            ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
-            : null,
-        })),
-      };
+    onLog() {
+      console.log(this.items)
+    }
+
+    // onSaveData() {
+    //   const data = {
+    //     ...this.items[0],
+    //     ...this.inputForm,
+    //     spare_id: this.items.map((i) => i.spare_id),
+    //     configures: this.inputForm.configures.map((i) => ({
+    //       ...i,
+    //       charge_time: i.has_charge_time
+    //         ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
+    //         : null,
+    //     })),
+    //   };
       
-      return rf
-      .getRequest("AdminRequest")
-      .updateBin(data)
-      .then((res) => {
-        this.showSuccess("Successfully!");
-        this.$emit("item:saved", res.data);
-      })
-      .catch(() => this.processErrors("Fail"));
-    },
+    //   return rf
+    //   .getRequest("AdminRequest")
+    //   .updateBin(data)
+    //   .then((res) => {
+    //     this.showSuccess("Successfully!");
+    //     this.$emit("item:saved", res.data);
+    //   })
+    //   .catch(() => this.processErrors("Fail"));
+    // },
   },
 };
 </script>
@@ -494,7 +547,10 @@ export default {
 <style lang="scss" scoped>
 .input-form {
   width: 100%;
-
+  .table-scroller{
+    overflow: unset;
+    max-height: unset;
+  }
   .title {
     margin: 0 0 20px 0;
   }
@@ -542,10 +598,6 @@ export default {
 <style>
 .style-chooser input.vs__search {
   border: none !important;
-}
-
-.input-form .bin-configures .table-scroller {
-  min-height: 175px !important;
 }
 
 .bluetext {

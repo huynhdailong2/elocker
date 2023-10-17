@@ -1,7 +1,7 @@
 <template>
   <modal
     :name="name"
-    :width="'70%'"
+    :width="'90%'"
     height="auto"
     :clickToClose="true"
     @before-open="beforeOpen"

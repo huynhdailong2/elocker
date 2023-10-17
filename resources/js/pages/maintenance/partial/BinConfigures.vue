@@ -1,6 +1,6 @@
 <template>
   <div class="bin-configures">
-    <div class="table-scroller mt-3 mb-3" v-if="!!spare">
+    <div class="table-scroller mt-3 mb-3 cus_table" v-if="!!spare">
       <table>
         <thead>
           <th class="no">S/N</th>
@@ -194,7 +194,7 @@
 <style lang="scss" scoped>
 .bin-configures {
   .table-scroller {
-    min-height: 250px;
+    // min-height: 250px;
     table {
       // margin-bottom: 80px;
       tr {
@@ -206,10 +206,11 @@
             align-items: center;
             justify-content: center;
             ::v-deep .vdp-datepicker {
-              input {
-                min-width: 100px;
-                max-width: 120px;
-              }
+              width: 100%;
+              // input {
+                // min-width: 100px;
+                // max-width: 120px;
+              // }
             }
             &.expiry {
               ::v-deep .vdp-datepicker {
@@ -253,6 +254,11 @@
       }
     }
   }
+}
+.cus_table{
+  min-height: unset;
+  max-height: unset;
+  overflow: unset;
 }
 </style>
 <script>
