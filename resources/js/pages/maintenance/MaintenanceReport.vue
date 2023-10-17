@@ -39,11 +39,11 @@
         href="javascript:void(0)"
         @click.stop="selected = TABS.TORQUE_WRENCH">Recall MME
       </a>
-      <a class="nav-link"
+      <!-- <a class="nav-link"
          :class="{'active': selected === TABS.WEIGHING_HISTORY}"
          href="javascript:void(0)"
          @click.stop="selected = TABS.WEIGHING_HISTORY">Weighing System Transaction
-      </a>
+      </a> -->
     </nav>
     <div class="content">
       <div class="list">
@@ -77,9 +77,9 @@
             <torque-wrenches />
           </template>
 
-          <template v-if="selected === TABS.WEIGHING_HISTORY">
+          <!-- <template v-if="selected === TABS.WEIGHING_HISTORY">
             <WeighingHistory />
-          </template>
+          </template> -->
           <!-- </keep-alive> -->
         </div>
       </div>

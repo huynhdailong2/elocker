@@ -1,6 +1,6 @@
 <template>
   <div id="dashboard" class="page">
-    <div style="overflow: auto;">
+    <!-- <div style="overflow: auto;">
         <div class="title-page">Weighing System</div>
 
         <div class="captions">
@@ -9,7 +9,7 @@
           <div class="sts-expired">Critical/Expired</div>
           <div class="sts-unassigned">Unassigned</div>
         </div>
-    </div>
+    </div> -->
 
     <div class="list-shelves">
       <span>Site Test > Room 1 > </span>

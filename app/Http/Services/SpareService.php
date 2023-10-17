@@ -1033,159 +1033,7 @@ class SpareService extends BaseService
         return $timeList->last()['point'];
     }
 
-    private function getIssueCardsBuilder($params = [])
-    {
-        $types = array_get($params, 'types', null);
-        $wo = array_get($params, 'wo', null);
-        $issuedDate = array_get($params, 'issued_date', null);
-        // $expiredDate = array_get($params, 'expired_date', null);
-        $torqueWrench = array_get($params, 'torque_wrench', Consts::FALSE);
-        $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
-        $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
-        $onlyTypeEuc = array_get($params, 'only_type_euc', false);
-        $trackingMo = Arr::get($params, 'tracking_mo', false);
-
-        $fromTableName = 'issue_cards';
-        if ($trackingMo) {
-            $fromTableName = 'tracking_mo';
-            $query = TrackingMo::join('job_cards', 'job_cards.id', "$fromTableName.job_card_id");
-        } else {
-            $query = IssueCard::join('job_cards', 'job_cards.id', "$fromTableName.job_card_id");
-        }
-
-        //        $rawData = IssueCard::join('job_cards', 'job_cards.id', 'issue_cards.job_card_id')
-        $rawData = $query
-            ->join('vehicles', 'vehicles.id', 'job_cards.vehicle_id')
-            ->join('users as issuer', 'issuer.id', "$fromTableName.issuer_id")
-            ->join('users as taker', 'taker.id', "$fromTableName.taker_id")
-            ->join('spares', 'spares.id', "$fromTableName.spare_id")
-            //            ->join('bins', function($join) {
-            //                $join->on('bins.id', '=', 'issue_cards.bin_id')
-            //                    ->on('bins.spare_id', '=', 'issue_cards.spare_id');
-            //            })
-            ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', "$fromTableName.torque_wrench_area_id")
-            // ->where(function ($query) {
-            //     $query->whereNull('issue_cards.returned')
-            //         ->orWhere('issue_cards.returned', Consts::RETURNED_TYPE_PARTIAL);
-            // })
-            ->when($types, function ($query) use ($types) {
-                $query->whereIn('spares.type', $types);
-            })
-            ->when($torqueWrench, function ($query) use ($fromTableName) {
-                $query->whereNotNull("$fromTableName.torque_wrench_area_id");
-            })
-            ->when($wo, function ($query) use ($wo) {
-                return $this->queryRange($query, $wo, 'job_cards.wo');
-            })
-            ->when($issuedDate, function ($query) use ($issuedDate, $fromTableName) {
-                return $this->queryRange($query, $issuedDate, "$fromTableName.created_at");
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->when(!empty($params['spare_id']), function ($query) use ($params) {
-                $query->where('spares.id', $params['spare_id']);
-            })
-            ->when(!empty($params['returned_type']), function ($query) use ($params, $fromTableName) {
-                $returnTypes = (array)$params['returned_type'];
-                $query->where(function ($subQuery) use ($returnTypes, $fromTableName) {
-                    $subQuery->whereNull("$fromTableName.returned")
-                        ->orWhereIn("$fromTableName.returned", $returnTypes);
-                });
-            }, function ($query) use ($params, $fromTableName) {
-                $query->where(function ($subQuery) use ($fromTableName) {
-                    $subQuery->whereNull("$fromTableName.returned")
-                        ->orWhere("$fromTableName.returned", '!=', Consts::RETURNED_TYPE_LINK_MO);
-                });
-            })
-            ->select(
-                'job_cards.*',
-                'vehicles.*',
-                'spares.type as spare_type',
-                'spares.name as spare_name',
-                'spares.part_no',
-                'spares.material_no',
-                'spares.id AS spare_id',
-                "$fromTableName.quantity",
-                "$fromTableName.bin_id",
-                "$fromTableName.created_at as issued_date",
-                'issuer.name as issuer_name',
-                'taker.name as taker_name',
-                "$fromTableName.updated_at as issued_update_date",
-                "$fromTableName.quantity as issued_quantity",
-                "$fromTableName.returned_quantity",
-                "$fromTableName.id as issued_id",
-                'torque_wrench_areas.area as torque_area',
-                'torque_wrench_areas.torque_value',
-                'torque_wrench_areas.id as torque_id',
-                DB::raw(
-                    "
-                    CASE
-	                WHEN $fromTableName.quantity - $fromTableName.returned_quantity = 0 THEN 0
-	                WHEN DATEDIFF(NOW(), DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR)) = 0 and $fromTableName.created_at > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'),INTERVAL 16 HOUR) THEN 0
-	                WHEN NOW() > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR) THEN 1
-	                ELSE 0
-                    END as expired_return_time_sql"
-                ),
-            )
-            ->orderBy('expired_return_time_sql', 'DESC')
-            ->when($onlyTypeEuc, function ($query) {
-                $query
-                    ->join('euc_box_spares', function ($join, $fromTableName) {
-                        $join->on("$fromTableName.euc_box_id", '=', 'euc_box_spares.euc_box_id');
-                        $join->on("$fromTableName.spare_id", '=', 'euc_box_spares.spare_id');
-                    })
-                    ->join('euc_boxes', 'euc_boxes.id', 'euc_box_spares.euc_box_id')
-                    ->addSelect('euc_box_spares.serial_no', 'euc_boxes.order AS euc_box_order');
-            })
-            ->when(
-                !empty($params['sort']) && !empty($params['sort_type']),
-                function ($query) use ($params) {
-                    return $query->orderBy($params['sort'], $params['sort_type']);
-                },
-                function ($query) use ($fromTableName) {
-                    return $query->orderBy("$fromTableName.updated_at", 'desc');
-                }
-            )
-            ->when(
-                empty($noPagination),
-                function ($query) use ($limit) {
-                    return $query->paginate($limit);
-                },
-                function ($query) {
-                    return $query->get();
-                }
-            );
-
-        $data = $noPagination ? $rawData : $rawData->getCollection();
-
-        $binIds = $data->pluck('bin_id')->toArray();
-        $configures = BinConfigure::whereIn('bin_id', $binIds)
-            ->get()
-            ->mapToGroups(function ($item) {
-                return [$item['bin_id'] => $item];
-            })
-            ->toArray();
-        $sparesExpiredReturns = $this->getSparesExpiredForReturns($params);
-
-        if ($noPagination) {
-            return $data->transform(function ($record) use ($configures, $sparesExpiredReturns) {
-                return $this->transformIssueSpare($record, $configures, $sparesExpiredReturns);
-            });
-        }
-
-        $rawData->getCollection()->transform(function ($record) use ($configures, $sparesExpiredReturns) {
-            return $this->transformIssueSpare($record, $configures, $sparesExpiredReturns);
-        });
-
-        return $rawData;
-    }
+   
 
     private function queryRange($query, $value, $property)
     {
@@ -1306,21 +1154,21 @@ class SpareService extends BaseService
         return $this->getIssueCardsBuilder($params);
     }
 
-    
 
-    public function getReportByLoan($params = [])
-    {
-        $params = array_merge($params, [
-            'types' => [
-                Consts::SPARE_TYPE_DURABLE,
-                Consts::SPARE_TYPE_PERISHABLE,
-                Consts::SPARE_TYPE_AFES,
-                Consts::SPARE_TYPE_OTHERS,
-                Consts::SPARE_TYPE_TORQUE_WRENCH,
-            ]
-        ]);
-        return $this->getIssueCardsBuilder($params);
-    }
+
+    // public function getReportByLoan($params = [])
+    // {
+    //     $params = array_merge($params, [
+    //         'types' => [
+    //             Consts::SPARE_TYPE_DURABLE,
+    //             Consts::SPARE_TYPE_PERISHABLE,
+    //             Consts::SPARE_TYPE_AFES,
+    //             Consts::SPARE_TYPE_OTHERS,
+    //             Consts::SPARE_TYPE_TORQUE_WRENCH,
+    //         ]
+    //     ]);
+    //     return $this->getIssueCardsBuilder($params);
+    // }
 
     public function getReportForReturns($params = [])
     {
@@ -2898,24 +2746,30 @@ class SpareService extends BaseService
         $taking_transaction->user;
         return $taking_transaction;
     }
+    // public function getReportByTnx($params = []){
+    //     return $this->getIssueCardsBuilder($params);
+    // }
     public function getReportByTnx($request = [])
     {
-        $search_key = isset($request['search_key'])?$request['search_key'] :'';
-        $date = isset($request['issued_date'])?$request['issued_date'] :[];
+        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
+        $date = isset($request['issued_date']) ? $request['issued_date'] : [];
         $dateee = json_decode($date, true);
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user','spare','bin');
-        if(!empty($date)){
+        $transactions = TakingTransaction::with('user', 'spare');
+        // $transactions->whereHas('location.bin', function ($query) use ($bin_id) {
+        //     $query->where('id', $bin_id);
+        // });
+        if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
                 $query->where('id', $search_key)
-                      ->orWhereHas('spare', function ($subquery) use ($search_key) {
-                          $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
-                      });
+                    ->orWhereHas('spare', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
             });
         }
 
@@ -2940,6 +2794,183 @@ class SpareService extends BaseService
         $page = $request['page'];
         $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
         return $paginatedTransactions;
+    }
+    private function getIssueCardsBuilder($params = [])
+    {
+        $types = array_get($params, 'types', null);
+        $wo = array_get($params, 'wo', null);
+        $issuedDate = array_get($params, 'issued_date', null);
+        $expiredDate = array_get($params, 'expired_date', null);
+        $torqueWrench = array_get($params, 'torque_wrench', Consts::FALSE);
+        $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
+        $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
+        $onlyTypeEuc = array_get($params, 'only_type_euc', false);
+        $trackingMo = Arr::get($params, 'tracking_mo', false);
 
+        $fromTableName = 'issue_cards';
+        if ($trackingMo) {
+            $fromTableName = 'tracking_mo';
+            $query = TrackingMo::join('job_cards', 'job_cards.id', "$fromTableName.job_card_id");
+        } else {
+            $query = IssueCard::join('job_cards', 'job_cards.id', "$fromTableName.job_card_id");
+        }
+        $rawData = $query
+            ->join('vehicles', 'vehicles.id', 'job_cards.vehicle_id')
+            ->join('users as issuer', 'issuer.id', "$fromTableName.issuer_id")
+            ->join('users as taker', 'taker.id', "$fromTableName.taker_id")
+            ->join('spares', 'spares.id', "$fromTableName.spare_id")
+            ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', "$fromTableName.torque_wrench_area_id")
+            ->when($types, function ($query) use ($types) {
+                $query->whereIn('spares.type', $types);
+            })
+            ->when($torqueWrench, function ($query) use ($fromTableName) {
+                $query->whereNotNull("$fromTableName.torque_wrench_area_id");
+            })
+            ->when($wo, function ($query) use ($wo) {
+                return $this->queryRange($query, $wo, 'job_cards.wo');
+            })
+            ->when($issuedDate, function ($query) use ($issuedDate, $fromTableName) {
+                return $this->queryRange($query, $issuedDate, "$fromTableName.created_at");
+            })
+            ->when(!empty($params['search_key']), function ($query) use ($params) {
+                $searchKey = Utils::escapeLike($params['search_key']);
+
+                $query->where(function ($subQuery) use ($searchKey) {
+                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+                });
+            })
+            ->when(!empty($params['spare_id']), function ($query) use ($params) {
+                $query->where('spares.id', $params['spare_id']);
+            })
+            ->when(!empty($params['returned_type']), function ($query) use ($params, $fromTableName) {
+                $returnTypes = (array)$params['returned_type'];
+                $query->where(function ($subQuery) use ($returnTypes, $fromTableName) {
+                    $subQuery->whereNull("$fromTableName.returned")
+                        ->orWhereIn("$fromTableName.returned", $returnTypes);
+                });
+            }, function ($query) use ($params, $fromTableName) {
+                $query->where(function ($subQuery) use ($fromTableName) {
+                    $subQuery->whereNull("$fromTableName.returned")
+                        ->orWhere("$fromTableName.returned", '!=', Consts::RETURNED_TYPE_LINK_MO);
+                });
+            })
+            ->select(
+                'job_cards.*',
+                'vehicles.*',
+                'spares.type as spare_type',
+                'spares.name as spare_name',
+                'spares.part_no',
+                'spares.material_no',
+                'spares.id AS spare_id',
+                "$fromTableName.quantity",
+                "$fromTableName.bin_id",
+                "$fromTableName.created_at as issued_date",
+                'issuer.name as issuer_name',
+                'taker.name as taker_name',
+                "$fromTableName.updated_at as issued_update_date",
+                "$fromTableName.quantity as issued_quantity",
+                "$fromTableName.returned_quantity",
+                "$fromTableName.id as issued_id",
+                'torque_wrench_areas.area as torque_area',
+                'torque_wrench_areas.torque_value',
+                'torque_wrench_areas.id as torque_id',
+                DB::raw(
+                    "
+                    CASE
+	                WHEN $fromTableName.quantity - $fromTableName.returned_quantity = 0 THEN 0
+	                WHEN DATEDIFF(NOW(), DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR)) = 0 and $fromTableName.created_at > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'),INTERVAL 16 HOUR) THEN 0
+	                WHEN NOW() > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR) THEN 1
+	                ELSE 0
+                    END as expired_return_time_sql"
+                ),
+            )
+            ->orderBy('expired_return_time_sql', 'DESC')
+            ->when($onlyTypeEuc, function ($query) {
+                $query
+                    ->join('euc_box_spares', function ($join, $fromTableName) {
+                        $join->on("$fromTableName.euc_box_id", '=', 'euc_box_spares.euc_box_id');
+                        $join->on("$fromTableName.spare_id", '=', 'euc_box_spares.spare_id');
+                    })
+                    ->join('euc_boxes', 'euc_boxes.id', 'euc_box_spares.euc_box_id')
+                    ->addSelect('euc_box_spares.serial_no', 'euc_boxes.order AS euc_box_order');
+            })
+            ->when(
+                !empty($params['sort']) && !empty($params['sort_type']),
+                function ($query) use ($params) {
+                    return $query->orderBy($params['sort'], $params['sort_type']);
+                },
+                function ($query) use ($fromTableName) {
+                    return $query->orderBy("$fromTableName.updated_at", 'desc');
+                }
+            )
+            ->when(
+                empty($noPagination),
+                function ($query) use ($limit) {
+                    return $query->paginate($limit);
+                },
+                function ($query) {
+                    return $query->get();
+                }
+            );
+
+        $data = $noPagination ? $rawData : $rawData->getCollection();
+
+        $binIds = $data->pluck('bin_id')->toArray();
+        $configures = BinConfigure::whereIn('bin_id', $binIds)
+            ->get()
+            ->mapToGroups(function ($item) {
+                return [$item['bin_id'] => $item];
+            })
+            ->toArray();
+        $sparesExpiredReturns = $this->getSparesExpiredForReturns($params);
+
+        if ($noPagination) {
+            return $data->transform(function ($record) use ($configures, $sparesExpiredReturns) {
+                return $this->transformIssueSpare($record, $configures, $sparesExpiredReturns);
+            });
+        }
+
+        $rawData->getCollection()->transform(function ($record) use ($configures, $sparesExpiredReturns) {
+            return $this->transformIssueSpare($record, $configures, $sparesExpiredReturns);
+        });
+
+        return $rawData;
+
+    }
+    public function getReportByLoan($request = [])
+    {
+        $params =  [
+            'types' => [
+                Consts::SPARE_TYPE_DURABLE,
+                Consts::SPARE_TYPE_PERISHABLE,
+                Consts::SPARE_TYPE_AFES,
+                Consts::SPARE_TYPE_OTHERS,
+                Consts::SPARE_TYPE_TORQUE_WRENCH,
+            ]
+        ];
+        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
+        $date = isset($request['issued_date']) ? $request['issued_date'] : [];
+        $dateee = json_decode($date, true);
+        $transactions = TakingTransaction::with('user', 'spare', 'bin');
+        $transactions->whereDoesntHave('spare', function ($subquery) use ($params) {
+            $subquery->whereIn('type', $params['types']);
+        });
+        if (!empty($date)) {
+            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        }
+        if (!empty($search_key)) {
+            $transactions->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                    ->orWhereHas('spare', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
+            });
+        }
+        $perPage = $request['limit'];
+        $page = $request['page'];
+        $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
+        return $paginatedTransactions;
     }
 }

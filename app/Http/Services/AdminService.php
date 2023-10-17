@@ -711,66 +711,124 @@ class AdminService extends BaseService
         return $this->saveData($bin, $params);
     }
 
-    public function updateBin($params)
+    public function updateBin($paramss)
     {
-        $spareId = array_get($params, 'spare_id', null);
-        $bin = Bin::with('configures', 'spares')->find($params['id']);
-        $bin->spares()->detach();
-        $bin->spares()->syncWithoutDetaching($spareId);
-        if (!in_array($bin->spare_id, $spareId)) {
-
-            ReturnSpare::query()
-                ->where('bin_id', $bin->id)
-                ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
-                ->update(
-                    [
+        $bin = Bin::with('configures', 'spares')->find($paramss['id']);
+        $formInput = $paramss['formInput'];
+        $spareIds = [];
+        $configureIds = [];
+        foreach ($formInput as $index => $params) {
+            $spareId = array_get($params, 'spare_id', null);
+            $spareIds[] = $spareId;
+            if ($bin->spare_id != $spareId) {
+                ReturnSpare::query()
+                    ->where('bin_id', $bin->id)
+                    ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
+                    ->update([
                         'write_off' => Consts::TRUE
-                    ]
-                );
+                    ]);
+            }
+
+            if (!Arr::get($params, 'critical')) {
+                $bin->critical = 0;
+            }
+
+            if (!$bin->quantity_oh) {
+                $bin->quantity_oh = $params['quantity'];
+            } else {
+                $quantityOh = BigNumber::new($bin->quantity_oh)
+                    ->add($params['quantity'])
+                    ->sub($bin->quantity)
+                    ->toString();
+
+                $bin->quantity_oh = $quantityOh < 0 ? $params['quantity'] : $quantityOh;
+            }
+
+            $bin->spare_id = json_encode($params['spare_id']);
+            $bin->status = !!$spareId ? Consts::BIN_STATUS_ASSIGNED : Consts::BIN_STATUS_UNASSIGNED;
+
+            $bin->save();
+            
+            if (isset($params['id'])) {
+                $configure = BinConfigure::find($params['id']);
+                if (!empty($configure)) {
+                    $configure = new BinConfigure;
+                    $configure->order = $index + 1;
+                    $configure->bin_id = $bin->id;
+                   
+                }else{
+                    $configure = new BinConfigure;
+                    $configure->order = $index + 1;
+                    $configure->bin_id = $bin->id;
+                }
+            } else {
+                $configure = new BinConfigure;
+                $configure->order = $index + 1;
+                $configure->bin_id = $bin->id;
+            }
+            $configure->charge_time = empty($params['has_charge_time']) ? null : $params['charge_time'];
+            $configure->calibration_due = empty($params['has_calibration_due']) ? null : $params['calibration_due'];
+            $configure->expiry_date = empty($params['has_expiry_date']) ? null : $params['expiry_date'];
+            $configure->load_hydrostatic_test_due = empty($params['has_load_hydrostatic_test_due']) ? null : $params['load_hydrostatic_test_due'];
+            $configure->spare_id = $params['spare_id'];
+            $configure->save();
+            $configureIds[] = $configure->id;
+            
         }
-
-        if (!Arr::get($params, 'critical')) {
-            $params['critical'] = 0;
-        }
-        if (!$bin->quantity_oh) {
-            $params['quantity_oh'] = $params['quantity'];
-        } else {
-
-            $quantityOh = BigNumber::new($bin->quantity_oh)
-                ->add($params['quantity'])
-                ->sub($bin->quantity)
-                ->toString();
-
-
-            $params['quantity_oh'] = $quantityOh < 0 ? $params['quantity'] : $quantityOh;
-        }
-        $params['spare_id'] = json_encode($params['spare_id']);
-        $params['status'] = !!$spareId ? Consts::BIN_STATUS_ASSIGNED : Consts::BIN_STATUS_UNASSIGNED;
-
-        $bin = $this->saveData($bin, $params);
-
-        $this->saveBinConfigures($bin, $params);
-
+        BinConfigure::where('bin_id', $bin->id)
+                ->whereNotIn('id', $configureIds)
+                ->delete();
+        $bin->spares()->sync($spareIds);
         return $bin->refresh();
     }
+    // private function saveBinConfigures($bin, $params)
+    // {
+    //     var_dump($params);die();
+    //     // $binConfigures = $bin->configures;
+    //     // foreach ($binConfigures as $index => $configure) {
+    //     //     if ($configure) {
+    //     //         $value = [
+    //     //             'order' => $index + 1,
+    //     //             'bin_id' => $bin->id,
+    //     //             'charge_time' => empty($configure['has_charge_time']) ? null : $configure['charge_time'],
+    //     //             'calibration_due' => empty($configure['has_calibration_due']) ? null : $configure['calibration_due'],
+    //     //             'expiry_date' => empty($configure['has_expiry_date']) ? null : $configure['expiry_date'],
+    //     //             'load_hydrostatic_test_due' => empty($configure['has_load_hydrostatic_test_due']) ? null : $configure['load_hydrostatic_test_due'],
+    //     //         ];
+    //     //         $configure->fill($value); // Cập nhật $configure với các giá trị mới
+    //     //         $configure->save(); 
+    //     //     }
+    //     // }
+    // }
 
     private function saveBinConfigures($bin, $params)
     {
-        if ($bin->is_drawer) {
-            return;
-        }
-
-        $configures = array_get($params, 'configures', []);
-
-        // hardcode only have 1 row
-        if (!empty($configures)) {
-            $first = collect($configures)->first();
-            $configures = [$first];
-        }
-
-
         $configureIds = [];
+        if (isset($params['id'])) {
+            $configure = BinConfigure::find($params['id']);
+            if (!empty($configure)) {
+                $configure = new BinConfigure;
+                $value['order'] = $index + 1;
+                $value['bin_id'] = $bin->id;
+            }
+        } else {
+            $configure = new BinConfigure;
+            $value['order'] = $index + 1;
+            $value['bin_id'] = $bin->id;
+        }
+        $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
+        $value['calibration_due'] = empty($value['has_calibration_due']) ? null : $value['calibration_due'];
+        $value['expiry_date'] = empty($value['has_expiry_date']) ? null : $value['expiry_date'];
+        $value['load_hydrostatic_test_due'] = empty($value['has_load_hydrostatic_test_due']) ? null : $value['load_hydrostatic_test_due'];
 
+        $this->saveData($configure, $value);
+
+        $configureIds[] = $configure->id;
+        BinConfigure::where('bin_id', $bin->id)
+            ->whereNotIn('id', $configureIds)
+            ->delete();
+        $configureIds = [];
+        $configures = array_get($params, 'configures', []);
         foreach ($configures as $index => $value) {
             $configure = null;
 
@@ -779,11 +837,15 @@ class AdminService extends BaseService
                 $value['order'] = $index + 1;
                 $value['bin_id'] = $bin->id;
             } else {
-                $configure = BinConfigure::findOrFail($value['id']);
+                $configure = BinConfigure::find($value['id']);
+                if (!$configure) {
+                    $configure = new BinConfigure;
+                    $value['order'] = $index + 1;
+                    $value['bin_id'] = $bin->id;
+                }
             }
 
-            // $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
-            $value['charge_time'] = $value['charge_time'];
+            $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
             $value['calibration_due'] = empty($value['has_calibration_due']) ? null : $value['calibration_due'];
             $value['expiry_date'] = empty($value['has_expiry_date']) ? null : $value['expiry_date'];
             $value['load_hydrostatic_test_due'] = empty($value['has_load_hydrostatic_test_due']) ? null : $value['load_hydrostatic_test_due'];
@@ -796,7 +858,46 @@ class AdminService extends BaseService
         BinConfigure::where('bin_id', $bin->id)
             ->whereNotIn('id', $configureIds)
             ->delete();
-        return true;
+
+        // if ($bin->is_drawer) {
+        //     return;
+        // }
+
+        // $configures = array_get($params, 'configures', []);
+
+        // // hardcode only have 1 row
+        // if (!empty($configures)) {
+        //     $first = collect($configures)->first();
+        //     $configures = [$first];
+        // }
+
+        // $configureIds = [];
+
+        // foreach ($configures as $index => $value) {
+        //     $configure = null;
+
+        //     if (empty($value['id'])) {
+        //         $configure = new BinConfigure;
+        //         $value['order'] = $index + 1;
+        //         $value['bin_id'] = $bin->id;
+
+        //     } else {
+        //         $configure = BinConfigure::findOrFail($value['id']);
+        //     }
+
+        //     $value['charge_time'] = empty($value['has_charge_time']) ? null : $value['charge_time'];
+        //     $value['calibration_due'] = empty($value['has_calibration_due']) ? null : $value['calibration_due'];
+        //     $value['expiry_date'] = empty($value['has_expiry_date']) ? null : $value['expiry_date'];
+        //     $value['load_hydrostatic_test_due'] = empty($value['has_load_hydrostatic_test_due']) ? null : $value['load_hydrostatic_test_due'];
+
+        //     $configure = BinConfigure::create($value);
+
+        //     $configureIds[] = $configure->id;
+        // }
+
+        // BinConfigure::where('bin_id', $bin->id)
+        //     ->whereNotIn('id', $configureIds)
+        //     ->delete();
     }
 
     public function unassignedBin($binId)

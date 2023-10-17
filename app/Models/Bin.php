@@ -40,7 +40,7 @@ class Bin extends Model
 
     public function configures()
     {
-        return $this->hasMany('App\Models\BinConfigure');
+        return $this->hasMany(BinConfigure::class);
     }
 
     public function spares()
