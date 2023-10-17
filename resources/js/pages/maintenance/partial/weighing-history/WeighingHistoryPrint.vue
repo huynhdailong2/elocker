@@ -5,9 +5,9 @@
 
     <div class="container mt-3">
       <div class="row">
-      <h2 class="mb-4">
+      <!-- <h2 class="mb-4">
         <span class="font-weight-bold">Weighing System Transaction</span>
-      </h2>
+      </h2> -->
       </div>
 
       <div class="row">

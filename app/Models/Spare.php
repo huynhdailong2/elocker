@@ -74,4 +74,8 @@ class Spare extends Model
     {
         return $this->belongsToMany(Bin::class);
     }
+    public function binconfigure()
+    {
+        return $this->belongsToMany(BinConfigure::class);
+    }
 }

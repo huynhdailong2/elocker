@@ -75,8 +75,8 @@
             <td :title="props.item.wo" >
               <div class="text ellipsis">{{ props.item.card_num }}</div>
             </td>
-            <td :title="props.item.issued_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.issued_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
+            <td :title="props.item.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
+              <div class="text ellipsis">{{ props.item.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
             </td>
             <td :title="props.item.issued_update_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
               <div class="text ellipsis" v-if="props.item.returned_quantity">{{ props.item.issued_update_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>

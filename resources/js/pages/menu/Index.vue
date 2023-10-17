@@ -334,22 +334,22 @@ export default {
             }
           ]
         },
-        {
-          name: 'Weighing System',
-          icon: '/images/icons/weighing-system.svg',
-          url: '/weighing',
-          type: MENU.MAIN,
-          visible: true,
-          children: [
-            {
-              name: 'Bin Management',
-              icon: '/images/icons/icon-bin-management.svg',
-              url: '/weighing/bin-management',
-              type: MENU.WEIGHING,
-              visible: true,
-            }
-          ]
-        }
+        // {
+        //   name: 'Weighing System',
+        //   icon: '/images/icons/weighing-system.svg',
+        //   url: '/weighing',
+        //   type: MENU.MAIN,
+        //   visible: true,
+        //   children: [
+        //     {
+        //       name: 'Bin Management',
+        //       icon: '/images/icons/icon-bin-management.svg',
+        //       url: '/weighing/bin-management',
+        //       type: MENU.WEIGHING,
+        //       visible: true,
+        //     }
+        //   ]
+        // }
       ]
     }
   }
