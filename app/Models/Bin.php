@@ -36,6 +36,8 @@ class Bin extends Model
         'is_processing',
         'process_time',
         'process_by',
+        'cu_id',
+        'lock_id',
     ];
 
     public function configures()

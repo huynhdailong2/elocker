@@ -2738,12 +2738,17 @@ class SpareService extends BaseService
             'remain_qty' => 1,
             'cabinet_id' => $request['location']['cabinet']['id'],
             'bin_id' => $request['location']['bin']['id'],
-            'spare_id' => $request['item']['id'],
+            // 'spare_id' => $request['item']['id'],
         ]);
+        $spareIds = [];
+        foreach($request['item'] as $value){
+            $spareIds[]=$value['id'];
+        }
+        $taking_transaction->spares()->attach($spareIds);
         $taking_transaction->makeHidden(['bin', 'cabinet']);
         $taking_transaction->location;
-        $taking_transaction->spare;
         $taking_transaction->user;
+        $taking_transaction->spares;
         return $taking_transaction;
     }
     // public function getReportByTnx($params = []){
@@ -2751,16 +2756,14 @@ class SpareService extends BaseService
     // }
     public function getReportByTnx($request = [])
     {
+        // var_dump($request);die();
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['issued_date']) ? $request['issued_date'] : [];
         $dateee = json_decode($date, true);
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user', 'spare');
-        // $transactions->whereHas('location.bin', function ($query) use ($bin_id) {
-        //     $query->where('id', $bin_id);
-        // });
+        $transactions = TakingTransaction::with('user', 'spares');
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -2835,11 +2838,11 @@ class SpareService extends BaseService
             ->when(!empty($params['search_key']), function ($query) use ($params) {
                 $searchKey = Utils::escapeLike($params['search_key']);
 
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-                });
+                // $query->where(function ($subQuery) use ($searchKey) {
+                //     $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+                //         ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+                //         ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+                // });
             })
             ->when(!empty($params['spare_id']), function ($query) use ($params) {
                 $query->where('spares.id', $params['spare_id']);
@@ -2953,21 +2956,21 @@ class SpareService extends BaseService
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['issued_date']) ? $request['issued_date'] : [];
         $dateee = json_decode($date, true);
-        $transactions = TakingTransaction::with('user', 'spare', 'bin');
-        $transactions->whereDoesntHave('spare', function ($subquery) use ($params) {
+        $transactions = TakingTransaction::with('user', 'spares', 'bin');
+        $transactions->whereDoesntHave('spares', function ($subquery) use ($params) {
             $subquery->whereIn('type', $params['types']);
         });
-        if (!empty($date)) {
-            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
-        }
-        if (!empty($search_key)) {
-            $transactions->where(function ($query) use ($search_key) {
-                $query->where('id', $search_key)
-                    ->orWhereHas('spare', function ($subquery) use ($search_key) {
-                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
-                    });
-            });
-        }
+        // if (!empty($date)) {
+        //     $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        // }
+        // if (!empty($search_key)) {
+        //     $transactions->where(function ($query) use ($search_key) {
+        //         $query->where('id', $search_key)
+        //             ->orWhereHas('spares', function ($subquery) use ($search_key) {
+        //                 $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+        //             });
+        //     });
+        // }
         $perPage = $request['limit'];
         $page = $request['page'];
         $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);

@@ -78,8 +78,8 @@
             <td :title="props.item.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
               <div class="text ellipsis">{{ props.item.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
             </td>
-            <td :title="props.item.issued_update_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
-              <div class="text ellipsis" v-if="props.item.returned_quantity">{{ props.item.issued_update_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
+            <td :title="props.item.updated_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
+              <div class="text ellipsis" v-if="props.item.updated_at">{{ props.item.updated_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
             </td>
             <td :title="props.item.vehicle_num" >
               <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
@@ -87,21 +87,28 @@
             <td :title="props.item.platform" >
               <div class="text ellipsis">{{ props.item.platform }}</div>
             </td>
-            <td :title="props.item.platform" >
-              <div class="text ellipsis">{{ props.item.platform }}</div>
+            <td :title="props.item.location">
+              <div class="text ellipsis">{{ props.item.location.bin.cluster_id }}-{{ props.item.cabinet.id }}-{{
+                props.item.location.bin.row }}-{{ props.item.location.bin.id }}</div>
             </td>
-            <td :title="props.item.platform" >
-              <div class="text ellipsis">{{ props.item.platform }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.type }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.spare_name" >
-              <div class="text ellipsis">{{ props.item.spare_name }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.name }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.part_no" >
-              <div class="text ellipsis">{{ props.item.part_no }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.part_no }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
-<!--            <td :title="props.item.torque_area" >-->
-<!--              <div class="text ellipsis">{{ props.item.torque_area }}</div>-->
-<!--            </td>-->
             <td :title="props.item.issued_quantity" >
               <div class="text ellipsis">{{ props.item.issued_quantity }}</div>
             </td>
@@ -111,8 +118,8 @@
             <td :title="props.item.quantity" >
               <div class="text ellipsis">{{ props.item.quantity }}</div>
             </td>
-            <td :title="props.item.issued_by" >
-              <div class="text ellipsis">{{ props.item.issued_by }}</div>
+            <td :title="props.item.user.name">
+              <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
             <!-- <td :title="props.item.issued_to" >
               <div class="text ellipsis">{{ props.item.issued_to }}</div>

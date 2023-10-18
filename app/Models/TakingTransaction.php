@@ -24,7 +24,7 @@ class TakingTransaction extends Model
         'remain_qty',
         'bin_id',
         'cabinet_id',
-        'spare_id',
+        // 'spare_id',
     ];
     protected $hidden = [
         'remain_qty'
@@ -48,9 +48,9 @@ class TakingTransaction extends Model
     {
         return $this->belongsTo(Shelf::class, 'cabinet_id');
     }
-    public function spare()
+    public function spares()
     {
-        return $this->belongsTo(Spare::class, 'spare_id');
+        return $this->belongsToMany(Spare::class);
     }
     // public function searchSpare(){
     //     return $this->hasMany(Spare::class, 'spare_id');
@@ -59,5 +59,9 @@ class TakingTransaction extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class, 'user_id');
+    // }
+
 }

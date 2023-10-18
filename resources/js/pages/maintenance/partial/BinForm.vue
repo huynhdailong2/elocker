@@ -98,12 +98,11 @@
             <th>Critical</th>
             <th>Min</th>
             <th>Max</th>
-            <th>Desc</th>
+            <!-- <th>Desc</th> -->
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
             <th>Load/Hydrostatic Test Due</th>
-            <th>has_batch_no</th>
             <th>Actions</th>
           </thead>
           <tbody>
@@ -114,7 +113,7 @@
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <td>{{ item.description }}</td>
+              <!-- <td>{{ item.description }}</td> -->
               <template v-if="item.configures.length > 0">
                 <td>{{ item.configures[0].batch_no}}</td>
                 <td>{{ item.configures[0].serial_no}}</td>
@@ -139,13 +138,6 @@
                     v-if="item.configures[0].has_load_hydrostatic_test_due"
                   />
                 </td>
-                <td v-for="(item1, index1) in configures" :key="index1">
-                  <input type="text" class="input" name="max" data-vv-as="maximum quantity" placeholder="Maximum Quantity"
-                    v-model.trim="inputForm.has_calibration_due" />
-                  <input type="text" class="input" name="max" data-vv-as="maximum quantity" placeholder="Maximum Quantity"
-                    v-model.trim="inputForm.created_at" />
-                </td>
-                <td>{{ item.has_batch_no }}</td>
               </template>
               <template v-else>
                 <td></td>
@@ -358,7 +350,7 @@ export default {
           };
         })
         .value();
-      console.log("🚀 ~ file: BinForm.vue:327 ~ initConfigures ~   this.inputForm.configures:", this.inputForm.configures)
+      // console.log("🚀 ~ file: BinForm.vue:327 ~ initConfigures ~   this.inputForm.configures:", this.inputForm.configures)
     },
 
     getSpares() {
