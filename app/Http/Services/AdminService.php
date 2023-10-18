@@ -713,11 +713,12 @@ class AdminService extends BaseService
 
     public function updateBin($paramss)
     {
-        $bin = Bin::with('configures', 'spares')->find($paramss['id']);
+        $bin = Bin::with('configures', 'spares')->find($paramss['formInput'][0]['id']);
         $formInput = $paramss['formInput'];
         $spareIds = [];
         $configureIds = [];
         foreach ($formInput as $index => $params) {
+           
             $spareId = array_get($params, 'spare_id', null);
             $spareIds[] = $spareId;
             if ($bin->spare_id != $spareId) {
@@ -766,10 +767,10 @@ class AdminService extends BaseService
                 $configure->order = $index + 1;
                 $configure->bin_id = $bin->id;
             }
-            $configure->charge_time = empty($params['has_charge_time']) ? null : $params['charge_time'];
-            $configure->calibration_due = empty($params['has_calibration_due']) ? null : $params['calibration_due'];
-            $configure->expiry_date = empty($params['has_expiry_date']) ? null : $params['expiry_date'];
-            $configure->load_hydrostatic_test_due = empty($params['has_load_hydrostatic_test_due']) ? null : $params['load_hydrostatic_test_due'];
+            $configure->charge_time = $params['charge_time'];
+            $configure->calibration_due = $params['calibration_due'];
+            $configure->expiry_date = $params['expiry_date'];
+            $configure->load_hydrostatic_test_due = $params['load_hydrostatic_test_due'];
             $configure->spare_id = $params['spare_id'];
             $configure->save();
             $configureIds[] = $configure->id;

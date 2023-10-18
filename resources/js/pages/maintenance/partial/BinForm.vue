@@ -70,7 +70,7 @@
         <div class="col-12">
           <label class="name">Description</label>
           <textarea class="textarea" placeholder="Description" name="description" v-model.trim="inputForm.description"
-            v-validate="'max:190'" />
+v-validate="'max:190'" />
           <span class="invalid-feedback" v-if="errors.has('description')">
             {{ errors.first("description") }}
           </span>
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" v-if="inputForm.spare_id" />
+    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" />
 
     <div class="actions">
       <button @click="onAddItem" class="btn-primary" style="padding: 8px 27px;">Add</button>
@@ -98,12 +98,12 @@
             <th>Critical</th>
             <th>Min</th>
             <th>Max</th>
-            <!-- <th>Desc</th> -->
+            <th>Desc</th>
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
             <th>Load/Hydrostatic Test Due</th>
-            <th>Expiry</th>
+            <th>Expiry Date</th>
             <th>Actions</th>
           </thead>
           <tbody>
@@ -114,7 +114,7 @@
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <!-- <td>{{ item.description }}</td> -->
+              <td>{{ item.description }}</td>
               <template v-if="item.configures.length > 0">
                 <td>{{ item.configures[0].batch_no}}</td>
                 <td>{{ item.configures[0].serial_no}}</td>
@@ -214,6 +214,7 @@ export default {
         .subtract(1, "days")
         .toDate();
     },
+    
     showConfigures() {
       return !isEmpty(this.inputForm.configures);
     },
@@ -222,16 +223,16 @@ export default {
       return false;
     },
 
-    visibleBinConfigure() {
-      return (
-        this.inputForm.has_batch_no ||
-        this.inputForm.has_serial_no ||
-        this.inputForm.has_charge_time ||
-        this.inputForm.has_calibration_due ||
-        this.inputForm.has_expiry_date ||
-        this.inputForm.has_load_hydrostatic_test_due
-      );
-    },
+    // visibleBinConfigure() {
+    //   return (
+    //     this.inputForm.has_batch_no ||
+    //     this.inputForm.has_serial_no ||
+    //     this.inputForm.has_charge_time ||
+    //     this.inputForm.has_calibration_due ||
+    //     this.inputForm.has_expiry_date ||
+    //     this.inputForm.has_load_hydrostatic_test_due
+    //   );
+    // },
   },
 
   watch: {
@@ -291,6 +292,8 @@ export default {
       max: this.data?.max,
       configures: this.data?.configures
     }));
+    console.log(this.items)
+    console.log(this.data)
     
     rf.getRequest("AdminRequest").getBinId(this.data.id);
 
@@ -382,18 +385,8 @@ export default {
         });
     },
 
-    async onClickSave() {
-      this.resetError();
-
-      await this.$validator.validateAll();
-
-      if (this.$refs.binConfigures) {
-        await this.$refs.binConfigures.validateData();
-      }
-
-      if (this.errors.any()) {
-        return;
-      }
+    onClickSave() {
+      
 
       const toUTc = (date) => {
         return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
@@ -411,22 +404,25 @@ export default {
         .value();
 
       const transData = {
-        ...this.inputForm,
-        formInput: this.items.map(i => ({
-          ...i,
-        })),
+        // ...this.inputForm,
+          formInput: this.items.map(i => ({ ...i})),
       }
 
-      this.submitRequest(transData)
-        .then((res) => {
-          this.showSuccess("Successfully!");
-          this.resetError();
-          this.resetForm();
-          this.$emit("item:saved", res.data);
-        })
-        .catch((error) => {
-          this.processErrors(error);
-        });
+      if (this.items.length === 0) {
+        this.showError("The list cannot be empty!");
+      } else {
+        this.submitRequest(transData)
+          .then((res) => {
+            this.showSuccess("Successfully!");
+            this.resetError();
+            this.resetForm();
+            this.$emit("item:saved", res.data);
+          })
+          .catch((error) => {
+            this.processErrors(error);
+          });
+      }
+
     },
 
     submitRequest(data) {
@@ -434,7 +430,18 @@ export default {
       return rf.getRequest("AdminRequest").updateBin(data);
     },
 
-    onAddItem() {
+    async onAddItem() {
+      this.resetError();
+
+      await this.$validator.validateAll();
+
+      if (this.$refs.binConfigures) {
+        await this.$refs.binConfigures.validateData();
+      }
+
+      if (this.errors.any()) {
+        return;
+      }
       const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
       const existingItem = this.items.find(
         (item) => item.spare_id === spare.id
@@ -445,6 +452,9 @@ export default {
         this.items.push({
           ...this.inputForm,
           name: spare.name,
+          expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
+          load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
+          calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
           charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
         });
         // this.updateListQuantitiesMinMax();
@@ -489,7 +499,7 @@ export default {
     //   };
 
     //   return rf
-    //     .getRequest("AdminRequest")
+//     .getRequest("AdminRequest")
     //     .updateBin(data)
     //     .then((res) => {
     //       this.showSuccess("Successfully!");
