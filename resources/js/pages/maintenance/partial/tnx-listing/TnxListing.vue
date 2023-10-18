@@ -94,7 +94,7 @@
               <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') }}</div>
             </td>
-            <td :title="props.item.wo">
+            <!-- <td :title="props.item.wo">
               <div class="text ellipsis">{{ props.item.wo }}</div>
             </td>
             <td :title="props.item.vehicle_num">
@@ -102,31 +102,31 @@
             </td>
             <td :title="props.item.platform">
               <div class="text ellipsis">{{ props.item.platform }}</div>
-            </td>
-            <td :title="props.item.location">
-              <div class="text ellipsis">{{ props.item.location.bin.cluster_id }}-{{ props.item.cabinet.id }}-{{
-                props.item.location.bin.row }}-{{ props.item.location.bin.id }}</div>
+            </td> -->
+            <td :title="props.item.locations">
+              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id }}-{{
+                props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
                 {{ row.type }}
-                <span v-if="index < props.item.spares.length - 1">,</span>
+                <span v-if="index < props.item.locations.length - 1">,</span>
               </div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
                 {{ row.name }}
-                <span v-if="index < props.item.spares.length - 1">,</span>
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
               </div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
                 {{ row.part_no }}
-                <span v-if="index < props.item.spares.length - 1">,</span>
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
               </div>
             </td>
-            <td :title="props.item.qty">
-              <div class="text ellipsis">{{ props.item.qty }}</div>
+            <td :title="props.item.request_qty">
+              <div class="text ellipsis">{{ props.item.request_qty }}</div>
             </td>
             <td :title="props.item.torque_area">
               <div class="text ellipsis">{{ props.item.torque_area || "N/A" }}</div>
@@ -365,7 +365,6 @@ export default {
     },
     getBins(params) {
       rf.getRequest('AdminRequest').getBins(params).then(res => {
-        console.log("🚀 ~ file: TnxListing.vue:367 ~ getBins ~ res:", res.data)
         return this.bins = res.data
       })
     },

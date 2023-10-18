@@ -16,7 +16,7 @@ class TakingTransaction extends Model
         'total_qty',
         'qty',
         'status',
-        'item_id',
+        // 'item_id',
         'pre_qty',
         'changed_qty',
         'user_id',
@@ -24,20 +24,34 @@ class TakingTransaction extends Model
         'remain_qty',
         'bin_id',
         'cabinet_id',
+        'request_qty',
         // 'spare_id',
     ];
     protected $hidden = [
-        'remain_qty'
+        'remain_qty',
+        'total_qty',
+        'hardware_port',
+        'part_number',
+        'port_id',
+        'qty',
+        'pre_qty',
+        'changed_qty',
+        'item_id',
+        'spares',
+        'bin',
+        'cabinet',
     ];
-    protected $appends = ['location'];
+    protected $appends = ['locations'];
 
-    public function getLocationAttribute()
+    public function getLocationsAttribute()
     {
         $bin = $this->bin;
         $cabinet = $this->cabinet;
+        $spares = $this->spares;
         return [
             'bin' => $bin,
             'cabinet' => $cabinet,
+            'spares' => $spares,
         ];
     }
     public function bin()
@@ -50,18 +64,11 @@ class TakingTransaction extends Model
     }
     public function spares()
     {
-        return $this->belongsToMany(Spare::class);
+        return $this->belongsToMany(Spare::class)->withPivot('listWO');
     }
-    // public function searchSpare(){
-    //     return $this->hasMany(Spare::class, 'spare_id');
-    // }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class, 'user_id');
-    // }
 
 }

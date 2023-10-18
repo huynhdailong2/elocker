@@ -32,6 +32,7 @@ use App\Models\CycleCount;
 use App\Models\CycleCountSpare;
 use App\Models\EucBoxSpare;
 use App\Models\IssueCard;
+use App\Models\TransactionSpare;
 use App\Models\ReplenishEucBox;
 use App\Models\Replenishment;
 use App\Models\ReplenishmentSpare;
@@ -1033,7 +1034,7 @@ class SpareService extends BaseService
         return $timeList->last()['point'];
     }
 
-   
+
 
     private function queryRange($query, $value, $property)
     {
@@ -2723,32 +2724,45 @@ class SpareService extends BaseService
     public function createTransaction($request)
     {
         $taking_transaction = TakingTransaction::create([
-            'hardware_port' => $request['hardware_port'],
             'name' => $request['name'],
-            'part_number' => $request['part_number'],
-            'port_id' => $request['port_id'],
-            'total_qty' => $request['total_qty'],
-            'qty' => $request['qty'],
             'status' => $request['status'],
-            'item_id' => $request['item_id'],
-            'pre_qty' => $request['pre_qty'],
-            'changed_qty' => $request['changed_qty'],
+            'total_qty' => 0,
+            'remain_qty' => 0,
+            'hardware_port' => 0,
+            'part_number' => 0,
+            'port_id' => 0,
+            'qty' => 0,
+            'pre_qty' => 0,
+            'changed_qty' => 0,
+            // 'item_id' => 1,
+            'request_qty' => $request['request_qty'],
             'user_id' => $request['user']['id'],
             'type' => $request['type'],
-            'remain_qty' => 1,
-            'cabinet_id' => $request['location']['cabinet']['id'],
-            'bin_id' => $request['location']['bin']['id'],
-            // 'spare_id' => $request['item']['id'],
+            'cabinet_id' => $request['locations'][0]['cabinet']['id'],
+            'bin_id' => $request['locations'][0]['bin']['id'],
         ]);
         $spareIds = [];
-        foreach($request['item'] as $value){
-            $spareIds[]=$value['id'];
+
+        foreach ($request['locations'][0]['spares'] as $item=> $value) {
+            $spareId = $value['id'];
+            $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
+            $spareIds[] = [
+                'spare_id'=>$spareId,
+                'listWO'=>json_encode($listWO),
+            ];
         }
-        $taking_transaction->spares()->attach($spareIds);
-        $taking_transaction->makeHidden(['bin', 'cabinet']);
+        foreach ($spareIds as $spare) {
+            $spareId = $spare['spare_id'];
+            $listWO = $spare['listWO'];
+            $transactionSpare = TransactionSpare::create([
+                'taking_transaction_id' => $taking_transaction->id,
+                'spare_id' => $spareId,
+                'listWO' => !empty($listWO)?$listWO:''
+            ]);
+        }
+        $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
         $taking_transaction->location;
         $taking_transaction->user;
-        $taking_transaction->spares;
         return $taking_transaction;
     }
     // public function getReportByTnx($params = []){
@@ -2763,7 +2777,7 @@ class SpareService extends BaseService
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user', 'spares');
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status','request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id','updated_at','created_at']);
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -2940,7 +2954,6 @@ class SpareService extends BaseService
         });
 
         return $rawData;
-
     }
     public function getReportByLoan($request = [])
     {

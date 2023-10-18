@@ -12,6 +12,7 @@ class TransactionSpare extends Model
     protected $fillable = [
         'taking_transaction_id',
         'spare_id',
+        'listWO',
     ];
     // public $timestamps = true;
 }
