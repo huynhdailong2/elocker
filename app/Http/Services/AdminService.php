@@ -1029,6 +1029,51 @@ class AdminService extends BaseService
         return $this->getJobCardBuilder($params)->get()->first();
     }
 
+    public function updateJobCardMany($params)
+    {
+        try
+        {
+            if( !empty($params['data']) ) {
+                foreach($params['data'] as $val) {
+                    $jobCard = JobCard::find($val['id']);
+                    if(!empty($jobCard)) {
+                        $jobCard = $this->saveData($jobCard, ['card_num' => $val['card_num']]);
+                    }
+                }
+            }
+        }
+        catch(Exception $e)
+        {
+            throw new Exception($e->getMessage());
+        }
+        return true;
+    }
+
+    public function updateStatusBins($params)
+    {
+        try
+        {
+            if( !empty($params['data']) ) {
+                foreach($params['data'] as $ele) {
+                    $binModel = Bin::find($ele['id']);
+                    if(!empty($binModel)) {
+                        foreach($ele as $key => $val) {
+                            if($key != 'id') {
+                                $binModel = $this->saveData($binModel, [$key => $val]);
+                            }
+                        }
+                        
+                    }
+                }
+            }
+        }
+        catch(Exception $e)
+        {
+            throw new Exception($e->getMessage());
+        }
+        return true;
+    }
+
     public function deleteJobCard($jobCardId)
     {
         $jobCard = JobCard::find($jobCardId);

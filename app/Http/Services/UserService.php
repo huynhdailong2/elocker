@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Storage;
 use Excel;
 
-class UserService
+class UserService extends BaseService
 {
     public function getAllUsers($input)
     {
@@ -145,6 +145,26 @@ class UserService
           $users->role_name = $this->getRoleName($users->role);
         }
         return $users;
+    }
+
+    public function updateUserCards($input)
+    {
+        try
+        {
+            if( !empty($input['data']) ) {
+                foreach($input['data'] as $val) {
+                    $userModel = User::find($val['id']);
+                    if(!empty($userModel)) {
+                        $userModel = $this->saveData($userModel, ['card_id' => $val['card_id']]);
+                    }
+                }
+            }
+        }
+        catch(\Exception $e)
+        {
+            throw new \Exception($e->getMessage());
+        }
+        return true;
     }
 
     public function updateAccount($userId, $input)
