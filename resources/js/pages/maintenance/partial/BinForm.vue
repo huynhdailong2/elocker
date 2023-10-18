@@ -124,7 +124,7 @@ v-validate="'max:190'" />
                     format="HH:mm"
                   />
                 </td>  
-                <td>     
+                <td class="d">     
                   <datepicker
                     format="dd/MM/yyyy"
                     input-class="form-control date-selector"
