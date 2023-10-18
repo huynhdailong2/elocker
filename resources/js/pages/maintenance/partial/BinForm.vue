@@ -98,12 +98,11 @@
             <th>Critical</th>
             <th>Min</th>
             <th>Max</th>
-            <th>Desc</th>
+            <!-- <th>Desc</th> -->
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
             <th>Load/Hydrostatic Test Due</th>
-            <th>Create At</th>
             <th>Expiry</th>
             <th>Actions</th>
           </thead>
@@ -115,7 +114,7 @@
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <td>{{ item.description }}</td>
+              <!-- <td>{{ item.description }}</td> -->
               <template v-if="item.configures.length > 0">
                 <td>{{ item.configures[0].batch_no}}</td>
                 <td>{{ item.configures[0].serial_no}}</td>
@@ -138,9 +137,6 @@
                     data-vv-as="calibration due"
                     v-if="item.configures[0].has_load_hydrostatic_test_due"
                   />
-                </td>
-                <td>
-                  {{item.configures[0].created_at}} 
                 </td>
                 <td>
                   {{item.configures[0].expiry_date}} 
@@ -451,29 +447,29 @@ export default {
           name: spare.name,
           charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
         });
-        this.updateListQuantitiesMinMax();
+        // this.updateListQuantitiesMinMax();
         this.resetForm()
       }
     },
 
-    updateListQuantitiesMinMax() {
-      if (this.items.length > 0) {
-        const totalQuantity = this.items.reduce(
-          (acc, item) => item.quantity,
-          0
-        );
-        const minValues = this.items.map((item) => item.min);
-        const maxValues = this.items.map((item) => item.max);
-        const min = Math.min(...minValues);
-        const max = Math.max(...maxValues);
+    // updateListQuantitiesMinMax() {
+    //   if (this.items.length > 0) {
+    //     const totalQuantity = this.items.reduce(
+    //       (acc, item) => item.quantity,
+    //       0
+    //     );
+    //     const minValues = this.items.map((item) => item.min);
+    //     const maxValues = this.items.map((item) => item.max);
+    //     const min = Math.min(...minValues);
+    //     const max = Math.max(...maxValues);
 
-        this.items.forEach((item) => {
-          item.quantity = totalQuantity;
-          item.min = min;
-          item.max = max;
-        });
-      }
-    },
+    //     this.items.forEach((item) => {
+    //       item.quantity = totalQuantity;
+    //       item.min = min;
+    //       item.max = max;
+    //     });
+    //   }
+    // },
 
     onClearList() {
       this.items = [];

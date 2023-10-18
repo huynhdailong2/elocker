@@ -28,13 +28,9 @@
         <div class="form-group">
           <div class="option">
             <label>Cluster:</label>
-            <select class="input"  
-            v-model="cluster_id"
-            name="cluster_id"
-            >
+            <select class="input" v-model="cluster_id" name="cluster_id">
               <option value="">All</option>
-              <option 
-              v-for="cluster in clusters" :value="cluster.id" :key="cluster.id">
+              <option v-for="cluster in clusters" :value="cluster.id" :key="cluster.id">
                 {{ cluster.name }}
               </option>
             </select>
@@ -45,12 +41,9 @@
         <div class="form-group">
           <div class="option">
             <label>Shelf:</label>
-            <select class="input"  v-model="shelf_id"
-            name="shelf_id"
-            >
+            <select class="input" v-model="shelf_id" name="shelf_id">
               <option value="">All</option>
-              <option 
-              v-for="shelf in shelfs" :value="shelf.id" :key="shelf.id">
+              <option v-for="shelf in shelfs" :value="shelf.id" :key="shelf.id">
                 {{ shelf.name }}
               </option>
             </select>
@@ -61,12 +54,9 @@
         <div class="form-group">
           <div class="option">
             <label>Bin:</label>
-            <select class="input"  v-model="bin_id"
-            name="bin_id"
-            >
+            <select class="input" v-model="bin_id" name="bin_id">
               <option value="">All</option>
-              <option 
-              v-for="bin in bins" :value="bin.id" :key="bin.id">
+              <option v-for="bin in bins" :value="bin.id" :key="bin.id">
                 {{ bin.bin_name }}
               </option>
             </select>
@@ -117,14 +107,23 @@
               <div class="text ellipsis">{{ props.item.location.bin.cluster_id }}-{{ props.item.cabinet.id }}-{{
                 props.item.location.bin.row }}-{{ props.item.location.bin.id }}</div>
             </td>
-            <td :title="props.item.spare.type">
-              <div class="text ellipsis">{{ props.item.spare.type }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.type }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.spare.name">
-              <div class="text ellipsis">{{ props.item.spare.name }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.name }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.spare.name">
-              <div class="text ellipsis">{{ props.item.spare.part_no }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                {{ row.part_no }}
+                <span v-if="index < props.item.spares.length - 1">,</span>
+              </div>
             </td>
             <td :title="props.item.qty">
               <div class="text ellipsis">{{ props.item.qty }}</div>
@@ -135,11 +134,12 @@
             <td :title="props.item.user.name">
               <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
-            <td :title="props.item.spare.type">
-              <div class="text ellipsis">
-                <div v-if="props.item.spare.type === 'consumable'">I</div>
-                <div v-else-if="props.item.type === 'return'">R</div>
-                <div v-else>L</div>
+            <td >
+              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+                <div>
+                  {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
+                  <span v-if="index < props.item.spares.length - 1">,</span>
+                </div>
               </div>
             </td>
             <td title="N/A">
@@ -316,9 +316,9 @@ export default {
       tnxFrom: moment().subtract(30, 'days').toDate(),
       tnxTo: moment().toDate(),
       inputSearch: null,
-      cluster_id :'',
-      shelf_id :'',
-      bin_id :'',
+      cluster_id: '',
+      shelf_id: '',
+      bin_id: '',
     }
   },
 
@@ -345,9 +345,9 @@ export default {
     getSparesReportByTnx(params) {
       params = {
         ...params,
-        cluster_id:this.cluster_id,
-        shelf_id:this.shelf_id,
-        bin_id:this.bin_id,
+        cluster_id: this.cluster_id,
+        shelf_id: this.shelf_id,
+        bin_id: this.bin_id,
         issued_date: {
           start: this.tnxFromFormat,
           end: this.tnxToFormat

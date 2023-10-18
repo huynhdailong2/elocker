@@ -24,7 +24,6 @@ class ChangeTakingTransactionsTable extends Migration
             $table->integer('item_id');
             $table->integer('cabinet_id');
             $table->integer('bin_id');
-            $table->integer('spare_id');
         });
         //
     }
