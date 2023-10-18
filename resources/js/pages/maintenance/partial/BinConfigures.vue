@@ -314,6 +314,10 @@ export default {
     },
   },
 
+  mounted() {
+    console.log("12312",this.data)
+  },
+
   methods: {
     async validateData() {
       await Utils.asyncForEach(this.data, async (item, index) => {
