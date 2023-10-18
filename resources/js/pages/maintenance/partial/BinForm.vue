@@ -5,7 +5,7 @@
         <div class="col-4">
           <label>Item Name</label>
           <select class="input" v-model="inputForm.spare_id" name="spare_id" :disabled="!!inputForm.is_drawer"
-            data-vv-as="spare" v-validate="'required'">
+            data-vv-as="spare">
             <option :value="item.id" v-for="(item, index) in spares" :key="index" :class="{
               bluetext: data.spares.map((i) => i.id).includes(item.id),
             }">
@@ -70,7 +70,7 @@
         <div class="col-12">
           <label class="name">Description</label>
           <textarea class="textarea" placeholder="Description" name="description" v-model.trim="inputForm.description"
-            v-validate="'max:190'" />
+v-validate="'max:190'" />
           <span class="invalid-feedback" v-if="errors.has('description')">
             {{ errors.first("description") }}
           </span>
@@ -98,11 +98,13 @@
             <th>Critical</th>
             <th>Min</th>
             <th>Max</th>
-            <!-- <th>Desc</th> -->
+            <th>Desc</th>
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
             <th>Load/Hydrostatic Test Due</th>
+            <th>Create At</th>
+            <th>Expiry</th>
             <th>Actions</th>
           </thead>
           <tbody>
@@ -113,7 +115,7 @@
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <!-- <td>{{ item.description }}</td> -->
+              <td>{{ item.description }}</td>
               <template v-if="item.configures.length > 0">
                 <td>{{ item.configures[0].batch_no}}</td>
                 <td>{{ item.configures[0].serial_no}}</td>
@@ -121,8 +123,7 @@
                   <vue-timepicker
                     :name="'charge_time-' + index"
                     v-validate="'required'"
-                    v-model="item.configures[0].charge_time"
-                    :class="{ error: errors.has(`${item.scope}.charge_time`) }"
+                    v-model="item.charge_time"
                     format="HH:mm"
                   />
                 </td>  
@@ -138,6 +139,12 @@
                     v-if="item.configures[0].has_load_hydrostatic_test_due"
                   />
                 </td>
+                <td>
+                  {{item.configures[0].created_at}} 
+                </td>
+                <td>
+                  {{item.configures[0].expiry_date}} 
+                </td>
               </template>
               <template v-else>
                 <td></td>
@@ -147,7 +154,7 @@
                 <td></td>
               </template> 
               <td>
-                <img src="/images/icons/icon-cancel.svg" width="22px" @click="showDeleteModal(item)" />
+<img src="/images/icons/icon-cancel.svg" width="22px" @click="showDeleteModal(item)" />
               </td>
             </tr>
           </tbody>
@@ -157,7 +164,6 @@
 
     <div style="justify-content: end" class="actions mt-3">
       <button class="btn-primary" @click.stop="onClickSave">Save</button>
-      <button class="btn-primary" @click.stop="onLog">Log List Item</button>
     </div>
   </div>
 </template>
@@ -207,6 +213,11 @@ export default {
   },
 
   computed: {
+    yesterday() {
+      return moment()
+        .subtract(1, "days")
+        .toDate();
+    },
     showConfigures() {
       return !isEmpty(this.inputForm.configures);
     },
@@ -266,26 +277,29 @@ export default {
     this.inputForm = {
       ...this.inputForm,
       ...this.data,
-      spare_id: this.data.spares.length > 0 ? this.data.spares[0].id : null,
-      critical: this.data.critical || 1,
-      description: this.data.spares[0].description || null,
-      min: this.data.min || 1,
-      max: this.data.max || 1,
-      quantity: this.data.quantity || 1,
+      spare_id: this.data.spares.length > 0 ? this.data?.spares[0]?.id : null,
+      critical: this.data?.critical || 1,
+description: this.data?.spares[0]?.description || null,
+      min: this.data?.min || 1,
+      max: this.data?.max || 1,
+      quantity: this.data?.quantity || 1,
     };
-    this.initConfigures();
-    rf.getRequest("AdminRequest").getBinId(this.data.id);
+
+    
     this.items = this.data.spares.map((i) => ({
       ...i,
       spare_id: i.id,
-      quantity: this.data.quantity,
-      critical: this.data.critical,
-      min: this.data.min,
-      max: this.data.max,
-      configures: this.data.configures
+      quantity: this.data?.quantity,
+      critical: this.data?.critical,
+      min: this.data?.min,
+      max: this.data?.max,
+      configures: this.data?.configures
     }));
+    
+    rf.getRequest("AdminRequest").getBinId(this.data.id);
+
+    this.initConfigures();
     this.getSpares();
-    console.log(this.data.listSpares)
   },
 
   methods: {
@@ -328,7 +342,6 @@ export default {
       });
 
       this.inputForm.configures = chain(this.inputForm.configures || [])
-
         .concat(newData)
         .map((item, index) => {
           return {
@@ -350,7 +363,6 @@ export default {
           };
         })
         .value();
-      // console.log("🚀 ~ file: BinForm.vue:327 ~ initConfigures ~   this.inputForm.configures:", this.inputForm.configures)
     },
 
     getSpares() {
@@ -375,7 +387,7 @@ export default {
     },
 
     async onClickSave() {
-      this.resetError();
+this.resetError();
 
       await this.$validator.validateAll();
 
@@ -402,7 +414,14 @@ export default {
         })
         .value();
 
-      this.submitRequest(this.inputForm)
+      const transData = {
+        ...this.inputForm,
+        formInput: this.items.map(i => ({
+          ...i,
+        })),
+      }
+
+      this.submitRequest(transData)
         .then((res) => {
           this.showSuccess("Successfully!");
           this.resetError();
@@ -430,6 +449,7 @@ export default {
         this.items.push({
           ...this.inputForm,
           name: spare.name,
+          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
         });
         this.updateListQuantitiesMinMax();
         this.resetForm()
@@ -459,28 +479,28 @@ export default {
       this.items = [];
     },
 
-    onSaveData() {
-      const data = {
-        ...this.items[0],
-        ...this.inputForm,
-        spare_id: this.items.map((i) => i.spare_id),
-        configures: this.inputForm.configures.map((i) => ({
-          ...i,
-          charge_time: i.has_charge_time
-            ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
-            : null,
-        })),
-      };
+    // onSaveData() {
+    //   const data = {
+    //     ...this.items[0],
+    //     ...this.inputForm,
+    //     spare_id: this.items.map((i) => i.spare_id),
+    //     configures: this.inputForm.configures.map((i) => ({
+    //       ...i,
+    //       charge_time: i.has_charge_time
+    //         ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
+    //         : null,
+    //     })),
+    //   };
 
-      return rf
-        .getRequest("AdminRequest")
-        .updateBin(data)
-        .then((res) => {
-          this.showSuccess("Successfully!");
-          this.$emit("item:saved", res.data);
-        })
-        .catch(() => this.processErrors("Fail"));
-    },
+    //   return rf
+//     .getRequest("AdminRequest")
+    //     .updateBin(data)
+    //     .then((res) => {
+    //       this.showSuccess("Successfully!");
+    //       this.$emit("item:saved", res.data);
+    //     })
+    //     .catch(() => this.processErrors("Fail"));
+    // },
   },
 };
 </script>
