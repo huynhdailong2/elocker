@@ -66,7 +66,7 @@ export default {
   // ======NEW
   ITEM_TYPE: {
     CONSUMABLE : { value: 'consumable', name: 'Consumable' },
-    DURABLE    : { value: 'durable', name: 'STEs' }, // issue: Change durable to STEs
+    DURABLE    : { value: 'durable', name: 'Durable' }, // issue: Change durable to STEs
     PERISHABLE : { value: 'perishable', name: 'Perishable' },
     AFES       : { value: 'afes', name: 'AFES' },
     EUC        : { value: 'euc', name: 'EUC' },
