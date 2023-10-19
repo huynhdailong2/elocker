@@ -2,6 +2,7 @@
   <div class="input-form">
     <div class="content-form">
       <div class="row">
+
         <div class="col-4">
           <label>Item Name</label>
           <select class="input" v-model="inputForm.spare_id" name="spare_id" :disabled="!!inputForm.is_drawer"
@@ -14,19 +15,11 @@
               </p>
             </option>
           </select>
-
-          <!-- <v-select
-            class="input style-chooser"
-            name="spare_id"
-            v-model="inputForm.spare_id"
-            :disabled="!!inputForm.is_drawer"
-            :reduce="(spare) => spare.code"
-            :options="spares"
-          ></v-select> -->
           <span class="invalid-feedback" v-if="errors.has('spare_id')">
             {{ errors.first("spare_id") }}
           </span>
         </div>
+
         <div class="col-4">
           <label>Quantity</label>
           <input type="text" class="input" name="quantity" placeholder="Quantity" :disabled="disableQuantity"
@@ -37,9 +30,11 @@
             {{ errors.first("quantity") }}
           </span>
         </div>
+
       </div>
 
       <div class="row">
+
         <div class="col-4">
           <label>Critical</label>
           <input type="text" class="input" name="critical" placeholder="Critical" v-model.trim="inputForm.critical"
@@ -48,6 +43,7 @@
             {{ errors.first("critical") }}
           </span>
         </div>
+
         <div class="col-4">
           <label>Minimum Quantity</label>
           <input type="text" class="input" name="min" data-vv-as="minimum quantity" placeholder="Minimum Quantity"
@@ -56,6 +52,7 @@
             {{ errors.first("min") }}
           </span>
         </div>
+
         <div class="col-4">
           <label>Maximum Quantity</label>
           <input type="text" class="input" name="max" data-vv-as="maximum quantity" placeholder="Maximum Quantity"
@@ -64,6 +61,7 @@
             {{ errors.first("max") }}
           </span>
         </div>
+        
       </div>
 
       <div class="row">
@@ -280,6 +278,7 @@ export default {
       min: this.data?.min || 1,
       max: this.data?.max || 1,
       quantity: this.data?.quantity || 1,
+      configures: this.data?.configures,
     };
 
     
@@ -385,9 +384,34 @@ export default {
         });
     },
 
-    onClickSave() {
-      
+  async onAddItem() {
+    // await this.$validator.validateAll();
 
+    // if (this.errors.any()) {
+    //   return;
+    // }
+
+    const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+    const existingItem = this.items.find(
+      (item) => item.spare_id === spare.id
+    );
+
+    if (existingItem) {
+      this.showError("Duplicated! This item was added!");
+    } else {
+      this.items.push({
+        ...this.inputForm,
+        name: spare.name,
+        expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
+        load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
+        calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
+        charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
+      });
+      this.resetForm();
+    }
+  },
+
+    onClickSave() {
       const toUTc = (date) => {
         return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
       };
@@ -430,37 +454,7 @@ export default {
       return rf.getRequest("AdminRequest").updateBin(data);
     },
 
-    async onAddItem() {
-      this.resetError();
-
-      await this.$validator.validateAll();
-
-      if (this.$refs.binConfigures) {
-        await this.$refs.binConfigures.validateData();
-      }
-
-      if (this.errors.any()) {
-        return;
-      }
-      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
-      const existingItem = this.items.find(
-        (item) => item.spare_id === spare.id
-      );
-      if (existingItem) {
-        this.showError("Duplicated! This item was added!");
-      } else {
-        this.items.push({
-          ...this.inputForm,
-          name: spare.name,
-          expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
-          load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
-          calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
-          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
-        });
-        // this.updateListQuantitiesMinMax();
-        this.resetForm()
-      }
-    },
+  
 
     // updateListQuantitiesMinMax() {
     //   if (this.items.length > 0) {
@@ -484,29 +478,6 @@ export default {
     onClearList() {
       this.items = [];
     },
-
-    // onSaveData() {
-    //   const data = {
-    //     ...this.items[0],
-    //     ...this.inputForm,
-    //     spare_id: this.items.map((i) => i.spare_id),
-    //     configures: this.inputForm.configures.map((i) => ({
-    //       ...i,
-    //       charge_time: i.has_charge_time
-    //         ? `${i.input_charge_time.HH}:${i.input_charge_time.mm}`
-    //         : null,
-    //     })),
-    //   };
-
-    //   return rf
-//     .getRequest("AdminRequest")
-    //     .updateBin(data)
-    //     .then((res) => {
-    //       this.showSuccess("Successfully!");
-    //       this.$emit("item:saved", res.data);
-    //     })
-    //     .catch(() => this.processErrors("Fail"));
-    // },
   },
 };
 </script>
