@@ -3039,6 +3039,7 @@ class SpareService extends BaseService
         $writeOff->save();
         $writeOff->delete();
         return $writeOff;
+        
     }
 
 }
