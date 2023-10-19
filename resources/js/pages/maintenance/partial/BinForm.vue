@@ -266,24 +266,27 @@ export default {
 
   watch: {
     "inputForm.spare_id"(newValue) {
-      const item = chain(this.spares)
-        .filter((record) => record.id === newValue)
-        .head()
-        .value();
+      if(newValue) {
+        const item = chain(this.spares)
+          .filter((record) => record.id === newValue)
+          .head()
+          .value();
 
-      if (!item) {
-        return;
+        if (!item) {
+          return;
+        }
+
+        this.inputForm = {
+          ...this.inputForm,
+          has_batch_no: item.has_batch_no,
+          has_serial_no: item.has_serial_no,
+          has_charge_time: item.has_charge_time,
+          has_calibration_due: item.has_calibration_due,
+          has_expiry_date: item.has_expiry_date,
+          has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
+        };
       }
-
-      this.inputForm = {
-        ...this.inputForm,
-        has_batch_no: item.has_batch_no,
-        has_serial_no: item.has_serial_no,
-        has_charge_time: item.has_charge_time,
-        has_calibration_due: item.has_calibration_due,
-        has_expiry_date: item.has_expiry_date,
-        has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
-      };
+      
     },
 
     "inputForm.quantity": debounce(function () {
@@ -305,18 +308,22 @@ export default {
       min: 1,
       max: 1000,
       quantity: 1,
+      configures: []
     };
 
-    this.items = this.data.spares.map((i) => ({
-      ...i,
-      spare_id: i.id ,
-      quantity: i.pivot.quantity_oh,
-      critical: i.pivot.critical,
-      min: i.pivot.min,
-      max: i.pivot.max,
-      charge_time: `${this.data?.configures.find(ele => ele.spare_id == i.id)?.charge_time}`,
-      configures: [this.data?.configures.find(ele => ele.spare_id == i.id)]
-    }));
+    if(this.data.spares.length) {
+      this.items = this.data.spares.map((i) => ({
+        ...i,
+        spare_id: i.id ,
+        quantity: i.pivot.quantity_oh,
+        critical: i.pivot.critical,
+        min: i.pivot.min,
+        max: i.pivot.max,
+        charge_time: `${this.data?.configures.find(ele => ele.spare_id == i.id)?.charge_time}`,
+        configures: [this.data?.configures.find(ele => ele.spare_id == i.id)]
+      }));
+    }
+   
 
     rf.getRequest("AdminRequest").getBinId(this.data.id);
 
@@ -327,9 +334,9 @@ export default {
   methods: {
     showDeleteModal(item) {
       const _handler = () => {
-        this.items = this.items.filter((i) => i.spare_id !== item.id);
+        this.items = this.items.filter((i) => i.spare_id !== item.spare_id);
       };
-      this.confirmAction({ callback: _handler, message: "Do you want to delete?" });
+      this.confirmAction({ callback: _handler, message: "Are you sure you want to delete?" });
     },
 
     resetForm() {
@@ -409,8 +416,11 @@ export default {
     },
 
     async onClickSave() {
+      if(this.items.length === 0) {
+        this.showError('Must add at least 1 item!')
+        return false;
+      }
       this.resetError();
-
       await this.$validator.validateAll();
 
       if (this.$refs.binConfigures) {
@@ -462,23 +472,30 @@ export default {
     },
 
     onAddItem() {
-      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
-      const existingItem = this.items.find(
-        (item) => item.spare_id === spare.id
-      );
-      if (existingItem) {
-        this.showError("Duplicated! This item was added!");
+      if(this.inputForm.spare_id) {
+
+        const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+        const existingItem = this.items.find(
+          (item) => item.spare_id === spare.id
+        );
+        if (existingItem) {
+          this.showError("Duplicated! This item was added!");
+        } else {
+          this.items.push({
+            ...this.inputForm,
+            spare_id: spare.id,
+            name: spare.name,
+            type: spare.type,
+            charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}`:''
+          });
+          // this.updateListQuantitiesMinMax();
+          this.resetForm()
+        }
+
       } else {
-        this.items.push({
-          ...this.inputForm,
-          spare_id: spare.id,
-          name: spare.name,
-          type: spare.type,
-          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}`:''
-        });
-        // this.updateListQuantitiesMinMax();
-        this.resetForm()
+        this.showError('Have to choose an item!')
       }
+     
     },
 
     updateListQuantitiesMinMax() {
