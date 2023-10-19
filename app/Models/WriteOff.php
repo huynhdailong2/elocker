@@ -10,6 +10,7 @@ class WriteOff extends Model
 {
     use GenerateSql, SoftDeletes;
 
+    protected $table='write_offs';
     protected $fillable = [
         'return_spare_id',
         'bin_id',
@@ -19,4 +20,16 @@ class WriteOff extends Model
         'reason',
         'eliminator_id'
     ];
+    public function bin()
+    {
+        return $this->belongsTo(Bin::class,'bin_id');
+    }
+    public function spares()
+    {
+        return $this->belongsTo(Spare::class,'spare_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

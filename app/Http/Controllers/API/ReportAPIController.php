@@ -137,15 +137,15 @@ class ReportAPIController extends BaseController
     public function writeOffSpare(Request $request)
     {
         $request->validate([
-            'return_spare_id' => 'required|exists:return_spares,id',
+            'return_spare_id' => 'required',
             'reason' => 'required'
         ]);
 
-        DB::beginTransaction();
+        // DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->spareService->writeOffSpare($params);
-            DB::commit();
+            // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollback();
@@ -157,7 +157,7 @@ class ReportAPIController extends BaseController
     public function unwriteOffSpare(Request $request)
     {
         $request->validate([
-            'id' => 'required|exists:write_offs,id',
+            'id' => 'required',
         ]);
 
         DB::beginTransaction();

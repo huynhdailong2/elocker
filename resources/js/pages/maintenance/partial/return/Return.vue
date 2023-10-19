@@ -43,64 +43,92 @@
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
-          <!-- <th class="text-center">WO#</th> -->
+          <th class="text-center">Trans ID</th>
           <th class="text-center">Trans Date</th>
           <!-- <th class="text-center">Vehicle #</th> -->
           <!-- <th class="text-center">Platform</th> -->
           <th class="text-center">Item Details</th>
           <th class="text-center">Part #</th>
           <th class="text-center">Quantity</th>
+          <th class="text-center">Location</th>
+          <th class="text-center">Item type</th>
           <!-- <th class="text-center">Area Use</th> -->
-          <th class="text-center">Return By</th>
-          <th class="text-center">Trans</th>
           <th class="text-center">Load/Hydrostatic Test Due</th>
           <th class="text-center">Expiry Date</th>
           <th class="text-center">Calibration Date</th>
+          <th class="text-center">Return By</th>
+          <th class="text-center">Trans</th>
           <th class="text-center">Status</th>
           <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr :style="{ 'background-color': props.item.not_use ? '#f21501' : '' }">
-            <!-- <td :title="props.item.wo" >
-              <div class="text ellipsis">{{ props.item.wo }}</div>
-            </td> -->
-            <td :title="props.item.returned_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.returned_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
+            <td :title="props.item.id" >
+              <div class="text ellipsis">{{ props.item.id }}</div>
+            </td>
+            <td :title="props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
+              <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
             </td>
             <!-- <td :title="props.item.vehicle_num" >
               <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
-            </td>
-            <td :title="props.item.platform" >
-              <div class="text ellipsis">{{ props.item.platform }}</div>
             </td> -->
-            <td :title="props.item.spare_name" >
-              <div class="text ellipsis">{{ props.item.spare_name }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.spare_name }}
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.part_no" >
-              <div class="text ellipsis">{{ props.item.part_no }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.part_no }}
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.quantity" >
-              <div class="text ellipsis">{{ props.item.quantity }}</div>
+            <td :title="props.item.request_qty" >
+              <div class="text ellipsis">{{ props.item.request_qty }}</div>
             </td>
-            <!-- <td :title="props.item.torque_area" >
-              <div class="text ellipsis">{{ props.item.torque_area || "N/A" }}</div>
-            </td> -->
-            <td :title="props.item.issued_by" >
-              <div class="text ellipsis">{{ props.item.returned_by }}</div>
+            <td :title="props.item.locations">
+              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id
+              }}-{{
+                  props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
             </td>
-            <td :title="props.item.tnx" >
-              <div class="text ellipsis">{{ props.item.tnx }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.type }}
+                <span v-if="index < props.item.locations.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.load_hydrostatic_test_due | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.load_hydrostatic_test_due | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY') }}</div>
+            <td class="mw_110px maw_145x" >
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.load_hydrostatic_test_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.expiry_date | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.expiry_date | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY') }}</div>
+            <td class="mw_110px maw_145x" >
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.calibration_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.calibration_due | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.calibration_due | dateFormatter('YYYY-MM-DD', 'DD-MM-YYYY') }}</div>
+            
+            <td class="mw_110px maw_145x" >
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                {{ row.expiry_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}
+                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              </div>
             </td>
-            <td :title="props.item.return_state" >
-              <div class="text ellipsis">{{ props.item.return_state | upperFirst }}</div>
+            <td>
+              <div class="text ellipsis">{{ props.item.user.name }}</div>
+            </td>
+            <td class="mw_110px maw_145x" >
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                <div>
+                  {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
+                  <span v-if="index < props.item.locations.spares.length - 1">,</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="text ellipsis">{{ props.item.status }}</div>
             </td>
             <td>
               <button class="btn btn-primary w_95px"
