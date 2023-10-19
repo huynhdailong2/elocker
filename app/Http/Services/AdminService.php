@@ -595,7 +595,10 @@ class AdminService extends BaseService
         return Bin::with('configures', 'spares')
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
             ->leftJoin('clusters', 'clusters.id', 'shelfs.cluster_id')
-            ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
+            // ->leftJoin('bin_configures', function($join)
+            // {
+            //     $join->on('bin_configures.bin_id', '=', 'bins.id');
+            // })
             ->when(!empty($params['bin_id']), function ($query) use ($params) {
                 $query->where('id', $params['bin_id']);
             })
@@ -647,7 +650,10 @@ class AdminService extends BaseService
                     return $query->orderBy($params['sort'], $params['sort_type']);
                 },
                 function ($query) {
-                    return $query->orderBy('row', 'asc')
+                    return $query
+                        ->orderBy('clusters.id', 'asc')
+                        ->orderBy('shelfs.name', 'asc')
+                        ->orderBy('row', 'asc')
                         ->orderBy('bin', 'asc');
                 }
             )
@@ -717,10 +723,17 @@ class AdminService extends BaseService
         $formInput = $paramss['formInput'];
         $spareIds = [];
         $configureIds = [];
+        $spareIdsSync = [];
         foreach ($formInput as $index => $params) {
-           
-            $spareId = array_get($params, 'spare_id', null);
+            $spareId = $params['spare_id']?? null;
             $spareIds[] = $spareId;
+            $spareIdsSync[$spareId]= [
+                'quantity' => $params['quantity'],
+                'quantity_oh'=> $params['quantity'],
+                'critical' => $params['critical'],
+                'min' => $params['min'],
+                'max' => $params['max'],
+            ];
             if ($bin->spare_id != $spareId) {
                 ReturnSpare::query()
                     ->where('bin_id', $bin->id)
@@ -745,41 +758,44 @@ class AdminService extends BaseService
                 $bin->quantity_oh = $quantityOh < 0 ? $params['quantity'] : $quantityOh;
             }
 
-            $bin->spare_id = json_encode($params['spare_id']);
+            $bin->spare_id = json_encode($spareIds);
             $bin->status = !!$spareId ? Consts::BIN_STATUS_ASSIGNED : Consts::BIN_STATUS_UNASSIGNED;
 
             $bin->save();
-            
-            if (isset($params['id'])) {
-                $configure = BinConfigure::find($params['id']);
-                if (!empty($configure)) {
-                    $configure = new BinConfigure;
-                    $configure->order = $index + 1;
-                    $configure->bin_id = $bin->id;
-                   
-                }else{
+
+            if(!empty($params['configures'][0])) {
+                $confInputs = $params['configures'][0];
+                if (!empty($confInputs['id'])) {
+                    $configure = BinConfigure::find($params['id']);
+                } else {
                     $configure = new BinConfigure;
                     $configure->order = $index + 1;
                     $configure->bin_id = $bin->id;
                 }
-            } else {
-                $configure = new BinConfigure;
-                $configure->order = $index + 1;
-                $configure->bin_id = $bin->id;
+                
+                $configure->batch_no = $confInputs['batch_no'];
+                $configure->serial_no = $confInputs['serial_no'];
+
+                $chargeTime = !empty($confInputs['input_charge_time'])? $confInputs['input_charge_time'] : NULL;
+                $configure->has_charge_time = !empty($confInputs['has_charge_time'])?1:0;
+                $configure->charge_time = !empty($chargeTime['HH'])? $chargeTime['HH'] . ':' . $chargeTime['mm'] : NULL;
+                $configure->has_calibration_due = !empty($confInputs['has_calibration_due'])?1:0;
+                $configure->calibration_due = $confInputs['calibration_due']?? NULL;
+                $configure->has_expiry_date =  !empty($confInputs['has_expiry_date'])?1:0;
+                $configure->expiry_date =  $confInputs['expiry_date']?? NULL;
+                $configure->has_load_hydrostatic_test_due = !empty($confInputs['has_load_hydrostatic_test_due'])?1:0;
+                $configure->load_hydrostatic_test_due = $confInputs['load_hydrostatic_test_due']?? NULL;
+                $configure->description = $params['description'];
+                $configure->spare_id = $spareId;
+                $configure->save();
+                $configureIds[] = $configure->id;
             }
-            $configure->charge_time = empty($params['configures']['has_charge_time']) ? null : $params['configures']['charge_time'];
-            $configure->calibration_due = empty($params['configures']['has_calibration_due']) ? null : $params['configures']['calibration_due'];
-            $configure->expiry_date = empty($params['configures']['has_expiry_date']) ? null : $params['configures']['expiry_date'];
-            $configure->load_hydrostatic_test_due = empty($params['configures']['has_load_hydrostatic_test_due']) ? null : $params['configures']['load_hydrostatic_test_due'];
-            $configure->spare_id = $params['spare_id'];
-            $configure->save();
-            $configureIds[] = $configure->id;
             
         }
         BinConfigure::where('bin_id', $bin->id)
                 ->whereNotIn('id', $configureIds)
                 ->delete();
-        $bin->spares()->sync($spareIds);
+        $bin->spares()->sync($spareIdsSync);
         return $bin->refresh();
     }
     // private function saveBinConfigures($bin, $params)

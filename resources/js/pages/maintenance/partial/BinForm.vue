@@ -94,6 +94,7 @@ v-validate="'max:190'" />
           <thead>
             <th>SN</th>
             <th>Item Name</th>
+            <th>Item Type</th>
             <th>Qty</th>
             <th>Critical</th>
             <th>Min</th>
@@ -102,8 +103,9 @@ v-validate="'max:190'" />
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
-            <th>Load/Hydrostatic Test Due</th>
-            <th>Create At</th>
+            <th>Inspection</th>
+            <th>Hyd Test Due</th>
+            <!-- <th>Create At</th> -->
             <th>Expiry</th>
             <th>Actions</th>
           </thead>
@@ -111,12 +113,13 @@ v-validate="'max:190'" />
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ item.name }}</td>
+              <td>{{ types[item.type.toUpperCase()].name }}</td>
               <td>{{ item.quantity }}</td>
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <td>{{ item.description }}</td>
               <template v-if="item.configures.length > 0">
+                <td>{{ item.configures[0].description }}</td>
                 <td>{{ item.configures[0].batch_no}}</td>
                 <td>{{ item.configures[0].serial_no}}</td>
                 <td>
@@ -125,8 +128,21 @@ v-validate="'max:190'" />
                     v-validate="'required'"
                     v-model="item.charge_time"
                     format="HH:mm"
+                    v-if="item.configures[0].has_charge_time"
                   />
                 </td>  
+                <td>     
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.configures[0].calibration_due"
+                    :disabled-dates="{ to: yesterday }"
+                    name="calibration_due"
+                    v-validate="'required'"
+                    data-vv-as="calibration due"
+                    v-if="item.configures[0].has_calibration_due"
+                  />
+                </td>
                 <td>     
                   <datepicker
                     format="dd/MM/yyyy"
@@ -139,11 +155,20 @@ v-validate="'max:190'" />
                     v-if="item.configures[0].has_load_hydrostatic_test_due"
                   />
                 </td>
-                <td>
+                <!-- <td>
                   {{item.configures[0].created_at}} 
-                </td>
-                <td>
-                  {{item.configures[0].expiry_date}} 
+                </td> -->
+                <td>     
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.configures[0].expiry_date"
+                    :disabled-dates="{ to: yesterday }"
+                    name="expiry_date"
+                    v-validate="'required'"
+                    data-vv-as="calibration due"
+                    v-if="item.configures[0].has_expiry_date"
+                  />
                 </td>
               </template>
               <template v-else>
@@ -201,7 +226,7 @@ export default {
       inputForm: {
         spare_id: null,
         min: null,
-        max: null,
+        max: 1000,
         critical: null,
         description: null,
         configures: [],
@@ -209,6 +234,7 @@ export default {
       spares: [],
       items: [],
       listSpares: [], 
+      types: Const.ITEM_TYPE,
     };
   },
 
@@ -275,27 +301,23 @@ export default {
 
   mounted() {
     this.inputForm = {
-      ...this.inputForm,
-      ...this.data,
-      spare_id: this.data.spares.length > 0 ? this.data?.spares[0]?.id : null,
-      critical: this.data?.critical || 1,
-description: this.data?.spares[0]?.description || null,
-      min: this.data?.min || 1,
-      max: this.data?.max || 1,
-      quantity: this.data?.quantity || 1,
+      critical: 1,
+      min: 1,
+      max: 1000,
+      quantity: 1,
     };
 
-    
     this.items = this.data.spares.map((i) => ({
       ...i,
-      spare_id: i.id,
-      quantity: this.data?.quantity,
-      critical: this.data?.critical,
-      min: this.data?.min,
-      max: this.data?.max,
-      configures: this.data?.configures
+      spare_id: i.id ,
+      quantity: i.pivot.quantity_oh,
+      critical: i.pivot.critical,
+      min: i.pivot.min,
+      max: i.pivot.max,
+      charge_time: `${this.data?.configures.find(ele => ele.spare_id == i.id)?.charge_time}`,
+      configures: [this.data?.configures.find(ele => ele.spare_id == i.id)]
     }));
-    
+
     rf.getRequest("AdminRequest").getBinId(this.data.id);
 
     this.initConfigures();
@@ -312,13 +334,13 @@ description: this.data?.spares[0]?.description || null,
 
     resetForm() {
       this.inputForm = {
-        spare_id: null,
+        // spare_id: null,
         min: 1,
-        max: 1,
+        max: 1000,
         critical: 1,
         description: null,
         quantity: 1,
-        configures: [],
+        // configures: [],
       };
     },
 
@@ -387,7 +409,7 @@ description: this.data?.spares[0]?.description || null,
     },
 
     async onClickSave() {
-this.resetError();
+      this.resetError();
 
       await this.$validator.validateAll();
 
@@ -420,6 +442,7 @@ this.resetError();
           ...i,
         })),
       }
+      // console.log(transData)
 
       this.submitRequest(transData)
         .then((res) => {
@@ -448,10 +471,12 @@ this.resetError();
       } else {
         this.items.push({
           ...this.inputForm,
+          spare_id: spare.id,
           name: spare.name,
-          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
+          type: spare.type,
+          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}`:''
         });
-        this.updateListQuantitiesMinMax();
+        // this.updateListQuantitiesMinMax();
         this.resetForm()
       }
     },
