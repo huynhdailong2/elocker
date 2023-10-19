@@ -314,6 +314,7 @@ export default {
     if(this.data.spares.length) {
       this.items = this.data.spares.map((i) => ({
         ...i,
+        id: this.data.id,
         spare_id: i.id ,
         quantity: i.pivot.quantity_oh,
         critical: i.pivot.critical,
@@ -483,6 +484,7 @@ export default {
         } else {
           this.items.push({
             ...this.inputForm,
+            id: this.data.id,
             spare_id: spare.id,
             name: spare.name,
             type: spare.type,

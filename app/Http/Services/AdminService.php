@@ -766,7 +766,7 @@ class AdminService extends BaseService
             if(!empty($params['configures'][0])) {
                 $confInputs = $params['configures'][0];
                 if (!empty($confInputs['id'])) {
-                    $configure = BinConfigure::find($params['id']);
+                    $configure = BinConfigure::find($confInputs['id']);
                 } else {
                     $configure = new BinConfigure;
                     $configure->order = $index + 1;
@@ -785,7 +785,7 @@ class AdminService extends BaseService
                 $configure->expiry_date =  $confInputs['expiry_date']?? NULL;
                 $configure->has_load_hydrostatic_test_due = !empty($confInputs['has_load_hydrostatic_test_due'])?1:0;
                 $configure->load_hydrostatic_test_due = $confInputs['load_hydrostatic_test_due']?? NULL;
-                $configure->description = $params['description'];
+                $configure->description = $params['description']?? NULL;
                 $configure->spare_id = $spareId;
                 $configure->save();
                 $configureIds[] = $configure->id;
