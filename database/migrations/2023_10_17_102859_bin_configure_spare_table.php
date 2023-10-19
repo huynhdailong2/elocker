@@ -17,9 +17,6 @@ class BinConfigureSpareTable extends Migration
             $table->unsignedBigInteger('bin_configure_id');
             $table->unsignedBigInteger('spare_id');
             $table->timestamps();
-
-            $table->foreign('bin_configure_id')->references('id')->on('bin_configures')->onDelete('cascade');
-            $table->foreign('spare_id')->references('id')->on('spares')->onDelete('cascade');
         });
     }
 

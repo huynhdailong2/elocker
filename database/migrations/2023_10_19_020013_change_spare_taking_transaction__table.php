@@ -13,7 +13,7 @@ class ChangeSpareTakingTransactionTable extends Migration
      */
     public function up()
     {
-        Schema::table('spare_taking_transaction', function (Blueprint $table) {
+        Schema::table('takting_transaction_detail', function (Blueprint $table) {
             $table->text('listWO');
         });
     }
