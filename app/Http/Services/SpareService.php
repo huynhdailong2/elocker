@@ -21,6 +21,7 @@ use App\Mails\SpareExpiringReport;
 use App\Mails\SparesByExpiredReport;
 use App\Mails\SparesByLoanReport;
 use App\Mails\SparesByReturnsReport;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Mails\SparesByTnxReport;
 use App\Mails\SparesByWoReport;
 use App\Mails\SparesTorqueWrenchReport;
@@ -2743,12 +2744,12 @@ class SpareService extends BaseService
         ]);
         $spareIds = [];
 
-        foreach ($request['locations'][0]['spares'] as $item=> $value) {
+        foreach ($request['locations'][0]['spares'] as $item => $value) {
             $spareId = $value['id'];
             $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
             $spareIds[] = [
-                'spare_id'=>$spareId,
-                'listWO'=>json_encode($listWO),
+                'spare_id' => $spareId,
+                'listWO' => json_encode($listWO),
             ];
         }
         foreach ($spareIds as $spare) {
@@ -2757,7 +2758,7 @@ class SpareService extends BaseService
             $transactionSpare = TransactionSpare::create([
                 'taking_transaction_id' => $taking_transaction->id,
                 'spare_id' => $spareId,
-                'listWO' => !empty($listWO)?$listWO:''
+                'listWO' => !empty($listWO) ? $listWO : ''
             ]);
         }
         $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
@@ -2777,7 +2778,7 @@ class SpareService extends BaseService
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status','request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id','updated_at','created_at']);
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'updated_at', 'created_at']);
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -2957,22 +2958,13 @@ class SpareService extends BaseService
     }
     public function getReportByLoan($request = [])
     {
-        $params =  [
-            'types' => [
-                Consts::SPARE_TYPE_DURABLE,
-                Consts::SPARE_TYPE_PERISHABLE,
-                Consts::SPARE_TYPE_AFES,
-                Consts::SPARE_TYPE_OTHERS,
-                Consts::SPARE_TYPE_TORQUE_WRENCH,
-            ]
-        ];
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['issued_date']) ? $request['issued_date'] : [];
         $dateee = json_decode($date, true);
-        $transactions = TakingTransaction::with('user', 'spares', 'bin');
-        $transactions->whereDoesntHave('spares', function ($subquery) use ($params) {
-            $subquery->whereIn('type', $params['types']);
-        });
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'updated_at', 'created_at']);
+        $perPage = $request['limit'];
+        $page = $request['page'];
+        $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
         // if (!empty($date)) {
         //     $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         // }
@@ -2984,9 +2976,16 @@ class SpareService extends BaseService
         //             });
         //     });
         // }
-        $perPage = $request['limit'];
-        $page = $request['page'];
-        $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
+        foreach ($transactions as $key => $value) {
+            if (!empty($value['locations']['spares'])) {
+                foreach ($value['locations']['spares'] as $value2) {
+                    if ($value2['type'] == Consts::SPARE_TYPE_CONSUMABLE) {
+                        unset($transactions[$key]);
+                    }
+                }
+            }
+        }
+
         return $paginatedTransactions;
     }
 }

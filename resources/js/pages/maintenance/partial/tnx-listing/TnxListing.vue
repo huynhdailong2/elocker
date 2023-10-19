@@ -94,18 +94,23 @@
               <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') }}</div>
             </td>
-            <!-- <td :title="props.item.wo">
-              <div class="text ellipsis">{{ props.item.wo }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                <div>
+                  {{ row.pivot.listWO == null ? '' : JSON.parse(row.pivot.listWO) }}
+                </div>
+              </div>
             </td>
             <td :title="props.item.vehicle_num">
               <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
             </td>
             <td :title="props.item.platform">
               <div class="text ellipsis">{{ props.item.platform }}</div>
-            </td> -->
+            </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id }}-{{
-                props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
+              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id
+              }}-{{
+  props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
             </td>
             <td>
               <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
@@ -134,11 +139,11 @@
             <td :title="props.item.user.name">
               <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
-            <td >
-              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
                 <div>
                   {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
-                  <span v-if="index < props.item.spares.length - 1">,</span>
+                  <span v-if="index < props.item.locations.spares.length - 1">,</span>
                 </div>
               </div>
             </td>

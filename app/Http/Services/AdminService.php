@@ -713,11 +713,10 @@ class AdminService extends BaseService
 
     public function updateBin($paramss)
     {
-        $bin = Bin::with('configures', 'spares')->find($paramss['formInput'][0]['id']);
-        $formInput = $paramss['formInput'];
+        $bin = Bin::with('configures', 'spares')->find($paramss[0]['id']);
         $spareIds = [];
         $configureIds = [];
-        foreach ($formInput as $index => $params) {
+        foreach ($paramss as $index => $params) {
            
             $spareId = array_get($params, 'spare_id', null);
             $spareIds[] = $spareId;
@@ -772,6 +771,10 @@ class AdminService extends BaseService
             $configure->expiry_date = $params['expiry_date'];
             $configure->load_hydrostatic_test_due = $params['load_hydrostatic_test_due'];
             $configure->spare_id = $params['spare_id'];
+            $configure->has_load_hydrostatic_test_due = $params['has_load_hydrostatic_test_due'];
+            $configure->has_expiry_date = $params['has_expiry_date'];
+            $configure->has_calibration_due = $params['has_expiry_date'];
+            $configure->has_charge_time = $params['has_expiry_date'];
             $configure->save();
             $configureIds[] = $configure->id;
             
