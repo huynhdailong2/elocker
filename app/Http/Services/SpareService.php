@@ -2701,62 +2701,68 @@ class SpareService extends BaseService
                 ]
             );
     }
-    public function createTransaction($request)
+    public function createTransaction($requests)
     {
-        $taking_transaction = TakingTransaction::create([
-            'name' => $request['name'],
-            'status' => $request['status'],
-            'total_qty' => 0,
-            'remain_qty' => 0,
-            'hardware_port' => 0,
-            'part_number' => 0,
-            'port_id' => 0,
-            'qty' => 0,
-            'pre_qty' => 0,
-            'changed_qty' => 0,
-            // 'item_id' => 1,
-            'request_qty' => $request['request_qty'],
-            'user_id' => $request['user']['id'],
-            'type' => $request['type'],
-            'cabinet_id' => $request['locations'][0]['cabinet']['id'],
-            'bin_id' => $request['locations'][0]['bin']['id'],
-        ]);
-        $spareIds = [];
-
-        foreach ($request['locations'][0]['spares'] as $item => $value) {
-            $spareId = $value['id'];
-            $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
-            $spareIds[] = [
-                'spare_id' => $spareId,
-                'listWO' => json_encode($listWO),
-            ];
-        }
-        foreach ($spareIds as $spare) {
-            $spareId = $spare['spare_id'];
-            $listWO = $spare['listWO'];
-            $transactionSpare = TransactionSpare::create([
-                'taking_transaction_id' => $taking_transaction->id,
-                'spare_id' => $spareId,
-                'listWO' => !empty($listWO) ? $listWO : ''
+        $taking_transactions = [];
+        $requestss = $requests['data'];
+        foreach($requestss as $request){
+            $taking_transaction = TakingTransaction::create([
+                'name' => $request['name'],
+                'status' => $request['status'],
+                'total_qty' => 0,
+                'remain_qty' => 0,
+                'hardware_port' => 0,
+                'part_number' => 0,
+                'port_id' => 0,
+                'qty' => 0,
+                'pre_qty' => 0,
+                'changed_qty' => 0,
+                // 'item_id' => 1,
+                'request_qty' => $request['request_qty'],
+                'user_id' => $request['user']['id'],
+                'type' => $request['type'],
+                'cabinet_id' => $request['locations'][0]['cabinet']['id'],
+                'bin_id' => $request['locations'][0]['bin']['id'],
             ]);
-        }
-        $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
-        $taking_transaction->location;
-        $taking_transaction->user;
-        if ($request['type'] == 'return') {
-            foreach ($request['locations'][0]['spares'] as $itemss) {
-                $returnSpare = ReturnSpare::create([
-                    'bin_id' => $request['locations'][0]['bin']['id'],
-                    'spare_id' => $itemss['id'],
-                    'quantity' => $itemss['quantity'],
-                    'state' => $itemss['status'],
-                    'type' => $itemss['type'],
-                    'quantity_returned_store' => $itemss['quantity'],
-                    'write_off' => 0,
+            $spareIds = [];
+    
+            foreach ($request['locations'][0]['spares'] as $item => $value) {
+                $spareId = $value['id'];
+                $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
+                $spareIds[] = [
+                    'spare_id' => $spareId,
+                    'listWO' => json_encode($listWO),
+                ];
+            }
+            foreach ($spareIds as $spare) {
+                $spareId = $spare['spare_id'];
+                $listWO = $spare['listWO'];
+                $transactionSpare = TransactionSpare::create([
+                    'taking_transaction_id' => $taking_transaction->id,
+                    'spare_id' => $spareId,
+                    'listWO' => !empty($listWO) ? $listWO : ''
                 ]);
             }
+            $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
+            $taking_transaction->location;
+            $taking_transaction->user;
+            if ($request['type'] == 'return') {
+                foreach ($request['locations'][0]['spares'] as $itemss) {
+                    $returnSpare = ReturnSpare::create([
+                        'bin_id' => $request['locations'][0]['bin']['id'],
+                        'spare_id' => $itemss['id'],
+                        'quantity' => $itemss['quantity'],
+                        'state' => $itemss['status'],
+                        'type' => $itemss['type'],
+                        'quantity_returned_store' => $itemss['quantity'],
+                        'write_off' => 0,
+                    ]);
+                }
+            }
+            $taking_transactions[]=$taking_transaction;
         }
-        return $taking_transaction;
+        
+        return $taking_transactions;
     }
     // public function getReportByTnx($params = []){
     //     return $this->getIssueCardsBuilder($params);

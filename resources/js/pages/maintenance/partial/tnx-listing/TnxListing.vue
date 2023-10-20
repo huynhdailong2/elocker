@@ -69,7 +69,7 @@
       <button class="btn btn-primary" :disabled="disabled" @click.stop="onClickGenerate">Generate</button>
     </div>
     <div class="table-scroller mt-3 mb-3">
-      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="13" :widthTable="'100%'"
+      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="14" :widthTable="'100%'"
         @DataTable:finish="onDataTableFinished" ref="datatable">
         <th class="text-center">Trans Id</th>
         <th class="text-center">Trans Date</th>

@@ -43,7 +43,7 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesReportByLoan"
           :limit="10"
-          :column="15"
+          :column="16"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
@@ -92,8 +92,8 @@
               <div class="text ellipsis">{{ props.item.platform || "N/A" }}</div>
             </td>
             <td :title="props.item.location">
-              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id }}-{{
-                props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
+              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id||'N/A' }}-{{ props.item.locations.cabinet.id }}-{{
+                props.item.locations.bin.row }}-{{ props.item.locations.bin.id||'N/A' }}</div>
             </td>
             <td>
               <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">

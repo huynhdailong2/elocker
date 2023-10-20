@@ -719,7 +719,8 @@ class AdminService extends BaseService
 
     public function updateBin($paramss)
     {
-        $bin = Bin::with('configures', 'spares')->find($paramss[0]['id']);
+        $bin = Bin::with('configures', 'spares')->find($paramss['formInput'][0]['id']);
+        $formInput = $paramss['formInput'];
         $spareIds = [];
         $configureIds = [];
         $spareIdsSync = [];
@@ -797,6 +798,7 @@ class AdminService extends BaseService
         $bin->spares()->sync($spareIdsSync);
         return $bin->refresh();
     }
+
     // private function saveBinConfigures($bin, $params)
     // {
     //     var_dump($params);die();

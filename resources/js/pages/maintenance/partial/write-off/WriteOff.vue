@@ -39,7 +39,7 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesWriteOff"
           :limit="10"
-          :column="8"
+          :column="9"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
