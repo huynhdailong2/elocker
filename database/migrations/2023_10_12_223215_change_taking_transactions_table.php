@@ -37,6 +37,15 @@ class ChangeTakingTransactionsTable extends Migration
     {
         Schema::table('taking_transactions', function (Blueprint $table) {
             $table->dropColumn('hardware_port');
+            $table->dropColumn('name');
+            $table->dropColumn('part_number');
+            $table->dropColumn('port_id');
+            $table->dropColumn('qty');
+            $table->dropColumn('pre_qty');
+            $table->dropColumn('changed_qty');
+            $table->dropColumn('item_id');
+            $table->dropColumn('cabinet_id');
+            $table->dropColumn('bin_id');
         });
     }
 }
