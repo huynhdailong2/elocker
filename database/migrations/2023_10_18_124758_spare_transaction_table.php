@@ -13,9 +13,10 @@ class SpareTransactionTable extends Migration
      */
     public function up()
     {
-        Schema::create('takting_transaction_detail', function (Blueprint $table) {
+        Schema::create('taking_transaction_details', function (Blueprint $table) {
             $table->unsignedBigInteger('taking_transaction_id');
             $table->unsignedBigInteger('spare_id');
+            $table->text('listWO');
             $table->timestamps();
 
             $table->foreign('taking_transaction_id')->references('id')->on('taking_transactions')->onDelete('cascade');
@@ -30,6 +31,6 @@ class SpareTransactionTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('spare_taking_transaction');
+        Schema::dropIfExists('taking_transaction_details');
     }
 }
