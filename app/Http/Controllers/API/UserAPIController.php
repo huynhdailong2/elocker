@@ -121,6 +121,25 @@ class UserAPIController extends AppBaseController
         }
     }
 
+    public function updateUserCards(Request $request)
+    {
+        $request->validate([
+            'data' => 'required',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $input = $request->all();
+            $data = $this->userService->updateUserCards($input);
+            DB::commit();
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            DB::rollBack();
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
+
     /* For app only */
     public function updateAccountApp(Request $request)
     {

@@ -8,6 +8,7 @@ class BinConfigure extends Model
 {
     protected $fillable = [
         'bin_id',
+        'spare_id',
         'order',
         'batch_no',
         'serial_no',
