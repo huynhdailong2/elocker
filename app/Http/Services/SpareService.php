@@ -33,7 +33,7 @@ use App\Models\CycleCount;
 use App\Models\CycleCountSpare;
 use App\Models\EucBoxSpare;
 use App\Models\IssueCard;
-use App\Models\TransactionSpare;
+use App\Models\TransactionDetails;
 use App\Models\ReplenishEucBox;
 use App\Models\Replenishment;
 use App\Models\ReplenishmentSpare;
@@ -2737,14 +2737,13 @@ class SpareService extends BaseService
             foreach ($spareIds as $spare) {
                 $spareId = $spare['spare_id'];
                 $listWO = $spare['listWO'];
-                $transactionSpare = TransactionSpare::create([
+                $transactionSpare = TransactionDetails::create([
                     'taking_transaction_id' => $taking_transaction->id,
                     'spare_id' => $spareId,
                     'listWO' => !empty($listWO) ? $listWO : ''
                 ]);
             }
             $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
-            $taking_transaction->location;
             $taking_transaction->user;
             if ($request['type'] == 'return') {
                 foreach ($request['locations'][0]['spares'] as $itemss) {
