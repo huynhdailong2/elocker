@@ -116,8 +116,8 @@
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
-              <td>{{ item.description }}</td>
               <template v-if="item.configures.length > 0">
+                <td>{{ item.configures[0].description }}</td>
                 <td>{{ item.configures[0].batch_no }}</td>
                 <td>{{ item.configures[0].serial_no }}</td>
                 <td>
