@@ -86,6 +86,7 @@ class SpareService extends BaseService
                 'bin_id'
             )) ? Consts::SPARE_TYPE_EUC : '';
             
+            // switch ($type) {
             switch ($type) {
                 case Consts::SPARE_TYPE_EUC:
                     $value['bin_id'] = null;
