@@ -258,6 +258,7 @@ export default {
           has_calibration_due: item.has_calibration_due,
           has_expiry_date: item.has_expiry_date,
           has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
+          description: item.description
         };
       }
 
@@ -343,6 +344,7 @@ export default {
         expiry_date: null,
         has_load_hydrostatic_test_due: null,
         load_hydrostatic_test_due: null,
+        description: null
       });
 
       this.inputForm.configures = chain(this.inputForm.configures || [])
@@ -364,6 +366,7 @@ export default {
               item.load_hydrostatic_test_due,
               Const.DATE_PATTERN
             ),
+            description: item.description
           };
         })
         .value();
@@ -472,6 +475,8 @@ export default {
         if (existingItem) {
           this.showError("Duplicated! This item was added!");
         } else {
+
+          this.inputForm.configures[0].description = this.inputForm.description;
           this.items.push({
             ...this.inputForm,
             id: this.data.id,
@@ -483,6 +488,7 @@ export default {
           // this.updateListQuantitiesMinMax();
           this.resetForm()
           this.initConfigures()
+
         }
 
       } else {
