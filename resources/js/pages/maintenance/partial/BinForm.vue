@@ -282,19 +282,25 @@ export default {
     };
 
     
-    this.items = this.data.spares.map((i) => ({
-      ...i,
-      spare_id: i.id,
-      quantity: this.data?.quantity,
-      critical: this.data?.critical,
-      min: this.data?.min,
-      max: this.data?.max,
-      configures: this.data?.configures
-    }));
-    console.log(this.items)
-    console.log(this.data)
+    this.items = this.data.spares.map((i) => {
+      const configure = this.data.configures.find(conf => conf.spare_id == i.id)
+      return {
+        ...i,
+        id: this.data.id,
+        spare_id: i.id,
+        quantity: this.data?.quantity,
+        critical: this.data?.critical,
+        min: this.data?.min,
+        max: this.data?.max,
+        charge_time: configure?.charge_time || '',
+        calibration_due: configure?.calibration_due || '', 
+        configures: this.data?.configures
+      }
+    });
+    console.log(this.items, this.data)
     
     rf.getRequest("AdminRequest").getBinId(this.data.id);
+
 
     this.initConfigures();
     this.getSpares();
@@ -385,6 +391,8 @@ export default {
     },
 
   async onAddItem() {
+    if(this.inputForm.configures.length > 0){
+      const configure = this.inputForm.configures[0]
     // await this.$validator.validateAll();
 
     // if (this.errors.any()) {
@@ -398,6 +406,7 @@ export default {
 
     if (existingItem) {
       this.showError("Duplicated! This item was added!");
+      
     } else {
       this.items.push({
         ...this.inputForm,
@@ -407,7 +416,7 @@ export default {
         calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
         charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
       });
-      this.resetForm();
+    }
     }
   },
 
@@ -427,15 +436,11 @@ export default {
         })
         .value();
 
-      const transData = {
-        // ...this.inputForm,
-          formInput: this.items.map(i => ({ ...i})),
-      }
 
       if (this.items.length === 0) {
         this.showError("The list cannot be empty!");
       } else {
-        this.submitRequest(transData)
+        this.submitRequest(this.items)
           .then((res) => {
             this.showSuccess("Successfully!");
             this.resetError();
