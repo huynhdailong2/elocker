@@ -719,12 +719,13 @@ class AdminService extends BaseService
 
     public function updateBin($paramss)
     {
-        $bin = Bin::with('configures', 'spares')->find($paramss[0]['id']);
+        $bin = Bin::with('configures', 'spares')->find($paramss['formInput'][0]['id']);
+        $formInput = $paramss['formInput'];
         $spareIds = [];
         $configureIds = [];
+        $spareIdsSync = [];
         foreach ($formInput as $index => $params) {
-           
-            $spareId = array_get($params, 'spare_id', null);
+            $spareId = $params['spare_id']?? null;
             $spareIds[] = $spareId;
             $spareIdsSync[$spareId]= [
                 'quantity' => $params['quantity'],
