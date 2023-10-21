@@ -6,7 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TransactionDetails extends Model
+class TransactionSpare extends Model
 {
     protected $table = 'taking_transaction_details';
     protected $fillable = [

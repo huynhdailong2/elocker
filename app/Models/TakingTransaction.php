@@ -64,7 +64,7 @@ class TakingTransaction extends Model
     }
     public function spares()
     {
-        return $this->belongsToMany(Spare::class)->withPivot('listWO');
+        return $this->belongsToMany(Spare::class,'taking_transaction_details')->withPivot('listWO');
     }
     public function user()
     {

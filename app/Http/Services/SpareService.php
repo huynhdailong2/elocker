@@ -33,7 +33,7 @@ use App\Models\CycleCount;
 use App\Models\CycleCountSpare;
 use App\Models\EucBoxSpare;
 use App\Models\IssueCard;
-use App\Models\TransactionDetails;
+use App\Models\TransactionSpare;
 use App\Models\ReplenishEucBox;
 use App\Models\Replenishment;
 use App\Models\ReplenishmentSpare;
@@ -2737,7 +2737,7 @@ class SpareService extends BaseService
             foreach ($spareIds as $spare) {
                 $spareId = $spare['spare_id'];
                 $listWO = $spare['listWO'];
-                $transactionSpare = TransactionDetails::create([
+                $transactionSpare = TransactionSpare::create([
                     'taking_transaction_id' => $taking_transaction->id,
                     'spare_id' => $spareId,
                     'listWO' => !empty($listWO) ? $listWO : ''
