@@ -496,6 +496,25 @@ class AdminAPIController extends BaseController
         }
     }
 
+    public function updateStatusBins(Request $request)
+    {
+        $request->validate([
+            'data' => 'required',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $input = $request->all();
+            $data = $this->adminService->updateStatusBins($input);
+            DB::commit();
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            DB::rollBack();
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
+
     public function unassignedBin(Request $request)
     {
         $request->validate([
@@ -818,6 +837,26 @@ class AdminAPIController extends BaseController
             $params = $request->all();
 
             $data = $this->adminService->updateJobCard($params);
+            DB::commit();
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            DB::rollBack();
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
+
+    public function updateJobCardMany(Request $request)
+    {
+        $request->validate([
+            'data'            => 'required',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $data = $this->adminService->updateJobCardMany($params);
             DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {

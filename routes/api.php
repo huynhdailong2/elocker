@@ -28,6 +28,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
         Route::get('/statistic', 'API\UserAPIController@getUsersStatistic');
         Route::get('/info/by-card-id', 'API\UserAPIController@getUserInfoByCardId');
         Route::post('/create', 'API\UserAPIController@createNewAccount');
+        Route::put('/update-cards', 'API\UserAPIController@updateUserCards');
         Route::post('/info', 'API\UserAPIController@updateAccountApp');
         Route::post('/import', 'API\UserAPIController@importUsers');
         Route::post('/{user_id}', 'API\UserAPIController@updateAccount');
@@ -124,6 +125,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
             Route::put('/update', 'API\AdminAPIController@updateBin');
             Route::put('/unassigned', 'API\AdminAPIController@unassignedBin');
             Route::put('/patch', 'API\AdminAPIController@patchBin');
+            Route::put('/update-status-bins', 'API\AdminAPIController@updateStatusBins');
         });
     });
 
@@ -154,6 +156,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
         Route::get('/by-card-num', 'API\AdminAPIController@getJobCardByCardNo');
         Route::post('/create', 'API\AdminAPIController@createJobCard');
         Route::put('/update', 'API\AdminAPIController@updateJobCard');
+        Route::put('/update-many', 'API\AdminAPIController@updateJobCardMany');
         Route::delete('/delete', 'API\AdminAPIController@deleteJobCard');
         Route::put('/closed', 'API\AdminAPIController@closedJobCard');
         Route::post('/scan-barcode', 'API\ScanBarcodeController@scanBarcode');

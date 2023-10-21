@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TransactionSpare extends Model
 {
-    protected $table = 'spare_taking_transaction';
+    protected $table = 'takting_transaction_detail';
     protected $fillable = [
         'taking_transaction_id',
         'spare_id',

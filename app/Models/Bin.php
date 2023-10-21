@@ -23,7 +23,7 @@ class Bin extends Model
         'row',
         'bin',
         'drawer_name',
-        // 'spare_id',
+        'spare_id',
         'quantity',
         'quantity_oh',
         'status',
@@ -47,9 +47,8 @@ class Bin extends Model
 
     public function spares()
     {
-        return $this->belongsToMany(Spare::class);
+        return $this->belongsToMany(Spare::class)->withPivot(['quantity_oh', 'min', 'max', 'critical']);
     }
-
 
     public function cluster()
     {

@@ -61,14 +61,14 @@
             {{ errors.first("max") }}
           </span>
         </div>
-        
+
       </div>
 
       <div class="row">
         <div class="col-12">
           <label class="name">Description</label>
           <textarea class="textarea" placeholder="Description" name="description" v-model.trim="inputForm.description"
-v-validate="'max:190'" />
+            v-validate="'max:190'" />
           <span class="invalid-feedback" v-if="errors.has('description')">
             {{ errors.first("description") }}
           </span>
@@ -76,7 +76,7 @@ v-validate="'max:190'" />
       </div>
     </div>
 
-    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" />
+    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" v-if="inputForm.spare_id" />
 
     <div class="actions">
       <button @click="onAddItem" class="btn-primary" style="padding: 8px 27px;">Add</button>
@@ -92,6 +92,7 @@ v-validate="'max:190'" />
           <thead>
             <th>SN</th>
             <th>Item Name</th>
+            <th>Item Type</th>
             <th>Qty</th>
             <th>Critical</th>
             <th>Min</th>
@@ -100,44 +101,48 @@ v-validate="'max:190'" />
             <th>Batch</th>
             <th>Serial</th>
             <th>Charge Time</th>
-            <th>Load/Hydrostatic Test Due</th>
-            <th>Expiry Date</th>
+            <th>Inspection</th>
+            <th>Hyd Test Due</th>
+            <!-- <th>Create At</th> -->
+            <th>Expiry</th>
             <th>Actions</th>
           </thead>
           <tbody>
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ item.name }}</td>
+              <td>{{ types[item.type.toUpperCase()].name }}</td>
               <td>{{ item.quantity }}</td>
               <td>{{ item.critical }}</td>
               <td>{{ item.min }}</td>
               <td>{{ item.max }}</td>
               <td>{{ item.description }}</td>
               <template v-if="item.configures.length > 0">
-                <td>{{ item.configures[0].batch_no}}</td>
-                <td>{{ item.configures[0].serial_no}}</td>
+                <td>{{ item.configures[0].batch_no }}</td>
+                <td>{{ item.configures[0].serial_no }}</td>
                 <td>
-                  <vue-timepicker
-                    :name="'charge_time-' + index"
-                    v-validate="'required'"
-                    v-model="item.charge_time"
-                    format="HH:mm"
-                  />
-                </td>  
-                <td class="d">     
-                  <datepicker
-                    format="dd/MM/yyyy"
-                    input-class="form-control date-selector"
-                    v-model="item.configures[0].load_hydrostatic_test_due"
-                    :disabled-dates="{ to: yesterday }"
-                    name="load_hydrostatic_test_due"
-                    v-validate="'required'"
-                    data-vv-as="calibration due"
-                    v-if="item.configures[0].has_load_hydrostatic_test_due"
-                  />
+                  <vue-timepicker :name="'charge_time-' + index" v-validate="'required'" v-model="item.charge_time"
+                    format="HH:mm" v-if="item.configures[0].has_charge_time" />
+                </td>
+                <td class="d">
+                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
+                    v-model="item.configures[0].calibration_due" :disabled-dates="{ to: yesterday }"
+                    name="calibration_due" v-validate="'required'" data-vv-as="calibration due"
+                    v-if="item.configures[0].has_calibration_due" />
                 </td>
                 <td>
-                  {{item.configures[0].expiry_date}} 
+                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
+                    v-model="item.configures[0].load_hydrostatic_test_due" :disabled-dates="{ to: yesterday }"
+                    name="load_hydrostatic_test_due" v-validate="'required'" data-vv-as="calibration due"
+                    v-if="item.configures[0].has_load_hydrostatic_test_due" />
+                </td>
+                <!-- <td>
+                  {{item.configures[0].created_at}} 
+                </td> -->
+                <td>
+                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
+                    v-model="item.configures[0].expiry_date" :disabled-dates="{ to: yesterday }" name="expiry_date"
+                    v-validate="'required'" data-vv-as="calibration due" v-if="item.configures[0].has_expiry_date" />
                 </td>
               </template>
               <template v-else>
@@ -145,8 +150,7 @@ v-validate="'max:190'" />
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
-              </template> 
+              </template>
               <td>
                 <img src="/images/icons/icon-cancel.svg" width="22px" @click="showDeleteModal(item)" />
               </td>
@@ -195,14 +199,15 @@ export default {
       inputForm: {
         spare_id: null,
         min: null,
-        max: null,
+        max: 1000,
         critical: null,
         description: null,
         configures: [],
       },
       spares: [],
       items: [],
-      listSpares: [], 
+      listSpares: [],
+      types: Const.ITEM_TYPE,
     };
   },
 
@@ -212,7 +217,7 @@ export default {
         .subtract(1, "days")
         .toDate();
     },
-    
+
     showConfigures() {
       return !isEmpty(this.inputForm.configures);
     },
@@ -235,24 +240,27 @@ export default {
 
   watch: {
     "inputForm.spare_id"(newValue) {
-      const item = chain(this.spares)
-        .filter((record) => record.id === newValue)
-        .head()
-        .value();
+      if (newValue) {
+        const item = chain(this.spares)
+          .filter((record) => record.id === newValue)
+          .head()
+          .value();
 
-      if (!item) {
-        return;
+        if (!item) {
+          return;
+        }
+
+        this.inputForm = {
+          ...this.inputForm,
+          has_batch_no: item.has_batch_no,
+          has_serial_no: item.has_serial_no,
+          has_charge_time: item.has_charge_time,
+          has_calibration_due: item.has_calibration_due,
+          has_expiry_date: item.has_expiry_date,
+          has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
+        };
       }
 
-      this.inputForm = {
-        ...this.inputForm,
-        has_batch_no: item.has_batch_no,
-        has_serial_no: item.has_serial_no,
-        has_charge_time: item.has_charge_time,
-        has_calibration_due: item.has_calibration_due,
-        has_expiry_date: item.has_expiry_date,
-        has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
-      };
     },
 
     "inputForm.quantity": debounce(function () {
@@ -270,38 +278,30 @@ export default {
 
   mounted() {
     this.inputForm = {
-      ...this.inputForm,
-      ...this.data,
-      spare_id: this.data.spares.length > 0 ? this.data?.spares[0]?.id : null,
-      critical: this.data?.critical || 1,
-      description: this.data?.spares[0]?.description || null,
-      min: this.data?.min || 1,
-      max: this.data?.max || 1,
-      quantity: this.data?.quantity || 1,
-      configures: this.data?.configures,
+      critical: 1,
+      min: 1,
+      max: 1000,
+      quantity: 1,
+      configures: []
     };
 
-    
-    this.items = this.data.spares.map((i) => {
-      const configure = this.data.configures.find(conf => conf.spare_id == i.id)
-      return {
-        ...i,
-        id: this.data.id,
-        spare_id: i.id,
-        quantity: this.data?.quantity,
-        critical: this.data?.critical,
-        min: this.data?.min,
-        max: this.data?.max,
-        charge_time: configure?.charge_time || '',
-        calibration_due: configure?.calibration_due || '', 
-        configures: this.data?.configures
-      }
-    });
-    console.log(this.items, this.data)
-    
+    if (this.data.spares.length) {
+      this.items = this.data.spares.map((i) => {
+        return {
+          ...i,
+          id: this.data.id,
+          spare_id: i.id,
+          quantity: i.pivot.quantity_oh,
+          critical: i.pivot.critical,
+          min: i.pivot.min,
+          max: i.pivot.max,
+          charge_time: `${this.data?.configures.find(ele => ele.spare_id == i.id)?.charge_time}`,
+          configures: [this.data?.configures.find(ele => ele.spare_id == i.id)].filter(Boolean)
+        }
+      });
+    }
+
     rf.getRequest("AdminRequest").getBinId(this.data.id);
-
-
     this.initConfigures();
     this.getSpares();
   },
@@ -309,20 +309,20 @@ export default {
   methods: {
     showDeleteModal(item) {
       const _handler = () => {
-        this.items = this.items.filter((i) => i.spare_id !== item.id);
+        this.items = this.items.filter((i) => i.spare_id !== item.spare_id);
       };
-      this.confirmAction({ callback: _handler, message: "Do you want to delete?" });
+      this.confirmAction({ callback: _handler, message: "Are you sure you want to delete?" });
     },
 
     resetForm() {
       this.inputForm = {
-        spare_id: null,
+        // spare_id: null,
         min: 1,
-        max: 1,
+        max: 1000,
         critical: 1,
         description: null,
         quantity: 1,
-        configures: [],
+        // configures: [],
       };
     },
 
@@ -390,35 +390,33 @@ export default {
         });
     },
 
-  async onAddItem() {
-    if(this.inputForm.configures.length > 0){
-      const configure = this.inputForm.configures[0]
-    // await this.$validator.validateAll();
+    async onClickSave() {
+      if (this.items.length === 0) {
+        this.showError('Must add at least 1 item!')
+        return false;
+      }
+      this.resetError();
+      await this.$validator.validateAll();
 
-    // if (this.errors.any()) {
-    //   return;
-    // }
+      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+      const existingItem = this.items.find(
+        (item) => item.spare_id === spare.id
+      );
 
-    const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
-    const existingItem = this.items.find(
-      (item) => item.spare_id === spare.id
-    );
-
-    if (existingItem) {
-      this.showError("Duplicated! This item was added!");
-      
-    } else {
-      this.items.push({
-        ...this.inputForm,
-        name: spare.name,
-        expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
-        load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
-        calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
-        charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}`:''
-      });
-    }
-    }
-  },
+      if (existingItem) {
+        this.showError("Duplicated! This item was added!");
+      } else {
+        this.items.push({
+          ...this.inputForm,
+          name: spare.name,
+          expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
+          load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
+          calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
+          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}` : ''
+        });
+        this.resetForm();
+      }
+    },
 
     onClickSave() {
       const toUTc = (date) => {
@@ -436,11 +434,15 @@ export default {
         })
         .value();
 
+      const transData = {
+        // ...this.inputForm,
+        formInput: this.items.map(i => ({ ...i })),
+      }
 
       if (this.items.length === 0) {
         this.showError("The list cannot be empty!");
       } else {
-        this.submitRequest(this.items)
+        this.submitRequest(transData)
           .then((res) => {
             this.showSuccess("Successfully!");
             this.resetError();
@@ -451,6 +453,7 @@ export default {
             this.processErrors(error);
           });
       }
+      // console.log(transData)
 
     },
 
@@ -459,7 +462,34 @@ export default {
       return rf.getRequest("AdminRequest").updateBin(data);
     },
 
-  
+    onAddItem() {
+      if (this.inputForm.spare_id) {
+
+        const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+        const existingItem = this.items.find(
+          (item) => item.spare_id === spare.id
+        );
+        if (existingItem) {
+          this.showError("Duplicated! This item was added!");
+        } else {
+          this.items.push({
+            ...this.inputForm,
+            id: this.data.id,
+            spare_id: spare.id,
+            name: spare.name,
+            type: spare.type,
+            charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}` : ''
+          });
+          // this.updateListQuantitiesMinMax();
+          this.resetForm()
+          this.initConfigures()
+        }
+
+      } else {
+        this.showError('Have to choose an item!')
+      }
+
+    },
 
     // updateListQuantitiesMinMax() {
     //   if (this.items.length > 0) {
@@ -490,10 +520,12 @@ export default {
 <style lang="scss" scoped>
 .input-form {
   width: 100%;
-  .table-scroller{
+
+  .table-scroller {
     overflow: unset;
     max-height: unset;
   }
+
   .title {
     margin: 0 0 20px 0;
   }

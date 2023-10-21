@@ -39,7 +39,7 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesWriteOff"
           :limit="10"
-          :column="8"
+          :column="9"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
@@ -50,29 +50,42 @@
           <th class="text-center">Reason</th>
           <th class="text-center">Write Off By</th>
           <th class="text-center">Edited Time</th>
+          <th class="text-center">Item Type</th>
           <template v-if="isSuperAdmin">
           <th class="text-center">Action</th>
           </template>
         <template slot="body" slot-scope="props">
           <tr>
-            <td class="mw_110px maw_145x" :title="props.item.name" >
-              <div class="text ellipsis">{{ props.item.name }}</div>
+            <td>
+              <div class="text ellipsis" >
+                {{ props.item.spares.name }}
+              </div>
             </td>
-            <td class="mw_110px maw_145x" :title="props.item.part_no" >
-              <div class="text ellipsis">{{ props.item.part_no }}</div>
+            <td class="mw_110px maw_145x" >
+              <div class="text ellipsis">
+                {{ props.item.spares.part_no }}
+              </div>
             </td>
             <td class="mw_110px maw_145x" :title="props.item.quantity || 0" >
               <div class="text ellipsis">{{ props.item.quantity || 0 }}</div>
             </td>
-            <td class="mw_110px maw_145x" :title="props.item.location" >
-              <div class="text ellipsis">{{ props.item.location }}</div>
+            <td >
+              <div class="text ellipsis">{{ props.item.bin.cluster_id }}-{{ props.item.shelf_id
+              }}-{{
+                  props.item.bin.row }}-{{ props.item.bin.id }}</div>
             </td>
             <td class="mw_110px maw_145x">{{ props.item.reason }}</td>
-            <td class="mw_110px maw_145x" :title="props.item.write_off_name" >
+            <!-- <td class="mw_110px maw_145x" :title="props.item.user" >
               <div class="text ellipsis">{{ props.item.write_off_name }}</div>
+            </td> -->
+            <td>
+              <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
             <td class="mw_110px maw_145x" :title="props.item.created_at | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')" >
               <div class="text ellipsis">{{ props.item.created_at | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
+            </td>
+            <td>
+              <div class="text ellipsis">{{ props.item.spares.type }}</div>
             </td>
             <template v-if="isSuperAdmin">
             <td>
@@ -302,7 +315,7 @@ export default {
 
     onClickDelete (item) {
       const callback = () => {
-        rf.getRequest('SpareRequest').unwriteOffSpareExpired({ id: item.write_off_id })
+        rf.getRequest('SpareRequest').unwriteOffSpareExpired({ id: item.id })
           .then(res => {
             this.showSuccess('Successful!')
             this.$refs.datatable.refresh()

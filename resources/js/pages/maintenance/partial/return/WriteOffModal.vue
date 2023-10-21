@@ -1,11 +1,5 @@
 <template>
-  <modal
-    :name="name"
-    :width="'500'"
-    height="auto"
-    :clickToClose="false"
-    @before-open="beforeOpen"
-    class="custom-modal">
+  <modal :name="name" :width="'500'" height="auto" :clickToClose="false" @before-open="beforeOpen" class="custom-modal">
     <div class="header">
       <div class="title">Write Off Item</div>
       <div class="close" @click.stop="close">
@@ -16,13 +10,7 @@
       <div class="form">
         <div class="mb-2">Fill a reason to write off the item.</div>
         <div>
-          <input
-              type="text"
-              class="input"
-              name="reason"
-              placeholder="Reason"
-              v-model="reason"
-              v-validate="'required'" >
+          <input type="text" class="input" name="reason" placeholder="Reason" v-model="reason" v-validate="'required'">
           <span class="invalid-feedback" v-if="errors.has('reason')">
             {{ errors.first('reason') }}
           </span>
@@ -40,6 +28,7 @@
 .content {
   width: 100%;
   text-align: center;
+
   .form {
     margin-bottom: 30px;
   }
@@ -59,7 +48,7 @@ export default {
 
   mixins: [RemoveErrorsMixin],
 
-  data () {
+  data() {
     return {
       data: null,
       callback: null,
@@ -68,17 +57,22 @@ export default {
   },
 
   methods: {
-    beforeOpen (event) {
+    beforeOpen(event) {
       const { params } = event
       this.data = params?.data
       this.callback = params?.callback
     },
 
-    close () {
+    close() {
       this.$modal.hide(this.name)
     },
 
-    async onClickSubmit () {
+    async onClickSubmit() {
+      let spares = this.data.locations.spares;
+      const returnSpareIds = [];
+      spares.forEach(spare => {
+        returnSpareIds.push(spare.id);
+      });
       this.resetError()
 
       await this.$validator.validateAll()
@@ -88,7 +82,7 @@ export default {
       }
 
       const params = {
-        return_spare_id: this.data.return_spare_id,
+        return_spare_id: returnSpareIds,
         reason: this.reason
       }
 

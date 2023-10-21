@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class ChangeSpareTakingTransactionTable extends Migration
+class AddDescriptionToBinConfiguresTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class ChangeSpareTakingTransactionTable extends Migration
      */
     public function up()
     {
-        Schema::table('takting_transaction_detail', function (Blueprint $table) {
-            $table->text('listWO');
+        Schema::table('bin_configures', function (Blueprint $table) {
+            $table->text('description')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ class ChangeSpareTakingTransactionTable extends Migration
      */
     public function down()
     {
-        Schema::table('spare_taking_transaction', function (Blueprint $table) {
-            $table->dropColumn('listWO');
+        Schema::table('bin_configures', function (Blueprint $table) {
+            $table->dropColumn('description');
         });
     }
 }

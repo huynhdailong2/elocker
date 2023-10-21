@@ -13,7 +13,7 @@ class SpareTransactionTable extends Migration
      */
     public function up()
     {
-        Schema::create('spare_taking_transaction', function (Blueprint $table) {
+        Schema::create('takting_transaction_detail', function (Blueprint $table) {
             $table->unsignedBigInteger('taking_transaction_id');
             $table->unsignedBigInteger('spare_id');
             $table->timestamps();

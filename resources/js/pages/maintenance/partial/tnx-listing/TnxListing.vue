@@ -69,7 +69,7 @@
       <button class="btn btn-primary" :disabled="disabled" @click.stop="onClickGenerate">Generate</button>
     </div>
     <div class="table-scroller mt-3 mb-3">
-      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="13" :widthTable="'100%'"
+      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="14" :widthTable="'100%'"
         @DataTable:finish="onDataTableFinished" ref="datatable">
         <th class="text-center">Trans Id</th>
         <th class="text-center">Trans Date</th>
@@ -87,25 +87,30 @@
         <th class="text-center">Expiry</th>
         <template slot="body" slot-scope="props">
           <tr>
-            <td :title="props.item.id">
+            <td >
               <div class="text ellipsis">{{ props.item.id }}</div>
             </td>
-            <td :title="props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')">
+            <td>
               <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') }}</div>
             </td>
-            <!-- <td :title="props.item.wo">
-              <div class="text ellipsis">{{ props.item.wo }}</div>
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+                <div>
+                  {{ row.pivot.listWO == null ? '' : JSON.parse(row.pivot.listWO) }}
+                </div>
+              </div>
             </td>
-            <td :title="props.item.vehicle_num">
-              <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
+            <td >
+              <div class="text ellipsis">{{ props.item.vehicle_num || "N/A"}}</div>
             </td>
-            <td :title="props.item.platform">
-              <div class="text ellipsis">{{ props.item.platform }}</div>
-            </td> -->
+            <td>
+              <div class="text ellipsis">{{ props.item.platform|| "N/A" }}</div>
+            </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id }}-{{
-                props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
+              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id
+              }}-{{
+                  props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
             </td>
             <td>
               <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
@@ -125,20 +130,20 @@
                 <span v-if="index < props.item.locations.spares.length - 1">,</span>
               </div>
             </td>
-            <td :title="props.item.request_qty">
+            <td>
               <div class="text ellipsis">{{ props.item.request_qty }}</div>
             </td>
-            <td :title="props.item.torque_area">
+            <td>
               <div class="text ellipsis">{{ props.item.torque_area || "N/A" }}</div>
             </td>
-            <td :title="props.item.user.name">
+            <td>
               <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
-            <td >
-              <div class="text ellipsis" v-for="(row, index) in props.item.spares" :item="row" :index="index">
+            <td>
+              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
                 <div>
                   {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
-                  <span v-if="index < props.item.spares.length - 1">,</span>
+                  <span v-if="index < props.item.locations.spares.length - 1">,</span>
                 </div>
               </div>
             </td>

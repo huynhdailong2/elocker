@@ -21,6 +21,7 @@ use App\Mails\SpareExpiringReport;
 use App\Mails\SparesByExpiredReport;
 use App\Mails\SparesByLoanReport;
 use App\Mails\SparesByReturnsReport;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Mails\SparesByTnxReport;
 use App\Mails\SparesByWoReport;
 use App\Mails\SparesTorqueWrenchReport;
@@ -1171,92 +1172,92 @@ class SpareService extends BaseService
     //     return $this->getIssueCardsBuilder($params);
     // }
 
-    public function getReportForReturns($params = [])
-    {
-        $returnedDate = array_get($params, 'returned_date', null);
-        $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
-        $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
-        $sendMailAlert = Arr::get($params, 'send_mail_alert');
+    // public function getReportForReturns($params = [])
+    // {
+    //     $returnedDate = array_get($params, 'returned_date', null);
+    //     $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
+    //     $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
+    //     $sendMailAlert = Arr::get($params, 'send_mail_alert');
 
-        $rawData = ReturnSpare::join('spares', 'spares.id', 'return_spares.spare_id')
-            ->leftJoin('bins', 'bins.id', 'return_spares.bin_id')
-            ->leftJoin('shelfs', 'shelfs.id', 'bins.shelf_id')
-            ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-            ->leftJoin('users', 'users.id', 'return_spares.handover_id')
-            ->when($returnedDate, function ($query) use ($returnedDate) {
-                return $this->queryRange($query, $returnedDate, 'return_spares.created_at');
-            })
-            ->when($sendMailAlert !== null, function ($query) use ($sendMailAlert) {
-                $query->where('return_spares.send_mail_alert', $sendMailAlert);
-            })
-            ->where(function ($query) {
-                $query->whereNull('return_spares.write_off')
-                    ->orWhere('return_spares.write_off', Consts::FALSE);
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->select(
-                'spares.type as spare_type',
-                'spares.name as spare_name',
-                'spares.part_no',
-                'return_spares.created_at as returned_date',
-                'users.name as handover',
-                'return_spares.bin_id',
-                'return_spares.spare_id',
-                'return_spares.quantity',
-                'return_spares.quantity_returned_store',
-                'return_spares.id as return_spare_id',
-                'return_spares.state as return_state'
-            )
-            ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
-            ->orderBy('return_spares.state', 'asc')
-            ->when(
-                !empty($params['sort']) && !empty($params['sort_type']),
-                function ($query) use ($params) {
-                    return $query->orderBy($params['sort'], $params['sort_type']);
-                },
-                function ($query) {
-                    return $query->orderBy('return_spares.updated_at', 'desc');
-                }
-            )
-            ->when(
-                empty($noPagination),
-                function ($query) use ($limit) {
-                    return $query->paginate($limit);
-                },
-                function ($query) {
-                    return $query->get();
-                }
-            );
+    //     $rawData = ReturnSpare::join('spares', 'spares.id', 'return_spares.spare_id')
+    //         ->leftJoin('bins', 'bins.id', 'return_spares.bin_id')
+    //         ->leftJoin('shelfs', 'shelfs.id', 'bins.shelf_id')
+    //         ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+    //         ->leftJoin('users', 'users.id', 'return_spares.handover_id')
+    //         ->when($returnedDate, function ($query) use ($returnedDate) {
+    //             return $this->queryRange($query, $returnedDate, 'return_spares.created_at');
+    //         })
+    //         ->when($sendMailAlert !== null, function ($query) use ($sendMailAlert) {
+    //             $query->where('return_spares.send_mail_alert', $sendMailAlert);
+    //         })
+    //         ->where(function ($query) {
+    //             $query->whereNull('return_spares.write_off')
+    //                 ->orWhere('return_spares.write_off', Consts::FALSE);
+    //         })
+    //         ->when(!empty($params['search_key']), function ($query) use ($params) {
+    //             $searchKey = Utils::escapeLike($params['search_key']);
+    //             $query->where(function ($subQuery) use ($searchKey) {
+    //                 $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+    //                     ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+    //                     ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+    //             });
+    //         })
+    //         ->select(
+    //             'spares.type as spare_type',
+    //             'spares.name as spare_name',
+    //             'spares.part_no',
+    //             'return_spares.created_at as returned_date',
+    //             'users.name as handover',
+    //             'return_spares.bin_id',
+    //             'return_spares.spare_id',
+    //             'return_spares.quantity',
+    //             'return_spares.quantity_returned_store',
+    //             'return_spares.id as return_spare_id',
+    //             'return_spares.state as return_state'
+    //         )
+    //         ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
+    //         ->orderBy('return_spares.state', 'asc')
+    //         ->when(
+    //             !empty($params['sort']) && !empty($params['sort_type']),
+    //             function ($query) use ($params) {
+    //                 return $query->orderBy($params['sort'], $params['sort_type']);
+    //             },
+    //             function ($query) {
+    //                 return $query->orderBy('return_spares.updated_at', 'desc');
+    //             }
+    //         )
+    //         ->when(
+    //             empty($noPagination),
+    //             function ($query) use ($limit) {
+    //                 return $query->paginate($limit);
+    //             },
+    //             function ($query) {
+    //                 return $query->get();
+    //             }
+    //         );
 
-        $data = $noPagination ? $rawData : $rawData->getCollection();
-        $binIds = $data->pluck('bin_id')->toArray();
-        $configures = BinConfigure::whereIn('bin_id', $binIds)
-            ->get()
-            ->mapToGroups(function ($item) {
-                return [$item['bin_id'] => $item];
-            })
-            ->toArray();
+    //     $data = $noPagination ? $rawData : $rawData->getCollection();
+    //     $binIds = $data->pluck('bin_id')->toArray();
+    //     $configures = BinConfigure::whereIn('bin_id', $binIds)
+    //         ->get()
+    //         ->mapToGroups(function ($item) {
+    //             return [$item['bin_id'] => $item];
+    //         })
+    //         ->toArray();
 
 
-        if ($noPagination) {
-            return $data->transform(function ($record) use ($configures) {
-                return $this->transformReturnSpare($record, $configures);
-            });
-        }
+    //     if ($noPagination) {
+    //         return $data->transform(function ($record) use ($configures) {
+    //             return $this->transformReturnSpare($record, $configures);
+    //         });
+    //     }
 
-        $rawData->getCollection()->transform(function ($record) use ($configures) {
-            return $this->transformReturnSpare($record, $configures);
-        });
+    //     $rawData->getCollection()->transform(function ($record) use ($configures) {
+    //         return $this->transformReturnSpare($record, $configures);
+    //     });
 
-        return $rawData;
-    }
+    //     return $rawData;
+    // }
 
     private function transformReturnSpare($record, $configures)
     {
@@ -1300,89 +1301,68 @@ class SpareService extends BaseService
 
     public function writeOffSpare($params = [])
     {
-        $returnSpareId = Arr::get($params, 'return_spare_id');
+        foreach ($params['return_spare_id'] as $item) {
+            $returnedSpareCurrent = ReturnSpare::query()
+                ->where('spare_id', $item)
+                ->first();
+            if ($returnedSpareCurrent->write_off == Consts::TRUE) {
+                return;
+            }
+            $returnedSpares = ReturnSpare::query()
+                ->where('bin_id', $returnedSpareCurrent->bin_id)
+                ->where('spare_id', $returnedSpareCurrent->spare_id)
+                ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
+                ->where(function ($subQuery) {
+                    /** @var Builder $subQuery */
+                    $subQuery->whereNull('return_spares.write_off')
+                        ->orWhere('return_spares.write_off', Consts::FALSE);
+                })
+                ->get();
+            foreach ($returnedSpares as $returnedSpare) {
+                $returnedSpare->write_off = Consts::TRUE;
+                $returnedSpare->save();
 
-        /** @var ReturnSpare $returnedSpareCurrent */
-        $returnedSpareCurrent = ReturnSpare::query()
-            ->where('id', $returnSpareId)
-            ->first();
-        if ($returnedSpareCurrent->write_off == Consts::TRUE) {
-            return;
+                $writeOff = WriteOff::create([
+                    'return_spare_id'=>$returnedSpare->id,
+                    'bin_id'=>$returnedSpare->bin_id,
+                    'spare_id'=>$returnedSpare->spare_id,
+                    'quantity'=>$returnedSpare->quantity,
+                    'reason'=>$params['reason'],
+                    'user_id'=>Auth::id(),
+                ]);
+
+                /** @var Bin $bin */
+                $bin = Bin::query()->where('id', $returnedSpare->bin_id)->first();
+                $bin->quantity_oh = $bin->quantity;
+
+                $bin->save();
+            }
         }
-
-        $returnedSpares = ReturnSpare::query()
-            ->where('bin_id', $returnedSpareCurrent->bin_id)
-            ->where('spare_id', $returnedSpareCurrent->spare_id)
-            ->where('state', '!=', Consts::RETURN_SPARE_STATE_WORKING)
-            ->where(function ($subQuery) {
-                /** @var Builder $subQuery */
-                $subQuery->whereNull('return_spares.write_off')
-                    ->orWhere('return_spares.write_off', Consts::FALSE);
-            })
-            ->get();
-
-        foreach ($returnedSpares as $returnedSpare) {
-            $returnedSpare->write_off = Consts::TRUE;
-            $returnedSpare->save();
-
-            $writeOff = new WriteOff;
-            $params['return_spare_id'] = $returnedSpare->id;
-            $params['bin_id'] = $returnedSpare->bin_id;
-            $params['spare_id'] = $returnedSpare->spare_id;
-            $params['quantity'] = $returnedSpare->quantity;
-            $params['user_id'] = Auth::id();
-
-            $this->saveData($writeOff, $params);
-
-            /** @var Bin $bin */
-            $bin = Bin::query()->where('id', $returnedSpare->bin_id)->first();
-            $bin->quantity_oh = $bin->quantity;
-
-            //            if ($returnedSpare->state === Consts::RETURN_SPARE_STATE_DAMAGE) {
-            //                BinConfigure::query()
-            //                    ->where('bin_id', $returnedSpare->bin_id)->delete();
-            //
-            //                $bin->fill(
-            //                    [
-            //                        'spare_id' => null,
-            //                        'status' => Consts::BIN_STATUS_UNASSIGNED,
-            //                        'quantity' => null,
-            //                        'quantity_oh' => null,
-            //                        'min' => null,
-            //                        'max' => null,
-            //                        'critical' => null,
-            //                    ]
-            //                );
-            //            }
-
-            $bin->save();
-        }
-
         return true;
     }
 
-    public function unwriteOffSpare($params = [])
-    {
-        $writeOffId = array_get($params, 'id', null);
-        $writeOff = WriteOff::find($writeOffId);
+    // public function unwriteOffSpare($params = [])
+    // {
+    //     $writeOffId = array_get($params, 'id', null);
+    //     $writeOff = WriteOff::find($writeOffId);
 
-        $writeOff->eliminator_id = Auth::id();
-        $writeOff->save();
-        $writeOff->delete();
+    //     $writeOff->eliminator_id = Auth::id();
+    //     $writeOff->save();
+    //     $writeOff->delete();
 
-        //        ReturnSpare::where('id', $writeOff->return_spare_id)
-        //            ->update([
-        //                         'write_off' => Consts::FALSE
-        //                     ]);
-        //
-        //        $bin = Bin::findOrFail($writeOff->bin_id);
-        //        $bin->quantity_oh = BigNumber::new($bin->quantity_oh ?? 0)
-        //            ->add($writeOff->quantity)
-        //            ->toString();
-        //        $bin->save();
+    //     //        ReturnSpare::where('id', $writeOff->return_spare_id)
+    //     //            ->update([
+    //     //                         'write_off' => Consts::FALSE
+    //     //                     ]);
+    //     //
+    //     //        $bin = Bin::findOrFail($writeOff->bin_id);
+    //     //        $bin->quantity_oh = BigNumber::new($bin->quantity_oh ?? 0)
+    //     //            ->add($writeOff->quantity)
+    //     //            ->toString();
+    //     //        $bin->save();
 
-        return $writeOff;
-    }
+    //     return $writeOff;
+    // }
 
     private function updateQuantityOhInBin($binId, $quantity)
     {
@@ -1392,49 +1372,49 @@ class SpareService extends BaseService
         return true;
     }
 
-    public function getSparesWriteOff($params = [])
-    {
-        $dates = array_get($params, 'dates', null);
+    // public function getSparesWriteOff($params = [])
+    // {
+    //     $dates = array_get($params, 'dates', null);
 
-        $data = WriteOff::leftJoin('bins', 'bins.id', 'write_offs.bin_id')
-            ->join('users', 'users.id', 'write_offs.user_id')
-            ->join('spares', 'spares.id', 'bins.spare_id')
-            ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-            ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-            ->when($dates, function ($query) use ($dates) {
-                return $this->queryRange($query, $dates, 'write_offs.created_at');
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->select('spares.*', 'bins.*', 'write_offs.*', 'write_offs.id as write_off_id', 'shelfs.name as shelf_name')
-            ->addSelect('users.name as write_off_name', 'bins.bin as bin_name', 'clusters.name as cluster_name')
-            ->get()
-            ->map(function ($record) {
-                return (object)[
-                    'write_off_id' => $record->write_off_id,
-                    'bin_id' => $record->bin_id,
-                    'spare_id' => $record->spare_id,
-                    'location' => "{$record->cluster_name} - {$record->shelf_name} - {$record->row} - {$record->bin}",
-                    'name' => $record->name,
-                    'part_no' => $record->part_no,
-                    'quantity' => $record->quantity,
-                    'reason' => $record->reason,
-                    'write_off_name' => $record->write_off_name,
-                    'created_at' => $record->created_at,
-                ];
-            });
+    //     $data = WriteOff::leftJoin('bins', 'bins.id', 'write_offs.bin_id')
+    //         ->join('users', 'users.id', 'write_offs.user_id')
+    //         ->join('spares', 'spares.id', 'bins.spare_id')
+    //         ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
+    //         ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+    //         ->when($dates, function ($query) use ($dates) {
+    //             return $this->queryRange($query, $dates, 'write_offs.created_at');
+    //         })
+    //         ->when(!empty($params['search_key']), function ($query) use ($params) {
+    //             $searchKey = Utils::escapeLike($params['search_key']);
+    //             $query->where(function ($subQuery) use ($searchKey) {
+    //                 $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+    //                     ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+    //                     ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+    //             });
+    //         })
+    //         ->select('spares.*', 'bins.*', 'write_offs.*', 'write_offs.id as write_off_id', 'shelfs.name as shelf_name')
+    //         ->addSelect('users.name as write_off_name', 'bins.bin as bin_name', 'clusters.name as cluster_name')
+    //         ->get()
+    //         ->map(function ($record) {
+    //             return (object)[
+    //                 'write_off_id' => $record->write_off_id,
+    //                 'bin_id' => $record->bin_id,
+    //                 'spare_id' => $record->spare_id,
+    //                 'location' => "{$record->cluster_name} - {$record->shelf_name} - {$record->row} - {$record->bin}",
+    //                 'name' => $record->name,
+    //                 'part_no' => $record->part_no,
+    //                 'quantity' => $record->quantity,
+    //                 'reason' => $record->reason,
+    //                 'write_off_name' => $record->write_off_name,
+    //                 'created_at' => $record->created_at,
+    //             ];
+    //         });
 
-        $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
-        $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
+    //     $noPagination = array_get($params, 'no_pagination', Consts::FALSE);
+    //     $limit = array_get($params, 'limit', Consts::DEFAULT_PER_PAGE);
 
-        return $noPagination ? $data : Utils::convertArrayToPagination($data, $limit);
-    }
+    //     return $noPagination ? $data : Utils::convertArrayToPagination($data, $limit);
+    // }
 
     public function sendSparesExpiringReport($params = [])
     {
@@ -2721,49 +2701,68 @@ class SpareService extends BaseService
                 ]
             );
     }
-    public function createTransaction($request)
+    public function createTransaction($requests)
     {
-        $taking_transaction = TakingTransaction::create([
-            'name' => $request['name'],
-            'status' => $request['status'],
-            'total_qty' => 0,
-            'remain_qty' => 0,
-            'hardware_port' => 0,
-            'part_number' => 0,
-            'port_id' => 0,
-            'qty' => 0,
-            'pre_qty' => 0,
-            'changed_qty' => 0,
-            // 'item_id' => 1,
-            'request_qty' => $request['request_qty'],
-            'user_id' => $request['user']['id'],
-            'type' => $request['type'],
-            'cabinet_id' => $request['locations'][0]['cabinet']['id'],
-            'bin_id' => $request['locations'][0]['bin']['id'],
-        ]);
-        $spareIds = [];
-
-        foreach ($request['locations'][0]['spares'] as $item=> $value) {
-            $spareId = $value['id'];
-            $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
-            $spareIds[] = [
-                'spare_id'=>$spareId,
-                'listWO'=>json_encode($listWO),
-            ];
-        }
-        foreach ($spareIds as $spare) {
-            $spareId = $spare['spare_id'];
-            $listWO = $spare['listWO'];
-            $transactionSpare = TransactionSpare::create([
-                'taking_transaction_id' => $taking_transaction->id,
-                'spare_id' => $spareId,
-                'listWO' => !empty($listWO)?$listWO:''
+        $taking_transactions = [];
+        $requestss = $requests['data'];
+        foreach($requestss as $request){
+            $taking_transaction = TakingTransaction::create([
+                'name' => $request['name'],
+                'status' => $request['status'],
+                'total_qty' => 0,
+                'remain_qty' => 0,
+                'hardware_port' => 0,
+                'part_number' => 0,
+                'port_id' => 0,
+                'qty' => 0,
+                'pre_qty' => 0,
+                'changed_qty' => 0,
+                // 'item_id' => 1,
+                'request_qty' => $request['request_qty'],
+                'user_id' => $request['user']['id'],
+                'type' => $request['type'],
+                'cabinet_id' => $request['locations'][0]['cabinet']['id'],
+                'bin_id' => $request['locations'][0]['bin']['id'],
             ]);
+            $spareIds = [];
+    
+            foreach ($request['locations'][0]['spares'] as $item => $value) {
+                $spareId = $value['id'];
+                $listWO = isset($value['listWO'][0]) ? $value['listWO'][0] : null;
+                $spareIds[] = [
+                    'spare_id' => $spareId,
+                    'listWO' => json_encode($listWO),
+                ];
+            }
+            foreach ($spareIds as $spare) {
+                $spareId = $spare['spare_id'];
+                $listWO = $spare['listWO'];
+                $transactionSpare = TransactionSpare::create([
+                    'taking_transaction_id' => $taking_transaction->id,
+                    'spare_id' => $spareId,
+                    'listWO' => !empty($listWO) ? $listWO : ''
+                ]);
+            }
+            $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
+            $taking_transaction->location;
+            $taking_transaction->user;
+            if ($request['type'] == 'return') {
+                foreach ($request['locations'][0]['spares'] as $itemss) {
+                    $returnSpare = ReturnSpare::create([
+                        'bin_id' => $request['locations'][0]['bin']['id'],
+                        'spare_id' => $itemss['id'],
+                        'quantity' => $itemss['quantity'],
+                        'state' => $itemss['status'],
+                        'type' => $itemss['type'],
+                        'quantity_returned_store' => $itemss['quantity'],
+                        'write_off' => 0,
+                    ]);
+                }
+            }
+            $taking_transactions[]=$taking_transaction;
         }
-        $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
-        $taking_transaction->location;
-        $taking_transaction->user;
-        return $taking_transaction;
+        
+        return $taking_transactions;
     }
     // public function getReportByTnx($params = []){
     //     return $this->getIssueCardsBuilder($params);
@@ -2777,14 +2776,14 @@ class SpareService extends BaseService
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status','request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id','updated_at','created_at']);
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'updated_at', 'created_at']);
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
                 $query->where('id', $search_key)
-                    ->orWhereHas('spare', function ($subquery) use ($search_key) {
+                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
                         $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
                     });
             });
@@ -2957,36 +2956,97 @@ class SpareService extends BaseService
     }
     public function getReportByLoan($request = [])
     {
-        $params =  [
-            'types' => [
-                Consts::SPARE_TYPE_DURABLE,
-                Consts::SPARE_TYPE_PERISHABLE,
-                Consts::SPARE_TYPE_AFES,
-                Consts::SPARE_TYPE_OTHERS,
-                Consts::SPARE_TYPE_TORQUE_WRENCH,
-            ]
-        ];
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['issued_date']) ? $request['issued_date'] : [];
         $dateee = json_decode($date, true);
-        $transactions = TakingTransaction::with('user', 'spares', 'bin');
-        $transactions->whereDoesntHave('spares', function ($subquery) use ($params) {
-            $subquery->whereIn('type', $params['types']);
-        });
-        // if (!empty($date)) {
-        //     $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
-        // }
-        // if (!empty($search_key)) {
-        //     $transactions->where(function ($query) use ($search_key) {
-        //         $query->where('id', $search_key)
-        //             ->orWhereHas('spares', function ($subquery) use ($search_key) {
-        //                 $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
-        //             });
-        //     });
-        // }
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'updated_at', 'created_at'])->get();
+        if (!empty($date)) {
+            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        }
+        $transactions = $transactions->toArray();
+
+        if (!empty($search_key)) {
+            $transactions->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
+            });
+        }
+        $perPage = $request['limit'];
+        $page = $request['page'];
+        foreach ($transactions as $key => $value) {
+            if (!empty($value['locations']['spares'])) {
+                foreach ($value['locations']['spares'] as $value2) {
+                    if ($value2['type'] == Consts::SPARE_TYPE_CONSUMABLE) {
+                        unset($transactions[$key]);
+                    }
+                }
+            }
+        }
+        $currentPage = $page;
+        $perPage = $request['limit'];
+
+        $paginatedData = array_slice($transactions, ($currentPage - 1) * $perPage, $perPage);
+
+        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($transactions), $perPage, $currentPage);
+
+        return $paginatedTransactions;
+    }
+    public function getReportForReturns($request = [])
+    {
+        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
+        $date = isset($request['returned_date']) ? $request['returned_date'] : [];
+        $dateee = json_decode($date, true);
+        $transactions = TakingTransaction::with('user')->where('type', 'return')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'updated_at', 'created_at']);
+        if (!empty($date)) {
+            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        }
+        if (!empty($search_key)) {
+            $transactions->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
+            });
+        }
         $perPage = $request['limit'];
         $page = $request['page'];
         $paginatedTransactions = $transactions->paginate($perPage, ['*'], 'page', $page);
         return $paginatedTransactions;
     }
+    public function getSparesWriteOff($request = [])
+    {
+        $date = isset($request['dates']) ? $request['dates'] : [];
+        $dateee = json_decode($date, true);
+        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
+        $data = WriteOff::with('bin','spares','user');
+        if (!empty($date)) {
+            $data->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+        }
+        if (!empty($search_key)) {
+            $data->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
+            });
+        }
+        $perPage = $request['limit'];
+        $page = $request['page'];
+        $paginatedTransactions = $data->paginate($perPage, ['*'], 'page', $page);
+        return $paginatedTransactions;
+    }
+    public function unwriteOffSpare($request = [])
+    {
+        $writeOff = WriteOff::find($request['id']);
+
+        $writeOff->eliminator_id = Auth::id();
+        $writeOff->save();
+        $writeOff->delete();
+        return $writeOff;
+        
+        
+    }
+
 }
