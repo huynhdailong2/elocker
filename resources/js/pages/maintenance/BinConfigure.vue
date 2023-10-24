@@ -139,7 +139,7 @@
               <div class="text">{{ props.item.spares.length }}</div>
             </td>
             <td>
-              <div>
+              <div class="text">
                 {{ props.item.spares.reduce((total, row) => total + row.pivot.quantity_oh, 0) }}
               </div>
             </td>
