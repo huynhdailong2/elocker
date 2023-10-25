@@ -98,7 +98,7 @@
         <th class="text-center">Item P/N</th> -->
         <th class="text-center">Is Drawer</th>
         <th class="text-center">Is Failed</th>
-        <th>Action</th>
+        <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr>
             <td>
@@ -198,7 +198,7 @@
                 </template>
               </div>
             </td>
-            <td class="action">
+            <td class="action text-center">
               <img
                 src="/images/icons/icon-edit.svg"
                 width="22px"

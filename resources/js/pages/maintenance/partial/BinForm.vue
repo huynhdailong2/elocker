@@ -111,15 +111,36 @@
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ item.name }}</td>
-              <td>{{ types[item.type.toUpperCase()].name }}</td>
-              <td>{{ item.quantity }}</td>
-              <td>{{ item.critical }}</td>
-              <td>{{ item.min }}</td>
-              <td>{{ item.max }}</td>
-              <td>{{ item.description }}</td>
+              <template>
+                <td>
+                    <input v-if="item.editable === true" style="width:max-content" v-model="item.quantity" />
+            <!-- <span v-else>{{ item.quantity }}</span> -->
+                </td>
+                <td>{{ types[item.type.toUpperCase()].name }}</td>
+                <td>{{ item.critical }}</td>
+                <td>{{ item.min }}</td>
+                <td>{{ item.max }}</td>
+                <td>{{ item.description }}</td>
+              </template>
+              <!-- <template v-else>
+                <td><input style="width:max-content" v-model="item.quantity" /></td>
+                <td><input v-model="types[item.type.toUpperCase()].name" /></td>
+                <td><input v-model="item.critical" /></td>
+                <td><input v-model="item.min" /></td>
+                <td><input v-model="item.max" /></td>
+                <td><input v-model="item.description" /></td>
+              </template> -->
               <template v-if="item.configures.length > 0">
-                <td>{{ item.configures[0].batch_no }}</td>
-                <td>{{ item.configures[0].serial_no }}</td>
+                <template v-if="!editingItem">
+                  <td>{{ item.configures[0].batch_no }}</td>
+                  <td>{{ item.configures[0].serial_no }}</td>
+                </template>
+                <template v-else>
+                  <template v-if="item.configures.length > 0">
+                    <td><input v-if="item.configures[0].batch_no > 0" v-model="item.configures[0].batch_no" /></td>
+                    <td><input v-if="item.configures[0].serial_no > 0" v-model="item.configures[0].serial_no" /></td>
+                  </template>
+                </template>
                 <td>
                   <vue-timepicker :name="'charge_time-' + index" v-validate="'required'" v-model="item.charge_time"
                     format="HH:mm" v-if="item.configures[0].has_charge_time" />
@@ -150,9 +171,14 @@
                 <td></td>
                 <td></td>
                 <td></td>
+                <td></td>
+                <td></td>
               </template>
-              <td>
-                <img src="/images/icons/icon-cancel.svg" width="22px" @click="showDeleteModal(item)" />
+              <td class="text-center">
+                <div style="display: flex; justify-content: center; align-items: center;">
+                  <img src="/images/icons/icon-edit.svg" width="22px" @click.stop="onClickEdit(item)" />
+                  <img src="/images/icons/icon-cancel.svg" width="22px" @click.stop="showDeleteModal(item)" />
+                </div>
               </td>
             </tr>
           </tbody>
@@ -208,6 +234,7 @@ export default {
       items: [],
       listSpares: [],
       types: Const.ITEM_TYPE,
+      editingItem: null,
     };
   },
 
@@ -390,6 +417,14 @@ export default {
         });
     },
 
+    onClickEdit(item) {
+        // console.log(item)
+      const iIndex = this.items.findIndex(i => i.spare_id === item.spare_id);
+      this.items[iIndex].editable = true
+      console.log(this.items[iIndex])
+      return this.items
+      },
+
     async onClickSave() {
       if (this.items.length === 0) {
         this.showError('Must add at least 1 item!')
@@ -454,6 +489,7 @@ export default {
           });
       }
       // console.log(transData)
+      this.editingItem = null;
 
     },
 
@@ -524,6 +560,10 @@ export default {
   .table-scroller {
     overflow: unset;
     max-height: unset;
+    table tr td {
+      word-break: unset;
+      vertical-align: middle;
+    }
   }
 
   .title {
