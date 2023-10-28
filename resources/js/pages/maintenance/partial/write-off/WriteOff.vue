@@ -70,9 +70,9 @@
               <div class="text ellipsis">{{ props.item.quantity || 0 }}</div>
             </td>
             <td >
-              <div class="text ellipsis">{{ props.item.bin.cluster_id }}-{{ props.item.shelf_id
+              <div class="text ellipsis">{{ props.item.cluster_name }}-{{ props.item.cabinet_name
               }}-{{
-                  props.item.bin.row }}-{{ props.item.bin.id }}</div>
+                  props.item.bin.row }}-{{ props.item.bin_name }}</div>
             </td>
             <td class="mw_110px maw_145x">{{ props.item.reason }}</td>
             <!-- <td class="mw_110px maw_145x" :title="props.item.user" >

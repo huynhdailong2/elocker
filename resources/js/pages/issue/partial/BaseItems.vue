@@ -49,7 +49,7 @@ export default {
       }
 
       return !chain(this.selectedSpares)
-        .every(item => !!item.quantity)
+        .every(item => !!item.spares.pivot.quantity)
         .value()
     },
 
@@ -123,7 +123,7 @@ export default {
       chain(this.data)
         .each(item => {
           this.$set(item, 'visible', true)
-          this.$set(item, 'quantity', null)
+          this.$set(item, 'spares.pivot.quantity', null)
           this.$set(item, 'is_checked', false)
         })
         .value()

@@ -18,7 +18,10 @@ class WriteOff extends Model
         'user_id',
         'quantity',
         'reason',
-        'eliminator_id'
+        'eliminator_id',
+        'cluster_name',
+        'cabinet_name',
+        'bin_name',
     ];
     public function bin()
     {

@@ -68,11 +68,11 @@ export default {
     },
 
     async onClickSubmit() {
-      let spares = this.data.locations.spares;
-      const returnSpareIds = [];
-      spares.forEach(spare => {
-        returnSpareIds.push(spare.id);
-      });
+      let spare_id = this.data.locations.spares.id;
+      // const returnSpareIds = [];
+      // spares.forEach(spare => {
+      //   returnSpareIds.push(spare.id);
+      // });
       this.resetError()
 
       await this.$validator.validateAll()
@@ -82,7 +82,7 @@ export default {
       }
 
       const params = {
-        return_spare_id: returnSpareIds,
+        return_spare_id: spare_id,
         reason: this.reason
       }
 

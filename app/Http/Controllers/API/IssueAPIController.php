@@ -36,7 +36,7 @@ class IssueAPIController extends BaseController
         $this->adminService = $adminService;
     }
 
-    public function issueCard(IssueCardFormRequest $request)
+    public function issueCard(Request $request)
     {
         DB::beginTransaction();
         try {
