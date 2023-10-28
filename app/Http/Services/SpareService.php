@@ -232,67 +232,67 @@ class SpareService extends BaseService
     {
         $userId = array_get($params, 'user_id', Auth::id());
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
+        $rawData =IssueCard::with('bin','spare')->orderBy('created_at','desc')->get();
+        // $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
+        //     ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
+        //     ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
+        //     ->join('bin_spare', 'bin_spare.bin_id', '=', 'bins.id')
+        //     ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+        //     ->where('issue_cards.taker_id', $userId)
+        //     ->where('issue_cards.quantity', '>', 0)
+        //     ->where('bins.is_failed', 0)
+        //     ->when(!$ignoreEmpty, function ($query) use ($params) {
+        //         $query->where('bins.quantity', 0)
+        //             ->where('bins.quantity_oh', 0);
+        //     })
+        //     ->when(!empty($params['types']), function ($query) use ($params) {
+        //         $query->whereIn('spares.type', $params['types']);
+        //     })
+        //     ->when(!empty($params['cluster_id']), function ($query) use ($params) {
+        //         $query->where('bins.cluster_id', $params['cluster_id']);
+        //     })
+        //     ->when(!empty($params['search_key']), function ($query) use ($params) {
+        //         $searchKey = Utils::escapeLike($params['search_key']);
 
-        $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
-            ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
-            ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-            ->join('spares', 'spares.id', 'bins.spare_id')
-            ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-            ->where('issue_cards.taker_id', $userId)
-            ->where('issue_cards.quantity', '>', 0)
-            ->where('bins.is_failed', 0)
-            ->when(!$ignoreEmpty, function ($query) use ($params) {
-                $query->where('bins.quantity', 0)
-                    ->where('bins.quantity_oh', 0);
-            })
-            ->when(!empty($params['types']), function ($query) use ($params) {
-                $query->whereIn('spares.type', $params['types']);
-            })
-            ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-                $query->where('bins.cluster_id', $params['cluster_id']);
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.serial_no', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->when(!empty($params['ignore_returned']), function ($query) use ($params) {
-                $query->where(function ($subQuery) {
-                    $subQuery->whereNull('returned')
-                        ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
-                });
-            })
-            ->select(
-                'issue_cards.*',
-                'issue_cards.id as issue_card_id',
-                'spares.name as spare_name',
-                'spares.part_no',
-                'spares.material_no',
-                'spares.has_serial_no',
-                'spares.url',
-                'bins.row',
-                'bins.bin as bin_name',
-                'shelfs.name as shelf_name',
-                'clusters.name as cluster_name',
-                'torque_wrench_areas.area as veh_p_area',
-                'torque_wrench_areas.torque_value',
-                'spares.type as spare_type'
-            )
-            ->when(
-                !empty($params['no_pagination']),
-                function ($query) {
-                    return $query->get();
-                },
-                function ($query) use ($params) {
-                    return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
-                }
-            );
-
+        //         $query->where(function ($subQuery) use ($searchKey) {
+        //             $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+        //                 ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+        //                 ->orWhere('spares.serial_no', 'LIKE', "%{$searchKey}%")
+        //                 ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+        //         });
+        //     })
+        //     ->when(!empty($params['ignore_returned']), function ($query) use ($params) {
+        //         $query->where(function ($subQuery) {
+        //             $subQuery->whereNull('returned')
+        //                 ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
+        //         });
+        //     })
+        //     ->select(
+        //         'issue_cards.*',
+        //         'issue_cards.id as issue_card_id',
+        //         'spares.name as spare_name',
+        //         'spares.part_no',
+        //         'spares.material_no',
+        //         'spares.has_serial_no',
+        //         'spares.url',
+        //         'bins.row',
+        //         'bins.bin as bin_name',
+        //         'shelfs.name as shelf_name',
+        //         'clusters.name as cluster_name',
+        //         'torque_wrench_areas.area as veh_p_area',
+        //         'torque_wrench_areas.torque_value',
+        //         'spares.type as spare_type'
+        //     )
+        //     ->when(
+        //         !empty($params['no_pagination']),
+        //         function ($query) {
+        //             return $query->get();
+        //         },
+        //         function ($query) use ($params) {
+        //             return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+        //         }
+        //     );
+        return $rawData;
         $data = Arr::get($params, 'no_pagination') ? $rawData : $rawData->getCollection();
         $binIds = $data->pluck('bin_id')->toArray();
         $configures = BinConfigure::whereIn('bin_id', $binIds)
@@ -2797,6 +2797,65 @@ class SpareService extends BaseService
                         'write_off' => 0,
                     ]);
                 }
+            }
+            if(!empty($taking_transaction['spares'])){
+                $spareTypes = [
+                    [
+                        'accepted' => ['issue', 'return', 'replenish'],
+                        'type'     => 'all',
+                        'label'    => 'All',
+                    ],
+                    [
+                        'accepted' => ['issue', 'replenish'],
+                        'type'     => Consts::SPARE_TYPE_CONSUMABLE,
+                        'label'    => 'Consumable',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_DURABLE,
+                        'label'    => 'STEs',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_PERISHABLE,
+                        'label'    => 'Perishable',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_AFES,
+                        'label'    => 'AFES',
+                    ],
+                    [
+                        'accepted' => ['issue', 'replenish'],
+                        'type'     => Consts::SPARE_TYPE_EUC,
+                        'label'    => 'EUC',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
+                        'label'    => 'Torque Wrench',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_OTHERS,
+                        'label'    => 'Others',
+                    ],
+                ];
+                foreach($taking_transaction['spares'] as $item){
+                    $type_item = $item['type'];
+                    $type_transaction = $request['type'];
+                    $found = false;
+                    foreach ($spareTypes as $spareType) {
+                        if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
+                            $item['label'] = $spareType['label'];
+                            $found = true;
+                        }
+                    }
+                    if (!$found) {
+                        $item['label'] = 'Unknown';
+                    }
+                }
+                
             }
             $taking_transactions[] = $taking_transaction;
         }
