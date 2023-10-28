@@ -227,9 +227,9 @@
                 </td>
                 <td>
                   <span v-if="editingItem !== item">{{
-                    item.description
+                    item.configures[0].description
                   }}</span>
-                  <input class="input_edit" v-else v-model="item.description" />
+                  <input class="input_edit" v-else v-model="item.configures[0].description" />
                 </td>
                 <td>
                   <template v-if="item.batch_no !== null">
@@ -436,6 +436,7 @@ export default {
           has_calibration_due: item.has_calibration_due,
           has_expiry_date: item.has_expiry_date,
           has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
+          description: item.description
         };
       }
     },
@@ -682,6 +683,7 @@ export default {
         expiry_date: null,
         has_load_hydrostatic_test_due: null,
         load_hydrostatic_test_due: null,
+        description: null
       });
 
       this.inputForm.configures = chain(this.inputForm.configures || [])
@@ -703,6 +705,7 @@ export default {
               item.load_hydrostatic_test_due,
               Const.DATE_PATTERN
             ),
+            description: item.description
           };
         })
         .value();
@@ -727,6 +730,133 @@ export default {
         .catch((error) => {
           this.processErrors(error);
         });
+    },
+
+    async onClickSave() {
+      if (this.items.length === 0) {
+        this.showError('Must add at least 1 item!')
+        return false;
+      }
+      this.resetError();
+      await this.$validator.validateAll();
+
+      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+      const existingItem = this.items.find(
+        (item) => item.spare_id === spare.id
+      );
+
+      if (existingItem) {
+        this.showError("Duplicated! This item was added!");
+      } else {
+        this.items.push({
+          ...this.inputForm,
+          name: spare.name,
+          expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
+          load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
+          calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
+          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}` : ''
+        });
+        this.resetForm();
+      }
+    },
+
+    onClickSave() {
+      const toUTc = (date) => {
+        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
+      };
+
+      chain(this.inputForm.configures)
+        .each((item) => {
+          (item.charge_time = Utils.objTime2String(item.input_charge_time)),
+            (item.calibration_due = toUTc(item.calibration_due));
+          item.expiry_date = toUTc(item.expiry_date);
+          item.load_hydrostatic_test_due = toUTc(
+            item.load_hydrostatic_test_due
+          );
+        })
+        .value();
+
+      const transData = {
+        // ...this.inputForm,
+        formInput: this.items.map(i => ({ ...i })),
+      }
+
+      if (this.items.length === 0) {
+        this.showError("The list cannot be empty!");
+      } else {
+        this.submitRequest(transData)
+          .then((res) => {
+            this.showSuccess("Successfully!");
+            this.resetError();
+            this.resetForm();
+            this.$emit("item:saved", res.data);
+          })
+          .catch((error) => {
+            this.processErrors(error);
+          });
+      }
+      // console.log(transData)
+
+    },
+
+    submitRequest(data) {
+      const params = cloneDeep(data);
+      return rf.getRequest("AdminRequest").updateBin(data);
+    },
+
+    onAddItem() {
+      if (this.inputForm.spare_id) {
+
+        const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+        const existingItem = this.items.find(
+          (item) => item.spare_id === spare.id
+        );
+        if (existingItem) {
+          this.showError("Duplicated! This item was added!");
+        } else {
+
+          this.inputForm.configures[0].description = this.inputForm.description;
+          this.items.push({
+            ...this.inputForm,
+            id: this.data.id,
+            spare_id: spare.id,
+            name: spare.name,
+            type: spare.type,
+            charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}` : ''
+          });
+          // this.updateListQuantitiesMinMax();
+          this.resetForm()
+          this.initConfigures()
+
+        }
+
+      } else {
+        this.showError('Have to choose an item!')
+      }
+
+    },
+
+    // updateListQuantitiesMinMax() {
+    //   if (this.items.length > 0) {
+    //     const totalQuantity = this.items.reduce(
+    //       (acc, item) => item.quantity,
+    //       0
+    //     );
+    //     const minValues = this.items.map((item) => item.min);
+    //     const maxValues = this.items.map((item) => item.max);
+    //     const min = Math.min(...minValues);
+    //     const max = Math.max(...maxValues);
+
+    //     this.items.forEach((item) => {
+    //       item.quantity = totalQuantity;
+    //       item.min = min;
+    //       item.max = max;
+    //     });
+    //   }
+    // },
+
+    onClearList() {
+      this.items = [];
     },
   },
 };

@@ -9,17 +9,22 @@
         :style="{width: issueFormStep ? '300px' : '200px'}"
          v-if="item.visible" >
         <div class="image">
-          <img :src="item.url">
+          <img :src="item.spares.url">
         </div>
         <div class="info">
-          <div>Item Name: {{ item.spare_name }}</div>
-          <div>MPN: {{ item.material_no }}</div>
-          <div>SSN: {{ item.part_no }}</div>
-          <div>Qty OH: {{ item.quantity_oh }}</div>
-          <div>Calibration Due/Inspection: {{ getCalibrationDueDate(item) | dateFormatter('YYYY-MM-DD') }}</div>
-          <div>Load/Hydrostatic Test Due: {{ getLoadHydrostaticDueDate(item) | dateFormatter('YYYY-MM-DD') }}</div>
-          <div>Expiry Date: {{ getExpiryDate(item) | dateFormatter('YYYY-MM-DD') }}</div>
-          <div>Location: {{ item.location }}</div>
+          <div>Item Name: {{ item.spares.name }}</div>
+          <div>MPN: {{ item.spares.material_no ||"N/A" }}</div>
+          <div>SSN: {{ item.spares.part_no ||"N/A"}}</div>
+          <div>Qty OH: {{ item.spares.pivot.quantity_oh || 0 }}</div>
+          <div  v-for="(row, index) in item.configures" :item="row" :index="index">Calibration Due/Inspection: {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}</div>
+          <div v-for="(row, index) in item.configures" :item="row" :index="index">Load/Hydrostatic Test Due: {{ row.load_hydrostatic_test_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}</div>
+          <div v-for="(row, index) in item.configures" :item="row" :index="index">Expiry Date:  {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}</div>
+          <div>Location:  {{ item.cluster.name }}-{{ item.shelf.name
+              }}-{{
+                  item.row }}-{{ item.bin }}</div>
           <div v-if="issueFormStep">
             <template v-if="visibleTorqueArea(item)">
               <span>Area</span>

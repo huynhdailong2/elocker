@@ -13,6 +13,19 @@ class TransactionSpare extends Model
         'taking_transaction_id',
         'spare_id',
         'listWO',
+        'job_card_id',
+        'vehicle_id',
+        'platform',
+        'job_name',
+        'vehicle_num',
+        'area_id',
+        'area_name',
     ];
+    protected $hidden = ['listWO'];
+    public function job_card()
+    {
+        return $this->belongsTo(JobCard::class, 'job_card_id');
+    }
+
     // public $timestamps = true;
 }

@@ -33,13 +33,17 @@ class Bin extends Model
         'description',
         'is_drawer',
         'is_failed',
-        'is_processing',
-        'process_time',
-        'process_by',
+        // 'is_processing',
+        // 'process_time',
+        // 'process_by',
         'cu_id',
         'lock_id',
     ];
-
+    protected $hidden =[
+        'is_processing',
+        'process_time',
+        'process_by',
+    ];
     public function configures()
     {
         return $this->hasMany(BinConfigure::class)->with('spares');
@@ -47,7 +51,7 @@ class Bin extends Model
 
     public function spares()
     {
-        return $this->belongsToMany(Spare::class)->withPivot(['quantity_oh', 'min', 'max', 'critical']);
+        return $this->belongsToMany(Spare::class,'bin_spare', 'bin_id', 'spare_id')->withPivot(['quantity','quantity_oh', 'min', 'max', 'critical','is_processing','process_time','process_by']);
     }
 
     public function cluster()

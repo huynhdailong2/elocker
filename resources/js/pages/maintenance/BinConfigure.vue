@@ -79,8 +79,8 @@
     <div class="table-content">
       <data-table2
         :getData="getBins"
-        :limit="14"
-        :column="14"
+        :limit="15"
+        :column="16"
         :widthTable="'100%'"
         @DataTable:finish="onDataTableFinished"
         ref="datatable"
@@ -92,6 +92,8 @@
         <th class="text-center">Bin</th>
         <th class="text-center">Drawer</th>
         <th class="ml-2">Item Name</th>
+        <th class="ml-2">Total Items</th>
+        <th class="ml-2">Total Qty OH</th>
         <!-- <th class="text-center">Item Type</th>
         <th class="text-center">Calibration Due/Inspection</th>
         <th class="text-center">Expiry Date</th>
@@ -133,7 +135,14 @@
                 {{ props.item.spares.map((item) => item.name).join(", ") }}
               </span>
             </td>
-
+            <td>
+              <div class="text">{{ props.item.spares.length }}</div>
+            </td>
+            <td>
+              <div class="text">
+                {{ props.item.spares.reduce((total, row) => total + row.pivot.quantity_oh, 0) }}
+              </div>
+            </td>
             <!-- <td>
               <div class="text-center">
                 {{ getLabelByType(props.item.type) }}

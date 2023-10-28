@@ -36,13 +36,13 @@ class IssueAPIController extends BaseController
         $this->adminService = $adminService;
     }
 
-    public function issueCard(IssueCardFormRequest $request)
+    public function issueCard(Request $request)
     {
-        DB::beginTransaction();
+        // DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->spareService->issueCard($params);
-            DB::commit();
+            // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollback();

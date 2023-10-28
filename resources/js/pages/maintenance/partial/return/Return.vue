@@ -45,14 +45,11 @@
           ref="datatable">
           <th class="text-center">Trans ID</th>
           <th class="text-center">Trans Date</th>
-          <!-- <th class="text-center">Vehicle #</th> -->
-          <!-- <th class="text-center">Platform</th> -->
           <th class="text-center">Item Details</th>
           <th class="text-center">Part #</th>
           <th class="text-center">Quantity</th>
           <th class="text-center">Location</th>
           <th class="text-center">Item type</th>
-          <!-- <th class="text-center">Area Use</th> -->
           <th class="text-center">Load/Hydrostatic Test Due</th>
           <th class="text-center">Expiry Date</th>
           <th class="text-center">Calibration Date</th>
@@ -68,62 +65,52 @@
             <td :title="props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
               <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
             </td>
-            <!-- <td :title="props.item.vehicle_num" >
-              <div class="text ellipsis">{{ props.item.vehicle_num }}</div>
-            </td> -->
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.spare_name }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.name || "N/A" }}
               </div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.part_no }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.part_no || "N/A" }}
               </div>
             </td>
             <td :title="props.item.request_qty" >
               <div class="text ellipsis">{{ props.item.request_qty }}</div>
             </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id
+              <div class="text ellipsis" >{{ props.item.cluster_name }}-{{ props.item.cabinet_name
               }}-{{
-                  props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
+                  props.item.locations.bin.row }}-{{ props.item.bin_name }}</div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.type }}
-                <span v-if="index < props.item.locations.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.type || "N/A"}}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.load_hydrostatic_test_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.load_hydrostatic_test_due |dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.calibration_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{  props.item.locations.spares.calibration_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
               </div>
             </td>
             
             <td class="mw_110px maw_145x" >
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.expiry_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.expiry_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}
               </div>
             </td>
             <td>
               <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
             <td class="mw_110px maw_145x" >
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+              <div class="text ellipsis">
                 <div>
-                  {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
-                  <span v-if="index < props.item.locations.spares.length - 1">,</span>
+                  {{ props.item.locations.spares.type === 'consumable' ? 'I' : props.item.locations.spares.type === 'return' ? 'R' : 'L' }}
                 </div>
               </div>
             </td>
@@ -379,6 +366,7 @@ export default {
     },
 
     onClickWriteOff (item) {
+      console.log(item);
       const callback = () => {
         this.$refs.datatable.refresh()
       }

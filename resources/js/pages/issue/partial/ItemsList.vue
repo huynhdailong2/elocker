@@ -11,7 +11,7 @@
           </th>
           <th>MPN</th>
           <th>SSN</th>
-          <th>Description</th>
+          <th>Item Details</th>
           <th>Location</th>
           <th>Qty OH</th>
           <th class="w_105px">Calibration Due/Inspection</th>
@@ -35,31 +35,61 @@
                   <span class="checkmark"></span>
                 </label>
               </td>
-              <td><div>{{ item.material_no }}</div></td>
-              <td><div>{{ item.part_no }}</div></td>
-              <td><div>{{ item.name }}</div></td>
-              <td><div>{{ item.location }}</div></td>
-              <td><div>{{ item.quantity_oh || 0 }}</div></td>
-              <td><div>{{ getCalibrationDueDate(item) | dateFormatter('YYYY-MM-DD') }}</div></td>
-              <td><div>{{ getLoadHydrostaticDueDate(item) | dateFormatter('YYYY-MM-DD') }}</div></td>
-              <td><div>{{ getExpiryDate(item) | dateFormatter('YYYY-MM-DD') }}</div></td>
+              <td>
+                <div class="text ellipsis">
+                  {{ item.spares.material_no ||"N/A" }}
+                </div>
+              </td>
+              <td>
+                <div class="text ellipsis">
+                  {{ item.spares.part_no ||"N/A"}}
+                </div>
+              </td>
+              <td>
+                <div>{{ item.spares.name }}</div>
+              </td>
+              <td>
+                <div>
+                  {{ item.cluster.name }}-{{ item.shelf.name
+              }}-{{
+                  item.row }}-{{ item.bin }}
+                </div>
+              </td>
+              <td>
+                <div>{{ item.spares.pivot.quantity_oh || 0 }}</div>
+              </td>
+              <td>
+                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                  {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}
+                </div>
+                <!-- <div>{{ getCalibrationDueDate(item) | dateFormatter('YYYY-MM-DD')|| "N/A" }}</div> -->
+              </td>
+              <td>
+                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                  {{ row.load_hydrostatic_test_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}
+                </div>
+                <!-- <div>{{ getLoadHydrostaticDueDate(item) | dateFormatter('YYYY-MM-DD') || "N/A" }}</div> -->
+              </td>
+              <td>
+                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                  {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}
+                </div>
+              </td>
               <td v-if="issueFormStep">
                 <div class="form-input">
-                  <span class="circle" @click.stop="onClickDecrease(item)">-</span>
-                  <span class="number">{{ item.quantity }}</span>
-                  <span class="circle" @click.stop="onClickIncrease(item)">+</span>
+                  <span class="circle" @click.stop="onClickDecrease(item.spares.pivot)">-</span>
+                  <span class="number">{{ item.spares.pivot.quantity }}</span>
+                  <span class="circle" @click.stop="onClickIncrease(item.spares.pivot)">+</span>
                 </div>
               </td>
               <td v-if="issueFormStep">
                 <template v-if="visibleTorqueArea(item)">
-                  <select
-                      class="input"
-                      :class="{'error': errors.has(`${item.scope}.torque_wrench_area_id`)}"
-                      v-model="item.torque_wrench_area_id"
-                      name="torque_wrench_area_id"
-                      :data-vv-scope="`${item.scope}`"
-                      data-vv-as="area"
-                      v-validate="''" >
+                  <select class="input" :class="{ 'error': errors.has(`${item.scope}.torque_wrench_area_id`) }"
+                    v-model="item.torque_wrench_area_id" name="torque_wrench_area_id" :data-vv-scope="`${item.scope}`"
+                    data-vv-as="area" v-validate="''">
                     <option :value="item.id" v-for="(item, idx) in torqueAreas" :key="idx">{{ item.area }}</option>
                   </select>
                   <span class="invalid-feedback" v-if="errors.has(`${item.scope}.torque_wrench_area_id`)">
@@ -67,7 +97,9 @@
                   </span>
                 </template>
               </td>
-              <td v-if="issueFormStep"><div>{{ getTorqueValue(item) }}</div></td>
+              <td v-if="issueFormStep">
+                <div>{{ getTorqueValue(item) }}</div>
+              </td>
             </tr>
           </template>
         </tbody>
@@ -76,28 +108,23 @@
 
     <div class="text-right">
       <template v-if="issueFormStep">
-        <button class="btn btn-second"
-            @click.stop="onCancel">
-            Cancel
+        <button class="btn btn-second" @click.stop="onCancel">
+          Cancel
         </button>
 
-        <button class="btn btn-primary"
-            @click.stop="onCheckout"
-            :disabled="noQuantity">
-            Checkout
+        <button class="btn btn-primary" @click.stop="onCheckout" :disabled="noQuantity">
+          Checkout
         </button>
 
       </template>
       <template v-else>
-        <button class="btn btn-primary"
-            @click.stop="nextIssueFormStep"
-            :disabled="noSelectedData" >
-            Go to Cart
+        <button class="btn btn-primary" @click.stop="nextIssueFormStep" :disabled="noSelectedData">
+          Go to Cart
         </button>
       </template>
     </div>
 
-    <scan-taker-modal :name="scanTakerModal"/>
+    <scan-taker-modal :name="scanTakerModal" />
   </div>
 </template>
 <style lang="scss" scoped>
@@ -107,6 +134,7 @@
     justify-content: center;
     align-items: center;
     margin-top: 10px;
+
     .circle {
       border: 1px solid #363A47;
       border-radius: 50%;
@@ -115,10 +143,12 @@
       font-weight: bold;
       background-color: #363A47;
       color: #fff;
+
       &:hover {
         border-color: #3490dc;
       }
     }
+
     .number {
       border: 1px solid #363A47;
       height: 35px;

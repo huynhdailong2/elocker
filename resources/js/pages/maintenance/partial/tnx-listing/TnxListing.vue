@@ -95,55 +95,57 @@
                 'DD-MM-YYYY') }}</div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                <div>
-                  {{ row.pivot.listWO == null ? '' : JSON.parse(row.pivot.listWO) }}
-                </div>
+              <div class="text ellipsis">
+                {{  props.item.locations.spares.pivot.job_name || "N/A"}}
               </div>
             </td>
-            <td >
-              <div class="text ellipsis">{{ props.item.vehicle_num || "N/A"}}</div>
+            <td>
+              <div class="text ellipsis">
+                {{  props.item.locations.spares.pivot.vehicle_num|| "N/A" }}
+              </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.platform|| "N/A" }}</div>
+              <div class="text ellipsis">
+                {{  props.item.locations.spares.pivot.platform || "N/A"}}
+              </div>
             </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis">{{ props.item.locations.bin.cluster_id }}-{{ props.item.locations.cabinet.id
+              <div class="text ellipsis" >{{ props.item.cluster_name }}-{{ props.item.cabinet_name
               }}-{{
-                  props.item.locations.bin.row }}-{{ props.item.locations.bin.id }}</div>
+                  props.item.locations.bin.row }}-{{ props.item.bin_name }}</div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.type }}
-                <span v-if="index < props.item.locations.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.type }}
               </div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.name }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.name }}
               </div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
-                {{ row.part_no }}
-                <span v-if="index < props.item.locations.spares.length - 1">,</span>
+              <div class="text ellipsis">
+                {{ props.item.locations.spares.part_no }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">{{ props.item.request_qty }}</div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.torque_area || "N/A" }}</div>
+              <div class="text ellipsis" >
+                <span>
+                  {{  props.item.locations.spares.pivot.area_name || "N/A" }}
+                </span>
+              </div>
             </td>
             <td>
               <div class="text ellipsis">{{ props.item.user.name }}</div>
             </td>
             <td>
-              <div class="text ellipsis" v-for="(row, index) in props.item.locations.spares" :item="row" :index="index">
+              <div class="text ellipsis">
                 <div>
-                  {{ row.type === 'consumable' ? 'I' : row.type === 'return' ? 'R' : 'L' }}
-                  <span v-if="index < props.item.locations.spares.length - 1">,</span>
+                  {{ props.item.locations.spares.type === 'consumable' ? 'I' : props.item.locations.spares.type === 'return' ? 'R' : 'L' }}
                 </div>
               </div>
             </td>

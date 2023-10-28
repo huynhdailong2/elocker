@@ -25,6 +25,9 @@ class TakingTransaction extends Model
         'bin_id',
         'cabinet_id',
         'request_qty',
+        'cluster_name',
+        'cabinet_name',
+        'bin_name',
         // 'spare_id',
     ];
     protected $hidden = [
@@ -40,9 +43,9 @@ class TakingTransaction extends Model
         'spares',
         'bin',
         'cabinet',
+        
     ];
     protected $appends = ['locations'];
-
     public function getLocationsAttribute()
     {
         $bin = $this->bin;
@@ -64,11 +67,10 @@ class TakingTransaction extends Model
     }
     public function spares()
     {
-        return $this->belongsToMany(Spare::class,'taking_transaction_details')->withPivot('listWO');
+        return $this->belongsToMany(Spare::class, 'taking_transaction_details')->withPivot('job_card_id','job_name', 'vehicle_id','vehicle_num','area_id','area_name', 'platform');
     }
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
 }
