@@ -56,6 +56,7 @@ export default {
     issueFormStep () {
       return this.currentStep === STEP.ISSUE_FORM
     }
+    
   },
 
   mounted () {
