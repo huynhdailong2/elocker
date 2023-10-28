@@ -2,14 +2,23 @@
   <div class="input-form">
     <div class="content-form">
       <div class="row">
-
         <div class="col-4">
           <label>Item Name</label>
-          <select class="input" v-model="inputForm.spare_id" name="spare_id" :disabled="!!inputForm.is_drawer"
-            data-vv-as="spare">
-            <option :value="item.id" v-for="(item, index) in spares" :key="index" :class="{
-              bluetext: data.spares.map((i) => i.id).includes(item.id),
-            }">
+          <select
+            class="input"
+            v-model="inputForm.spare_id"
+            name="spare_id"
+            :disabled="!!inputForm.is_drawer"
+            data-vv-as="spare"
+          >
+            <option
+              :value="item.id"
+              v-for="(item, index) in spares"
+              :key="index"
+              :class="{
+                bluetext: data.spares.map((i) => i.id).includes(item.id),
+              }"
+            >
               <p>
                 {{ item.name }}
               </p>
@@ -22,23 +31,36 @@
 
         <div class="col-4">
           <label>Quantity</label>
-          <input type="text" class="input" name="quantity" placeholder="Quantity" :disabled="disableQuantity"
-            v-model="inputForm.quantity" v-validate="`required|numeric|min_value:${inputForm.min || 0}|max_value:${inputForm.max || 1000
+          <input
+            type="text"
+            class="input"
+            name="quantity"
+            placeholder="Quantity"
+            :disabled="disableQuantity"
+            v-model="inputForm.quantity"
+            v-validate="
+              `required|numeric|min_value:${inputForm.min || 0}|max_value:${
+                inputForm.max || 1000
               }`
-              " />
+            "
+          />
           <span class="invalid-feedback" v-if="errors.has('quantity')">
             {{ errors.first("quantity") }}
           </span>
         </div>
-
       </div>
 
       <div class="row">
-
         <div class="col-4">
           <label>Critical</label>
-          <input type="text" class="input" name="critical" placeholder="Critical" v-model.trim="inputForm.critical"
-            v-validate="'numeric|min_value:0'" />
+          <input
+            type="text"
+            class="input"
+            name="critical"
+            placeholder="Critical"
+            v-model.trim="inputForm.critical"
+            v-validate="'numeric|min_value:0'"
+          />
           <span class="invalid-feedback" v-if="errors.has('critical')">
             {{ errors.first("critical") }}
           </span>
@@ -46,8 +68,15 @@
 
         <div class="col-4">
           <label>Minimum Quantity</label>
-          <input type="text" class="input" name="min" data-vv-as="minimum quantity" placeholder="Minimum Quantity"
-            v-model.trim="inputForm.min" v-validate="'required|numeric|min_value:0'" />
+          <input
+            type="text"
+            class="input"
+            name="min"
+            data-vv-as="minimum quantity"
+            placeholder="Minimum Quantity"
+            v-model.trim="inputForm.min"
+            v-validate="'required|numeric|min_value:0'"
+          />
           <span class="invalid-feedback" v-if="errors.has('min')">
             {{ errors.first("min") }}
           </span>
@@ -55,20 +84,31 @@
 
         <div class="col-4">
           <label>Maximum Quantity</label>
-          <input type="text" class="input" name="max" data-vv-as="maximum quantity" placeholder="Maximum Quantity"
-            v-model.trim="inputForm.max" v-validate="`required|numeric|min_value:${inputForm.min}`" />
+          <input
+            type="text"
+            class="input"
+            name="max"
+            data-vv-as="maximum quantity"
+            placeholder="Maximum Quantity"
+            v-model.trim="inputForm.max"
+            v-validate="`required|numeric|min_value:${inputForm.min}`"
+          />
           <span class="invalid-feedback" v-if="errors.has('max')">
             {{ errors.first("max") }}
           </span>
         </div>
-
       </div>
 
       <div class="row">
         <div class="col-12">
           <label class="name">Description</label>
-          <textarea class="textarea" placeholder="Description" name="description" v-model.trim="inputForm.description"
-            v-validate="'max:190'" />
+          <textarea
+            class="textarea"
+            placeholder="Description"
+            name="description"
+            v-model.trim="inputForm.description"
+            v-validate="'max:190'"
+          />
           <span class="invalid-feedback" v-if="errors.has('description')">
             {{ errors.first("description") }}
           </span>
@@ -76,12 +116,27 @@
       </div>
     </div>
 
-    <bin-configures :spare="inputForm" :data="inputForm.configures" ref="binConfigures" v-if="inputForm.spare_id" />
+    <bin-configures
+      :spare="inputForm"
+      :data="inputForm.configures"
+      ref="binConfigures"
+      v-if="inputForm.spare_id"
+    />
 
     <div class="actions">
-      <button @click="onAddItem" class="btn-primary" style="padding: 8px 27px;">Add</button>
-      <button @click="onClearList" class="btn-primary"
-        style="background: none; border-radius: 5px; border: 2px solid white;padding: 8px 27px;">
+      <button @click="onAddItem" class="btn-primary" style="padding: 8px 27px">
+        Add
+      </button>
+      <button
+        @click="onClearList"
+        class="btn-primary"
+        style="
+          background: none;
+          border-radius: 5px;
+          border: 2px solid white;
+          padding: 8px 27px;
+        "
+      >
         Clear
       </button>
     </div>
@@ -110,60 +165,143 @@
           <tbody>
             <tr v-for="(item, index) in items" :key="index">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.name }}</td>
-              <template>
-                <td>
-                    <input v-if="item.editable === true" style="width:max-content" v-model="item.quantity" />
-            <!-- <span v-else>{{ item.quantity }}</span> -->
-                </td>
-                <td>{{ types[item.type.toUpperCase()].name }}</td>
-                <td>{{ item.critical }}</td>
-                <td>{{ item.min }}</td>
-                <td>{{ item.max }}</td>
-                <td>{{ item.description }}</td>
-              </template>
-              <!-- <template v-else>
-                <td><input style="width:max-content" v-model="item.quantity" /></td>
-                <td><input v-model="types[item.type.toUpperCase()].name" /></td>
-                <td><input v-model="item.critical" /></td>
-                <td><input v-model="item.min" /></td>
-                <td><input v-model="item.max" /></td>
-                <td><input v-model="item.description" /></td>
-              </template> -->
-              <template v-if="item.configures.length > 0">
-                <template v-if="!editingItem">
-                  <td>{{ item.configures[0].batch_no }}</td>
-                  <td>{{ item.configures[0].serial_no }}</td>
+              <td>
+                <template v-if="editingItem === item">
+                  <select
+                    class="p-10px"
+                    v-model="item.spare_id"
+                    name="spare_id"
+                    @change="handleSelectChange(item)"
+                  >
+                    <option
+                      v-for="(item, spareIndex) in spares"
+                      :value="item.id"
+                      :key="spareIndex"
+                      :class="{
+                        bluetext: data.spares
+                          .map((i) => i.id)
+                          .includes(item.id),
+                      }"
+                    >
+                      {{ item.name }}
+                    </option>
+                  </select>
                 </template>
+
                 <template v-else>
-                  <template v-if="item.configures.length > 0">
-                    <td><input v-if="item.configures[0].batch_no > 0" v-model="item.configures[0].batch_no" /></td>
-                    <td><input v-if="item.configures[0].serial_no > 0" v-model="item.configures[0].serial_no" /></td>
-                  </template>
+                  <span>{{ item.name }}</span>
                 </template>
+              </td>
+              <template>
+                <td>{{ types[item.type.toUpperCase()].name }}</td>
                 <td>
-                  <vue-timepicker :name="'charge_time-' + index" v-validate="'required'" v-model="item.charge_time"
-                    format="HH:mm" v-if="item.configures[0].has_charge_time" />
-                </td>
-                <td class="d">
-                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
-                    v-model="item.configures[0].calibration_due" :disabled-dates="{ to: yesterday }"
-                    name="calibration_due" v-validate="'required'" data-vv-as="calibration due"
-                    v-if="item.configures[0].has_calibration_due" />
+                  <span v-if="editingItem !== item">{{ item.quantity }}</span>
+                  <input
+                    name="quantity_edit"
+                    v-validate="
+                      `required|numeric|min_value:${
+                        item.min || 0
+                      }|max_value:${item.max || 1000}`
+                    "
+                    class="input_edit"
+                    v-else
+                    v-model="item.quantity"
+                  />
+                  <template  v-if="editingItem == item">
+                    <span class="invalid-feedback" v-if="errors.has('quantity_edit')">
+                      {{ errors.first("quantity_edit") }}
+                    </span>
+                  </template>
                 </td>
                 <td>
-                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
-                    v-model="item.configures[0].load_hydrostatic_test_due" :disabled-dates="{ to: yesterday }"
-                    name="load_hydrostatic_test_due" v-validate="'required'" data-vv-as="calibration due"
-                    v-if="item.configures[0].has_load_hydrostatic_test_due" />
+                  <span v-if="editingItem !== item">{{ item.critical }}</span>
+                  <input class="input_edit" v-else v-model="item.critical" />
+                </td>
+                <td>
+                  <span v-if="editingItem !== item">{{ item.min }}</span>
+                  <input class="input_edit" v-else v-model="item.min" />
+                </td>
+                <td>
+                  <span v-if="editingItem !== item">{{ item.max }}</span>
+                  <input class="input_edit" v-else v-model="item.max" />
+                </td>
+                <td>
+                  <span v-if="editingItem !== item">{{
+                    item.description
+                  }}</span>
+                  <input class="input_edit" v-else v-model="item.description" />
+                </td>
+                <td>
+                  <template v-if="item.batch_no !== null">
+                    <span v-if="editingItem !== item">{{ item.batch_no }}</span>
+                    <input class="input_edit" v-else v-model="item.batch_no" />
+                  </template>
+                </td>
+                <td>
+                  <template v-if="item.serial_no !== null">
+                    <span v-if="editingItem !== item">{{
+                      item.serial_no
+                    }}</span>
+                    <input class="input_edit" v-else v-model="item.serial_no" />
+                  </template>
+                </td>
+              </template>
+
+              <template v-if="item.configures.length > 0">
+                <td>
+                  <template v-if="item.charge_time !== null">
+                    <vue-timepicker
+                      :name="'charge_time-' + index"
+                      v-validate="'required'"
+                      v-model="item.charge_time"
+                      format="HH:mm"
+                      v-if="!!item.configures[0].has_charge_time"
+                      drop-direction="auto"
+                    />
+                  </template>
+                </td>
+                <td>
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.configures[0].calibration_due"
+                    :disabled-dates="{ to: yesterday }"
+                    name="calibration_due"
+                    v-validate="'required'"
+                    data-vv-as="calibration due"
+                    popperContainer="{CalendarContainer}"
+                    v-if="item.configures[0].has_calibration_due"
+                    style="min-width: 100px"
+                  />
+                </td>
+                <td>
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.configures[0].load_hydrostatic_test_due"
+                    :disabled-dates="{ to: yesterday }"
+                    name="load_hydrostatic_test_due"
+                    v-validate="'required'"
+                    data-vv-as="hydrostatic due"
+                    v-if="item.configures[0].has_load_hydrostatic_test_due"
+                    style="min-width: 100px"
+                  />
                 </td>
                 <!-- <td>
                   {{item.configures[0].created_at}} 
                 </td> -->
                 <td>
-                  <datepicker format="dd/MM/yyyy" input-class="form-control date-selector"
-                    v-model="item.configures[0].expiry_date" :disabled-dates="{ to: yesterday }" name="expiry_date"
-                    v-validate="'required'" data-vv-as="calibration due" v-if="item.configures[0].has_expiry_date" />
+                  <datepicker
+                    format="dd/MM/yyyy"
+                    input-class="form-control date-selector"
+                    v-model="item.configures[0].expiry_date"
+                    :disabled-dates="{ to: yesterday }"
+                    name="expiry_date"
+                    v-validate="'required'"
+                    data-vv-as="calibration due"
+                    v-if="item.configures[0].has_expiry_date"
+                    style="min-width: 100px"
+                  />
                 </td>
               </template>
               <template v-else>
@@ -171,13 +309,29 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
-                <td></td>
               </template>
+
               <td class="text-center">
-                <div style="display: flex; justify-content: center; align-items: center;">
-                  <img src="/images/icons/icon-edit.svg" width="22px" @click.stop="onClickEdit(item)" />
-                  <img src="/images/icons/icon-cancel.svg" width="22px" @click.stop="showDeleteModal(item)" />
+                <div class="flex-center">
+                  <template v-if="editingItem !== item">
+                    <img
+                      src="/images/icons/icon-edit.svg"
+                      width="22px"
+                      @click="onClickEdit(item)"
+                    />
+                  </template>
+                  <template v-else>
+                    <img
+                      src="/images/icons/icon-save.svg"
+                      width="22px"
+                      @click.stop="onClickCancel()"
+                    />
+                  </template>
+                  <img
+                    src="/images/icons/icon-trash.svg"
+                    width="22px"
+                    @click.stop="showDeleteModal(item)"
+                  />
                 </div>
               </td>
             </tr>
@@ -198,7 +352,7 @@ import moment from "moment";
 import RemoveErrorsMixin from "common/RemoveErrorsMixin";
 import Const from "common/Const";
 import Utils from "common/Utils";
-import { chain, cloneDeep, isEmpty, times, size, debounce } from "lodash";
+import { chain, cloneDeep, isEmpty, size, debounce } from "lodash";
 import BinConfigures from "./BinConfigures";
 import Datepicker from "vuejs-datepicker";
 import VueTimepicker from "vue2-timepicker";
@@ -232,7 +386,6 @@ export default {
       },
       spares: [],
       items: [],
-      listSpares: [],
       types: Const.ITEM_TYPE,
       editingItem: null,
     };
@@ -240,9 +393,7 @@ export default {
 
   computed: {
     yesterday() {
-      return moment()
-        .subtract(1, "days")
-        .toDate();
+      return moment().subtract(1, "days").toDate();
     },
 
     showConfigures() {
@@ -287,7 +438,6 @@ export default {
           has_load_hydrostatic_test_due: item.has_load_hydrostatic_test_due,
         };
       }
-
     },
 
     "inputForm.quantity": debounce(function () {
@@ -309,7 +459,7 @@ export default {
       min: 1,
       max: 1000,
       quantity: 1,
-      configures: []
+      configures: [],
     };
 
     if (this.data.spares.length) {
@@ -322,9 +472,19 @@ export default {
           critical: i.pivot.critical,
           min: i.pivot.min,
           max: i.pivot.max,
-          charge_time: `${this.data?.configures.find(ele => ele.spare_id == i.id)?.charge_time}`,
-          configures: [this.data?.configures.find(ele => ele.spare_id == i.id)].filter(Boolean)
-        }
+          charge_time:
+            this.data?.configures.find((ele) => ele.spare_id == i.id)
+              ?.charge_time ?? null,
+          batch_no:
+            this.data?.configures.find((ele) => ele.spare_id == i.id)
+              ?.batch_no ?? null,
+          serial_no:
+            this.data?.configures.find((ele) => ele.spare_id == i.id)
+              ?.serial_no ?? null,
+          configures: [
+            this.data?.configures.find((ele) => ele.spare_id == i.id),
+          ].filter(Boolean),
+        };
       });
     }
 
@@ -334,12 +494,164 @@ export default {
   },
 
   methods: {
+    handleSelectChange(item) {
+      console.log(item);
+    },
+
     showDeleteModal(item) {
       const _handler = () => {
         this.items = this.items.filter((i) => i.spare_id !== item.spare_id);
       };
-      this.confirmAction({ callback: _handler, message: "Are you sure you want to delete?" });
+      this.confirmAction({
+        callback: _handler,
+        message: "Are you sure you want to delete?",
+      });
     },
+
+    onClickEdit(item) {
+      this.editingItem = item;
+    },
+
+    onClickCancel() {
+      this.editingItem = null;
+    },
+
+    async onClickSave() {
+      if (this.items.length === 0) {
+        this.showError("Must add at least 1 item!");
+        return false;
+      }
+      this.resetError();
+      await this.$validator.validateAll();
+
+      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+      const existingItem = this.items.find(
+        (item) => item.spare_id === spare.id
+      );
+
+      if (existingItem) {
+        this.showError("Duplicated! This item was added!");
+      } else {
+        this.items.push({
+          ...this.inputForm,
+          name: spare.name,
+          expiry_date:
+            this.inputForm.configures.length > 0
+              ? this.inputForm.configures[0].expiry_date
+              : null,
+          load_hydrostatic_test_due:
+            this.inputForm.configures.length > 0
+              ? this.inputForm.configures[0].load_hydrostatic_test_due
+              : null,
+          calibration_due:
+            this.inputForm.configures.length > 0
+              ? this.inputForm.configures[0].calibration_due
+              : null,
+          charge_time:
+            this.inputForm.configures.length > 0
+              ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}`
+              : "",
+        });
+        this.resetForm();
+        this.editingItem = null;
+      }
+    },
+
+    onClickSave() {
+      const toUTc = (date) => {
+        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
+      };
+
+      chain(this.inputForm.configures)
+        .each((item) => {
+          (item.charge_time = Utils.objTime2String(item.input_charge_time)),
+            (item.calibration_due = toUTc(item.calibration_due));
+          item.expiry_date = toUTc(item.expiry_date);
+          item.load_hydrostatic_test_due = toUTc(
+            item.load_hydrostatic_test_due
+          );
+        })
+        .value();
+
+      const transData = {
+        // ...this.inputForm,
+        formInput: this.items.map((i) => ({ ...i })),
+      };
+
+      if (this.items.length === 0) {
+        this.showError("The list cannot be empty!");
+      } else {
+        this.submitRequest(transData)
+          .then((res) => {
+            this.showSuccess("Successfully!");
+            this.resetError();
+            this.resetForm();
+            this.$emit("item:saved", res.data);
+          })
+          .catch((error) => {
+            this.processErrors(error);
+          });
+      }
+      // console.log(transData)
+      this.editingItem = null;
+    },
+
+    submitRequest(data) {
+      const params = cloneDeep(data);
+      return rf.getRequest("AdminRequest").updateBin(data);
+    },
+
+    onAddItem() {
+      if (this.inputForm.spare_id) {
+        const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
+        const existingItem = this.items.find(
+          (item) => item.spare_id === spare.id
+        );
+        if (existingItem) {
+          this.showError("Duplicated! This item was added!");
+        } else {
+          this.items.push({
+            ...this.inputForm,
+            id: this.data.id,
+            spare_id: spare.id,
+            name: spare.name,
+            type: spare.type,
+            charge_time:
+              this.inputForm.configures.length > 0
+                ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}`
+                : "",
+          });
+          // this.updateListQuantitiesMinMax();
+          this.resetForm();
+          this.initConfigures();
+        }
+      } else {
+        this.showError("Have to choose an item!");
+      }
+    },
+
+    onClearList() {
+      this.items = [];
+    },
+
+    // updateListQuantitiesMinMax() {
+    //   if (this.items.length > 0) {
+    //     const totalQuantity = this.items.reduce(
+    //       (acc, item) => item.quantity,
+    //       0
+    //     );
+    //     const minValues = this.items.map((item) => item.min);
+    //     const maxValues = this.items.map((item) => item.max);
+    //     const min = Math.min(...minValues);
+    //     const max = Math.max(...maxValues);
+
+    //     this.items.forEach((item) => {
+    //       item.quantity = totalQuantity;
+    //       item.min = min;
+    //       item.max = max;
+    //     });
+    //   }
+    // },
 
     resetForm() {
       this.inputForm = {
@@ -401,7 +713,6 @@ export default {
       rf.getRequest("AdminRequest")
         .getSpares(params)
         .then((res) => {
-          this.listSpares = res.data
           this.spares = chain(res.data || [])
             // .filter(item => item.type !== Const.ITEM_TYPE.EUC.value)
             .map((item) => {
@@ -412,142 +723,10 @@ export default {
               };
             })
             .value();
-        }).catch((error) => {
+        })
+        .catch((error) => {
           this.processErrors(error);
         });
-    },
-
-    onClickEdit(item) {
-        // console.log(item)
-      const iIndex = this.items.findIndex(i => i.spare_id === item.spare_id);
-      this.items[iIndex].editable = true
-      console.log(this.items[iIndex])
-      return this.items
-      },
-
-    async onClickSave() {
-      if (this.items.length === 0) {
-        this.showError('Must add at least 1 item!')
-        return false;
-      }
-      this.resetError();
-      await this.$validator.validateAll();
-
-      const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
-      const existingItem = this.items.find(
-        (item) => item.spare_id === spare.id
-      );
-
-      if (existingItem) {
-        this.showError("Duplicated! This item was added!");
-      } else {
-        this.items.push({
-          ...this.inputForm,
-          name: spare.name,
-          expiry_date: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].expiry_date : null,
-          load_hydrostatic_test_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].load_hydrostatic_test_due : null,
-          calibration_due: this.inputForm.configures.length > 0 ? this.inputForm.configures[0].calibration_due : null,
-          charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.HH}` : ''
-        });
-        this.resetForm();
-      }
-    },
-
-    onClickSave() {
-      const toUTc = (date) => {
-        return date ? new moment(date).utc().format(Const.DATE_PATTERN) : null;
-      };
-
-      chain(this.inputForm.configures)
-        .each((item) => {
-          (item.charge_time = Utils.objTime2String(item.input_charge_time)),
-            (item.calibration_due = toUTc(item.calibration_due));
-          item.expiry_date = toUTc(item.expiry_date);
-          item.load_hydrostatic_test_due = toUTc(
-            item.load_hydrostatic_test_due
-          );
-        })
-        .value();
-
-      const transData = {
-        // ...this.inputForm,
-        formInput: this.items.map(i => ({ ...i })),
-      }
-
-      if (this.items.length === 0) {
-        this.showError("The list cannot be empty!");
-      } else {
-        this.submitRequest(transData)
-          .then((res) => {
-            this.showSuccess("Successfully!");
-            this.resetError();
-            this.resetForm();
-            this.$emit("item:saved", res.data);
-          })
-          .catch((error) => {
-            this.processErrors(error);
-          });
-      }
-      // console.log(transData)
-      this.editingItem = null;
-
-    },
-
-    submitRequest(data) {
-      const params = cloneDeep(data);
-      return rf.getRequest("AdminRequest").updateBin(data);
-    },
-
-    onAddItem() {
-      if (this.inputForm.spare_id) {
-
-        const spare = this.spares.find((i) => i.id == this.inputForm.spare_id);
-        const existingItem = this.items.find(
-          (item) => item.spare_id === spare.id
-        );
-        if (existingItem) {
-          this.showError("Duplicated! This item was added!");
-        } else {
-          this.items.push({
-            ...this.inputForm,
-            id: this.data.id,
-            spare_id: spare.id,
-            name: spare.name,
-            type: spare.type,
-            charge_time: this.inputForm.configures.length > 0 ? `${this.inputForm.configures[0].input_charge_time?.HH}:${this.inputForm.configures[0].input_charge_time?.mm}` : ''
-          });
-          // this.updateListQuantitiesMinMax();
-          this.resetForm()
-          this.initConfigures()
-        }
-
-      } else {
-        this.showError('Have to choose an item!')
-      }
-
-    },
-
-    // updateListQuantitiesMinMax() {
-    //   if (this.items.length > 0) {
-    //     const totalQuantity = this.items.reduce(
-    //       (acc, item) => item.quantity,
-    //       0
-    //     );
-    //     const minValues = this.items.map((item) => item.min);
-    //     const maxValues = this.items.map((item) => item.max);
-    //     const min = Math.min(...minValues);
-    //     const max = Math.max(...maxValues);
-
-    //     this.items.forEach((item) => {
-    //       item.quantity = totalQuantity;
-    //       item.min = min;
-    //       item.max = max;
-    //     });
-    //   }
-    // },
-
-    onClearList() {
-      this.items = [];
     },
   },
 };
@@ -556,10 +735,22 @@ export default {
 <style lang="scss" scoped>
 .input-form {
   width: 100%;
-
+  .p-10px {
+    padding: 10px;
+  }
+  .input_edit {
+    width: 100%;
+    padding: 10px;
+    min-width: 100px;
+  }
+  .flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .table-scroller {
-    overflow: unset;
-    max-height: unset;
+    // overflow: unset;
+    // max-height: unset;
     table tr td {
       word-break: unset;
       vertical-align: middle;
@@ -572,7 +763,6 @@ export default {
 
   .content-form {
     width: 100%;
-
     .row {
       margin-bottom: 20px;
 
