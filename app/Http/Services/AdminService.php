@@ -17,6 +17,7 @@ use App\Models\ReplenishEucBox;
 use App\Models\ReplenishmentSpare;
 use App\Models\ReturnSpare;
 use App\Models\Shelf;
+use App\Models\TrackingMo;
 use App\Models\Spare;
 use App\Models\TorqueWrenchArea;
 use App\Models\UserAccessingSpare;
@@ -2144,6 +2145,7 @@ class AdminService extends BaseService
                     $querys = $query->get();
                     $paginatedTransactionss = $querys->toArray();
                     $newData = [];
+                    $newDatas = [];
                     foreach ($paginatedTransactionss as $key1 => $transaction) {
                         $spares = $transaction['spares'];
                         $configures = $transaction['configures'];
@@ -2156,27 +2158,40 @@ class AdminService extends BaseService
                                     $matchingConfigures[] = $configure;
                                 }
                             }
-
-                            // if ($spare['pivot']['is_processing'] == 0) {
-                            //     $newTransaction = $transaction;
-                            //     $newTransaction['spares'] = $spare;
-                            //     $newTransaction['configures'] = $matchingConfigures;
-                            //     $newData[] = $newTransaction;
-                            // } else {
-                            //     unset($paginatedTransactionss[$key1]);
-                            // }
                             $newTransaction = $transaction;
                             $newTransaction['spares'] = $spare;
                             $newTransaction['configures'] = $matchingConfigures;
                             $newData[] = $newTransaction;
                         }
                     }
-                    return $newData;
+                    foreach ($newData as $iteem) {
+                        $issueCard = [];
+                        $trackingMo = [];
+                        $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
+                        $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
+                    
+                        if (!empty($issue_card)) {
+                            $issueCard = $issue_card;
+                        }
+                        if (!empty($tracking_mo)) {
+                            $trackingMo = $tracking_mo;
+                        }
+                    
+                        if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
+                            $newTransactions = $iteem;
+                            $newTransactions['issueCard'] = $issueCard;
+                            $newTransactions['trackingMo'] = $trackingMo;
+                            $newDatas[] = $newTransactions;
+                        }
+                    }
+                    
+                    return $newDatas;
                 },
                 function ($query) use ($params) {
                     $query->get();
                     $paginatedTransactionss = $query->toArray();
                     $newData = [];
+                    $newDatas = [];
                     foreach ($paginatedTransactionss as $key1 => $transaction) {
                         $spares = $transaction['spares'];
                         $configures = $transaction['configures'];
@@ -2201,12 +2216,32 @@ class AdminService extends BaseService
                             }
                         }
                     }
+                    foreach ($newData as $iteem) {
+                        $issueCard = [];
+                        $trackingMo = [];
+                        $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
+                        $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
+                    
+                        if (!empty($issue_card)) {
+                            $issueCard = $issue_card;
+                        }
+                        if (!empty($tracking_mo)) {
+                            $trackingMo = $tracking_mo;
+                        }
+                    
+                        if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
+                            $newTransactions = $iteem;
+                            $newTransactions['issueCard'] = $issueCard;
+                            $newTransactions['trackingMo'] = $trackingMo;
+                            $newDatas[] = $newTransactions;
+                        }
+                    }
                     $perPage = $params['limit'];
                     $page = $params['page'];
                     $currentPage = $page;
                     $perPage = $params['limit'];
-                    $paginatedData = array_slice($newData, ($currentPage - 1) * $perPage, $perPage);
-                    return $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newData), $perPage, $currentPage);
+                    $paginatedData = array_slice($newDatas, ($currentPage - 1) * $perPage, $perPage);
+                    return $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
                 }
             );
     }

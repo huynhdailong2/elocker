@@ -118,10 +118,10 @@ class SpareService extends BaseService
                     break;
                 default:
                     //lock bin
-                    $this->adminService->checkProcessingBinSpare(['user_id' => Auth::id(), 'bin_id' => $value['id'], 'spare_id' => $value['spares']['id'], 'value' => 1]);
+                    $this->adminService->checkProcessingBinSpare(['user_id' => Auth::id(), 'bin_id' => $value['configures'][0]['bin_id'], 'spare_id' => $value['spares']['id'], 'value' => 1]);
                     $issueCard = IssueCard::create([
                         'job_card_id' => $value['job_card_id'],
-                        'bin_id' => $value['id'],
+                        'bin_id' => $value['configures'][0]['bin_id'],
                         'spare_id' => $value['spares']['id'],
                         'quantity' => $value['spares']['pivot']['quantity'],
                         'issuer_id' => Auth::id(),
@@ -132,7 +132,7 @@ class SpareService extends BaseService
                         [
                             'job_card_id' => $value['job_card_id'],
                             'issue_card_id' => $issueCard->id,
-                            'bin_id' => $value['id'],
+                            'bin_id' => $value['configures'][0]['bin_id'],
                             'spare_id' => $value['spares']['id'],
                             'quantity' => $value['spares']['pivot']['quantity'],
                             'issuer_id' => Auth::id(),
@@ -817,9 +817,9 @@ class SpareService extends BaseService
 
         return $bin;
     }
-    private function updateQuantityInBinSpare($binId,$spareId, $quantity)
+    private function updateQuantityInBinSpare($binId, $spareId, $quantity)
     {
-        $binSpareCollection = BinSpare::where('bin_id',$binId)->where('spare_id',$spareId)->get();
+        $binSpareCollection = BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->get();
         if (!$binSpareCollection) {
             throw new Exception("Bin with bin id = {$binId} is invalid.");
         }
@@ -832,7 +832,7 @@ class SpareService extends BaseService
             return $bin;
         }
     }
-    
+
     private function updateQuantityInEucBox($eucBoxId, $spareId, $quantity)
     {
         $euc = EucBoxSpare::where('euc_box_id', $eucBoxId)
