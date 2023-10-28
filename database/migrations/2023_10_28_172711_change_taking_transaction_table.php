@@ -29,6 +29,7 @@ class ChangeTakingTransactionTable extends Migration
         //
         Schema::table('taking_transactions', function (Blueprint $table) {
             $table->dropColumn('request_qty');
+            
         });
     }
 }
