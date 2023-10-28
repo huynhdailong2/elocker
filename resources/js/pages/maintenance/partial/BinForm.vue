@@ -229,7 +229,7 @@
                   <span v-if="editingItem !== item">{{
                     item.configures[0].description
                   }}</span>
-                  <input class="input_edit" v-else v-model="item.configures[0].description" />
+                  <input class="input_edit" v-else v-model="item.description" />
                 </td>
                 <td>
                   <template v-if="item.batch_no !== null">
@@ -473,6 +473,8 @@ export default {
           critical: i.pivot.critical,
           min: i.pivot.min,
           max: i.pivot.max,
+          description: this.data?.configures.find((ele) => ele.spare_id == i.id)
+              ?.description ?? null,
           charge_time:
             this.data?.configures.find((ele) => ele.spare_id == i.id)
               ?.charge_time ?? null,
