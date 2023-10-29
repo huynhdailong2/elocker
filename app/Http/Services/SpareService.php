@@ -2959,9 +2959,49 @@ class SpareService extends BaseService
                     ]);
                 }
             }
+            if (!empty($taking_transaction['spares'])) {
+                $spareTypes = [
+                    [
+                        'accepted' => ['issue', 'return', 'replenish'],
+                        'type'     => 'all',
+                        'label'    => 'All',
+                        'label_type' => 'All',
+                    ],
+                    [
+                        'accepted' => ['issue', 'replenish'],
+                        'type'     => Consts::SPARE_TYPE_CONSUMABLE,
+                        'label'    => 'Consumable',
+                        'label_type' => 'Consumable Type',
+                    ],
+                    [
+                        'accepted' => ['issue', 'return'],
+                        'type'     => Consts::SPARE_TYPE_DURABLE,
+                        'label'    => 'STEs',
+                        'label_type' => 'STEs Type',
+                    ],
+                ];
+            
+                foreach ($taking_transaction['spares'] as &$item) {
+                    $type_item = $item['type'];
+                    $type_transaction = $request['type'];
+                    $found = false;
+                    foreach ($spareTypes as $spareType) {
+                        if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
+                            $item['label'] = $spareType['label'];
+                            $item['label_type'] = $spareType['label_type'];
+                            $found = true;
+                        }
+                    }
+                    if (!$found) {
+                        $item['label'] = 'Unknown';
+                        $item['label_type'] = 'Unknown Type';
+                    }
+                }
+            }
+            
             $taking_transactions[] = $taking_transaction;
         }
-
+        
         return $taking_transactions;
     }
     // public function getReportByTnx($params = []){
