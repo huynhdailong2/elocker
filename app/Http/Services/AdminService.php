@@ -24,6 +24,7 @@ use App\Models\UserAccessingSpare;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\WriteOff;
+use App\Models\TakingTransaction;
 use App\Traits\CustomQueryBuilder;
 use App\User;
 use App\Utils;
@@ -338,73 +339,114 @@ class AdminService extends BaseService
 
     public function getSparesAssignedBin($params = [])
     {
-        // If params does not have excludeBinIds
-        if (!Arr::get($params, 'excludeBinIds')) {
-            //            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
-            $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
+        // // If params does not have excludeBinIds
+        // if (!Arr::get($params, 'excludeBinIds')) {
+        //     //            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
+        //     $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
+        // }
+
+        // // Does not get empty bin
+        // $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
+        // // Can replenishment (quantity = 0 and quantity_oh = 0)
+        // $canReplenishment = Arr::get($params, 'can_replenishment', false);
+
+        // return Bin::with('configures', 'spares', 'shelf', 'cluster')
+        //     // ->join('spares', 'spares.id', 'bin_configures.spare_id')
+        //     // ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
+        //     // ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
+        //     // ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+        //     ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
+        //     ->where('bins.is_failed', 0)
+        //     ->where('bins.is_processing', 0)
+        //     ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
+        //         $query->whereNotIn('bins.id', $params['excludeBinIds']);
+        //     })
+        //     ->when(!empty($params['binIds']), function ($query) use ($params) {
+        //         $query->whereIn('bins.id', $params['binIds']);
+        //     })
+        //     ->when(!empty($params['spareIds']), function ($query) use ($params) {
+        //         $query->whereIn('spares.id', $params['spareIds']);
+        //     })
+        //     // ->when(!empty($params['type']), function ($query) use ($params) {
+        //     //     $query->where('spares.type', $params['type']);
+        //     // })
+        //     // ->when(!empty($params['types']), function ($query) use ($params) {
+        //     //     $query->whereIn('spares.type', $params['types']);
+        //     // })
+        //     ->when(!empty($params['cluster_id']), function ($query) use ($params) {
+        //         $query->where('bins.cluster_id', $params['cluster_id']);
+        //     })
+        //     ->when(!empty($params['search_key']), function ($query) use ($params) {
+        //         $searchKey = Utils::escapeLike($params['search_key']);
+        //         $query->where(function ($subQuery) use ($searchKey) {
+        //             $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+        //                 ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%");
+        //         });
+        //     })
+        //     ->when($ignoreEmpty, function ($query) {
+        //         $query->where('quantity_oh', '>', 0);
+        //     })
+        //     ->when($canReplenishment, function ($query) {
+        //         $query->where('quantity', 0)
+        //             ->where('quantity_oh', 0);
+        //     })
+        //     // ->when(empty($params['include_is_virtual']), function ($query) use ($params) {
+        //     //     $query->where('clusters.is_virtual', Consts::FALSE);
+        //     // })
+        //     // ->select('spares.*', 'bins.*', 'bins.id as bin_id', 'bins.bin as bin_name')
+        //     // ->addSelect('shelfs.name as shelf_name', 'clusters.name as cluster_name', 'spares.name as spare_name')
+        //     // ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
+        //     // ->addSelect('bin_configures.serial_no as serial_no')
+        //     ->when(
+        //         !empty($params['no_pagination']),
+        //         function ($query) {
+        //             return $query->get();
+        //         },
+        //         function ($query) use ($params) {
+        //             return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+        //         }
+        //     );
+        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
+        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
+        $transactions = $transactions->toArray();
+        if (!empty($search_key)) {
+            $transactions->where(function ($query) use ($search_key) {
+                $query->where('id', $search_key)
+                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
+                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
+                    });
+            });
         }
-
-        // Does not get empty bin
-        $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        // Can replenishment (quantity = 0 and quantity_oh = 0)
-        $canReplenishment = Arr::get($params, 'can_replenishment', false);
-
-        return Bin::with('configures', 'spares', 'shelf', 'cluster')
-            // ->join('spares', 'spares.id', 'bin_configures.spare_id')
-            // ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-            // ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
-            // ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-            ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
-            ->where('bins.is_failed', 0)
-            ->where('bins.is_processing', 0)
-            ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
-                $query->whereNotIn('bins.id', $params['excludeBinIds']);
-            })
-            ->when(!empty($params['binIds']), function ($query) use ($params) {
-                $query->whereIn('bins.id', $params['binIds']);
-            })
-            ->when(!empty($params['spareIds']), function ($query) use ($params) {
-                $query->whereIn('spares.id', $params['spareIds']);
-            })
-            ->when(!empty($params['type']), function ($query) use ($params) {
-                $query->where('spares.type', $params['type']);
-            })
-            ->when(!empty($params['types']), function ($query) use ($params) {
-                $query->whereIn('spares.type', $params['types']);
-            })
-            ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-                $query->where('bins.cluster_id', $params['cluster_id']);
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->when($ignoreEmpty, function ($query) {
-                $query->where('quantity_oh', '>', 0);
-            })
-            ->when($canReplenishment, function ($query) {
-                $query->where('quantity', 0)
-                    ->where('quantity_oh', 0);
-            })
-            ->when(empty($params['include_is_virtual']), function ($query) use ($params) {
-                $query->where('clusters.is_virtual', Consts::FALSE);
-            })
-            // ->select('spares.*', 'bins.*', 'bins.id as bin_id', 'bins.bin as bin_name')
-            // ->addSelect('shelfs.name as shelf_name', 'clusters.name as cluster_name', 'spares.name as spare_name')
-            // ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
-            // ->addSelect('bin_configures.serial_no as serial_no')
-            ->when(
-                !empty($params['no_pagination']),
-                function ($query) {
-                    return $query->get();
-                },
-                function ($query) use ($params) {
-                    return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+        foreach ($transactions as $key => $value) {
+            if (!empty($value['locations']['spares'])) {
+                foreach ($value['locations']['spares'] as $value2) {
+                    if ($value2['type'] == Consts::SPARE_TYPE_CONSUMABLE) {
+                        unset($transactions[$key]);
+                    }
                 }
-            );
+            }
+        }
+        $newData = [];
+        foreach ($transactions as $transaction) {
+            $spares = $transaction['locations']['spares'];
+            foreach ($spares as $spare) {
+                $newTransaction = $transaction;
+                $newTransaction['locations']['spares'] = $spare;
+                $newData[] = $newTransaction;
+            }
+        }
+        $newDatas = [];
+        foreach ($newData as $itme) {
+            $bin_new = $itme['locations']['bin']['id'];
+            $spare_new = $itme['locations']['spares']['id'];
+            $bin_spare = BinSpare::where('bin_id', $bin_new)->where('spare_id', $spare_new)->first();
+            $configures = BinConfigure::where('bin_id', $bin_new)->where('spare_id', $spare_new)->first();
+            $newTransaction = $itme;
+            $newTransaction['bin_spare'] = $bin_spare;
+            $newTransaction['configures'] = $configures;
+            $newDatas[] = $newTransaction;
+        }
+        return $newDatas;
     }
 
     public function getEucAssignedBox($params = [])
@@ -2169,14 +2211,14 @@ class AdminService extends BaseService
                         $trackingMo = [];
                         $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
                         $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-                    
+
                         if (!empty($issue_card)) {
                             $issueCard = $issue_card;
                         }
                         if (!empty($tracking_mo)) {
                             $trackingMo = $tracking_mo;
                         }
-                    
+
                         if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
                             $newTransactions = $iteem;
                             $newTransactions['issueCard'] = $issueCard;
@@ -2184,7 +2226,7 @@ class AdminService extends BaseService
                             $newDatas[] = $newTransactions;
                         }
                     }
-                    
+
                     return $newDatas;
                 },
                 function ($query) use ($params) {
@@ -2221,14 +2263,14 @@ class AdminService extends BaseService
                         $trackingMo = [];
                         $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
                         $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-                    
+
                         if (!empty($issue_card)) {
                             $issueCard = $issue_card;
                         }
                         if (!empty($tracking_mo)) {
                             $trackingMo = $tracking_mo;
                         }
-                    
+
                         if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
                             $newTransactions = $iteem;
                             $newTransactions['issueCard'] = $issueCard;

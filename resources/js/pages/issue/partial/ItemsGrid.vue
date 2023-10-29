@@ -23,8 +23,7 @@
           <div v-for="(row, index) in item.configures" :item="row" :index="index">Expiry Date:  {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}</div>
           <div>Location:  {{ item.cluster.name }}-{{ item.shelf.name
-              }}-{{
-                  item.row }}-{{ item.bin }}</div>
+              }}-{{item.row }}-{{ item.bin }}</div>
           <div v-if="issueFormStep">
             <template v-if="visibleTorqueArea(item)">
               <span>Area</span>

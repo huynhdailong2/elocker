@@ -90,9 +90,9 @@
                     <span class="checkmark"></span>
                   </label>
                 </td>
-                <td><div>{{ item.material_no }}</div></td>
-                <td><div>{{ item.part_no }}</div></td>
-                <td><div>{{ item.spare_name }}</div></td>
+                <td><div>{{ item.spare.material_no }}</div></td>
+                <td><div>{{ item.spare.part_no }}</div></td>
+                <td><div>{{ item.spare.name }}</div></td>
                 <td><div>{{ item.cluster_name }} - {{ item.shelf_name }} - {{ item.row }} - {{ item.bin_name }}</div></td>
                 <td><div>{{ item.quantity_loan || 0 }}</div></td>
                 <td>{{ item.veh_p_area }}</td>

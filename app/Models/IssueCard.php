@@ -24,4 +24,13 @@ class IssueCard extends Model
     {
         return $this->hasOne(User::class, 'id', 'taker_id');
     }
+    public function bin()
+    {
+        return $this->belongsTo(Bin::class, 'bin_id', 'id');
+    }
+    public function spare()
+    {
+        return $this->belongsTo(Spare::class);
+    }
+    
 }

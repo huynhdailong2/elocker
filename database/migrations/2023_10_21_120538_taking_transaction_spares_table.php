@@ -17,6 +17,13 @@ class TakingTransactionSparesTable extends Migration
         Schema::create('taking_transaction_details', function (Blueprint $table) {
             $table->unsignedBigInteger('taking_transaction_id');
             $table->unsignedBigInteger('spare_id');
+            $table->integer('job_card_id')->nullable();
+            $table->integer('vehicle_id')->nullable();
+            $table->text('job_name')->nullable();
+            $table->text('vehicle_num')->nullable();
+            $table->integer('area_id')->nullable();
+            $table->text('area_name')->nullable();
+            $table->text('platform')->nullable();
             $table->text('listWO');
             $table->timestamps();
 

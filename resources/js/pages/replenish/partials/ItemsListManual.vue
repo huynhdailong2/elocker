@@ -33,11 +33,11 @@
                   <span class="checkmark"></span>
                 </label>
               </td>
-              <td><div>{{ item.material_no }}</div></td>
-              <td><div>{{ item.part_no }}</div></td>
-              <td><div>{{ item.name }}</div></td>
-              <td><div>{{ item.cluster_name }} - {{ item.shelf_name }} - {{ item.row }} - {{ item.bin }}</div></td>
-              <td><div>{{ item.quantity_oh || 0 }}</div></td>
+              <td><div>{{ item.locations.spares.material_no }}</div></td>
+              <td><div>{{ item.locations.spares.part_no }}</div></td>
+              <td><div>{{ item.locations.spares.name }}</div></td>
+              <td><div>{{ item.cluster_name }} - {{ item.cabinet_name }} - {{ item.locations.bin.row }} - {{ item.locations.bin.bin }}</div></td>
+              <td><div>{{ item.bin_spare.quantity_oh || 0 }}</div></td>
               <template v-if="replenishForm">
                 <td><div>{{ item.inputForm ? (item.inputForm.quantity || 0) : 0 }}</div></td>
                 <td>

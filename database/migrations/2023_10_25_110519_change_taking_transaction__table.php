@@ -18,6 +18,9 @@ class ChangeTakingTransactionTable extends Migration
             $table->text('cluster_name')->nullable();
             $table->text('cabinet_name')->nullable();
             $table->text('bin_name')->nullable();
+            $table->integer('request_qty')->nullable();
+            $table->integer('cabinet_id')->nullable();
+            $table->integer('bin_id')->nullable();
         });
     }
 
@@ -32,6 +35,9 @@ class ChangeTakingTransactionTable extends Migration
             $table->dropColumn('cluster_name');
             $table->dropColumn('cabinet_name');
             $table->dropColumn('bin_name');
+            $table->dropColumn('request_qty');
+            $table->dropColumn('cabinet_id');
+            $table->dropColumn('bin_id');
         });
     }
 }

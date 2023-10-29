@@ -1,20 +1,18 @@
 <template>
-  <div id="replenish-manual-print"
-    :class="{'d-none': !isPrinting, 'd-block': isPrinting}"
-    v-if="isPrinting">
+  <div id="replenish-manual-print" :class="{ 'd-none': !isPrinting, 'd-block': isPrinting }" v-if="isPrinting">
 
     <div class="container mt-3">
       <div class="row">
-      <h2 class="text-center mb-4">
-        <span class="font-weight-bold">[{{ current }}] Manual Replenish</span>
-      </h2>
+        <h2 class="text-center mb-4">
+          <span class="font-weight-bold">[{{ current }}] Manual Replenish</span>
+        </h2>
       </div>
 
       <div class="row" style="background-color: #b3c6e7;">
         <div class="border border-dark p-2 text-break text-center text-dark col-1">S/N</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-2">MPN</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-2">SSN</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-2">Description</div>
+        <div class="border border-dark p-2 text-break text-center text-dark col-2">Item Details</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-3">Bin #</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-1">Qty OH</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-1">Qty RL</div>
@@ -22,10 +20,11 @@
 
       <div class="row" v-for="(item, index) in data">
         <div class=" col-1 border border-dark p-2 text-break text-center text-dark">{{ index + 1 }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.material_no }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.name }}</div>
-        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.shelf_name }} - {{ item.row }} - {{ item.bin }}</div>
+        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.material_no }}</div>
+        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.part_no }}</div>
+        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.name }}</div>
+        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.cluster_name }} - {{
+          item.shelf_name }} - {{ item.locations.bin.row }} - {{ item.locations.bin.bin }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ getQtyRl(item) || 0 }}</div>
       </div>
@@ -52,7 +51,7 @@ export default {
   },
 
   methods: {
-    print () {
+    print() {
       this.isPrinting = true;
       this.$nextTick(() => {
         this.isPrinting = false;
@@ -62,17 +61,17 @@ export default {
       })
     },
 
-    htmlToPaper (callback) {
+    htmlToPaper(callback) {
       let
         name = '_blank',
-        specs = ['fullscreen=yes','titlebar=yes', 'scrollbars=yes'],
+        specs = ['fullscreen=yes', 'titlebar=yes', 'scrollbars=yes'],
         replace = true,
         styles = ['/css/app.css'];
       specs = !!specs.length ? specs.join(',') : '';
 
       const element = document.getElementById('replenish-manual-print');
 
-      if(!element) {
+      if (!element) {
         this.isPrinting = false;
         alert(`Element to print #replenish-manual-print not found!`);
         return;
@@ -104,7 +103,7 @@ export default {
       return true;
     },
 
-    addStyles (win, styles) {
+    addStyles(win, styles) {
       styles.forEach(style => {
         let link = win.document.createElement('link');
         link.setAttribute('rel', 'stylesheet');
@@ -114,7 +113,7 @@ export default {
       });
     },
 
-    getQtyRl (item) {
+    getQtyRl(item) {
       if (has(item, 'inputForm')) {
         return item.inputForm.quantity
       }
