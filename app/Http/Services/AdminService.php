@@ -407,7 +407,7 @@ class AdminService extends BaseService
         //         }
         //     );
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
-        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
+        $transactions = TakingTransaction::with('user')->select(['id','status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
         $transactions = $transactions->toArray();
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
@@ -464,6 +464,7 @@ class AdminService extends BaseService
                         ->orWhere('euc_box_spares.calibration_due', '>=', Carbon::now()->format('Y-m-d'));
                 })
                     // Do not get overdue items by expiry_date
+                    
                     ->where(function ($subQuery) {
                         $subQuery->whereNull('euc_box_spares.expiry_date')
                             ->orWhere('euc_box_spares.expiry_date', '>=', Carbon::now()->format('Y-m-d'));
