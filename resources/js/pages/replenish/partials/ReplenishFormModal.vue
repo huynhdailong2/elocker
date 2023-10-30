@@ -20,7 +20,7 @@
             type="text"
             class="input"
             disabled
-            :value="`${spare.shelf_name} - ${ spare.row } - ${ spare.bin }`">
+            :value="`${spare.cabinet_name} - ${ spare.locations.bin.row } - ${ spare.locations.bin.bin }`">
         </div>
         <div class="col-sm-3">
           <label>Item Name:</label>
@@ -28,7 +28,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.name">
+            :value="spare.locations.spares.name">
         </div>
         <div class="col-sm-3">
           <label>Item P/N:</label>
@@ -36,7 +36,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.part_no">
+            :value="spare.locations.spares.part_no">
         </div>
         <div class="col-sm-3">
           <label>Item Type:</label>
@@ -44,7 +44,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.type | upperFirst">
+            :value="spare.locations.spares.type | upperFirst">
         </div>
       </div>
       <div class="row">
@@ -54,7 +54,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.quantity_oh || 0">
+            :value="spare.bin_spare.quantity_oh || 0">
         </div>
         <div class="col-sm-3">
           <label>Quantity RL:</label>
@@ -77,7 +77,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.min">
+            :value="spare.bin_spare.min">
         </div>
         <div class="col-sm-3">
           <label>Max:</label>
@@ -85,7 +85,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.max">
+            :value="spare.bin_spare.max">
         </div>
       </div>
 
@@ -153,14 +153,14 @@ export default {
         return 0
       }
 
-      const number = (this.spare.max || 0) - (this.spare.quantity_oh || 0)
+      const number = (this.spare.bin_spare.max || 0) - (this.spare.bin_spare.quantity_oh || 0)
       return number < 0 ? 0 : number
     },
 
     visibleBinConfigure () {
-      return this.spare.has_batch_no || this.spare.has_serial_no
-        || this.spare.has_charge_time || this.spare.has_calibration_due
-        || this.spare.has_expiry_date|| this.spare.has_load_hydrostatic_test_due
+      return this.spare.configures.has_batch_no || this.spare.configures.has_serial_no
+        || this.spare.configures.has_charge_time || this.spare.configures.has_calibration_due
+        || this.spare.configures.has_expiry_date|| this.spare.configures.has_load_hydrostatic_test_due
     }
   },
 

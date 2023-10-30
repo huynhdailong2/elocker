@@ -19,16 +19,18 @@ class ReturningSpareJob implements ShouldQueue
 
     private $userId;
     private $data;
+    private $spare_ids;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($userId, $data)
+    public function __construct($userId, $data, $spare_ids)
     {
         $this->userId = $userId;
         $this->data = $data;
+        $this->spare_ids = $spare_ids;
     }
 
     /**
@@ -54,9 +56,9 @@ class ReturningSpareJob implements ShouldQueue
         $this->updateItemsHandover($itemsFromHandover);
     }
 
-    private function getIssueCards($binIds)
+    private function getIssueCards($binIds, $spare)
     {
-        return IssueCard::whereIn('bin_id', $binIds)
+        return IssueCard::whereIn('bin_id', $binIds)->whereIn('spare_id', $spare)
             ->where(function ($query) {
                 $query->whereNull('returned')
                     ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
@@ -65,9 +67,9 @@ class ReturningSpareJob implements ShouldQueue
             ->get();
     }
 
-    private function getItemsHandover($binIds)
+    private function getItemsHandover($binIds, $spare_id)
     {
-        return ReturnSpare::whereIn('bin_id', $binIds)
+        return ReturnSpare::whereIn('bin_id', $binIds)->whereIn('spare_id', $spare_id)
             ->where('type', Consts::HAND_OVER)
             ->where('receiver_id', $this->userId)
             ->whereColumn('quantity', '<>', 'quantity_returned_store')
@@ -77,13 +79,16 @@ class ReturningSpareJob implements ShouldQueue
 
     private function updateIssueCards($data)
     {
-        $mapData = collect($data)
-            ->mapWithKeys(function ($item) {
-                return [ $item['bin_id'] => $item ];
-            });
+        $mapData = collect($data)->mapWithKeys(function ($item) {
+            return [$item['bin_id'] => $item['spare_id']];
+        });
+        
+        $binIds = array_keys($mapData->toArray());
+        $spareIds = array_values($mapData->toArray());
+        // foreach($this->spare_ids as $item){
+            $cards = $this->getIssueCards($binIds, $spareIds);
 
-        $binIds = collect($data)->pluck('bin_id')->toArray();
-        $cards = $this->getIssueCards($binIds);
+        // }
 
         foreach ($cards as $card) {
             $inputQuantity = $mapData[$card->bin_id]['quantity'];
@@ -112,20 +117,21 @@ class ReturningSpareJob implements ShouldQueue
         }
 
         // Clear tracking mo => because quantity always equal 1
-        TrackingMo::whereIn('bin_id', $binIds)
+        TrackingMo::whereIn('bin_id', $binIds)->where('spare_id', $this->data)
             ->delete();
     }
 
     private function updateItemsHandover($data)
     {
-        $mapData = collect($data)
-            ->mapWithKeys(function ($item) {
-                return [ $item['bin_id'] => $item ];
-            });
-
-        $binIds = collect($data)->pluck('bin_id')->toArray();
-        $returnings = $this->getItemsHandover($binIds);
-
+        $mapData = collect($data)->mapWithKeys(function ($item) {
+            return [$item['bin_id'] => $item['spare_id']];
+        });
+        
+        $binIds = array_keys($mapData->toArray());
+        $spareIds = array_values($mapData->toArray());
+        // foreach($this->spare_ids as $item){
+        $returnings = $this->getItemsHandover($binIds,$spareIds);
+        // }
         foreach ($returnings as $return) {
             $inputQuantity = $mapData[$return->bin_id]['quantity'];
             if (!$inputQuantity) {
@@ -150,4 +156,3 @@ class ReturningSpareJob implements ShouldQueue
         }
     }
 }
-

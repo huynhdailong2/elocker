@@ -28,6 +28,7 @@ use App\Mails\SparesTorqueWrenchReport;
 use App\Mails\SparesWriteOffReport;
 use App\Mails\YetToReturnSparesReport;
 use App\Models\Bin;
+use App\Models\TakingTransactionDetail;
 use App\Models\BinConfigure;
 use App\Models\BinSpare;
 use App\Models\Cluster;
@@ -143,7 +144,50 @@ class SpareService extends BaseService
                     // $this->saveData($issueCard, $value);
                     // $value['issue_card_id'] = $issueCard->id;
                     // $this->saveData($trackingMo, $value);
-                    $this->updateQuantityInBinSpare($issueCard->bin_id,$issueCard->spare_id, -$issueCard->quantity);
+                    $this->updateQuantityInBinSpare($issueCard->bin_id, $issueCard->spare_id, -$issueCard->quantity);
+                    $transaction_last = TakingTransaction::orderBy('created_at', 'desc')->limit(1)->first();
+                    $binGet = Bin::find($value['configures'][0]['bin_id']);
+                    $cluster = Cluster::find($binGet->cluster_id);
+                    $shelf = Shelf::find($binGet->shelf_id);
+                    // $transaction_last = $transaction_last->toArray();
+                    $bub_num = 0;
+                    if (!empty($transaction_last)) {
+                        $bub_num = $transaction_last->id + 1;
+                    } else {
+                        $bub_num = 1;
+                    }
+                    $job_carddd = JobCard::find($value['job_card_id']);
+                    $data_transaction = [
+                        'user_id' => 1,
+                        'type' => 'issue',
+                        'satus' => 'done',
+                        'job_card_id' => $value['job_card_id'],
+                        'name' => 'trans#' . $bub_num,
+                        'cabinet_id' => $binGet->shelf_id,
+                        'bin_id' => $value['configures'][0]['bin_id'],
+                        'request_qty' => $value['spares']['pivot']['quantity'],
+                        'cluster_name' => $cluster->name,
+                        'cabinet_name' => $shelf->name,
+                        'bin_name' => $binGet->bin,
+                        'total_qty' => 0,
+                        'remain_qty' => 0,
+                        'hardware_port' => 0,
+                        'port_id' => 0,
+                        'qty' => 0,
+                        'pre_qty' => 0,
+                        'changed_qty' => 0,
+                        'part_number' => 0,
+                    ];
+                    $transaction_new = TakingTransaction::create($data_transaction);
+                    $taking_transaction_detail = [
+                        'taking_transaction_id' => $transaction_new->id,
+                        'spare_id' => $value['spares']['id'],
+                        'platform' => $job_carddd->platform,
+                        'job_name' =>  $job_carddd->wo,
+                        'job_card_id' =>  $value['job_card_id'],
+                        'listWO' => 'null',
+                    ];
+                    TakingTransactionDetail::create($taking_transaction_detail);
                     break;
             }
             $response[] = (object)[
@@ -232,67 +276,67 @@ class SpareService extends BaseService
     {
         $userId = array_get($params, 'user_id', Auth::id());
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        $rawData =IssueCard::with('bin','spare')->orderBy('created_at','desc')->get();
-        // $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
-        //     ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
-        //     ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-        //     ->join('bin_spare', 'bin_spare.bin_id', '=', 'bins.id')
-        //     ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+        $rawData =IssueCard::with('bin','spare')->orderBy('created_at','desc')->get();        $rawData = IssueCard::with('bin', 'spare')->orderBy('created_at', 'desc')
+        //     // $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
+        //     //     ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
+        //     //     ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
+        //     //     ->join('bin_spare', 'bin_spare.bin_id', '=', 'bins.id')
+        //     //     ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
         //     ->where('issue_cards.taker_id', $userId)
-        //     ->where('issue_cards.quantity', '>', 0)
-        //     ->where('bins.is_failed', 0)
-        //     ->when(!$ignoreEmpty, function ($query) use ($params) {
-        //         $query->where('bins.quantity', 0)
-        //             ->where('bins.quantity_oh', 0);
-        //     })
-        //     ->when(!empty($params['types']), function ($query) use ($params) {
-        //         $query->whereIn('spares.type', $params['types']);
-        //     })
-        //     ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-        //         $query->where('bins.cluster_id', $params['cluster_id']);
-        //     })
-        //     ->when(!empty($params['search_key']), function ($query) use ($params) {
-        //         $searchKey = Utils::escapeLike($params['search_key']);
+        //     ->where('issue_cards.quantity', '>', 0)->get();
+        // // ->where('bins.is_failed', 0)->get();
+        // //     ->when(!$ignoreEmpty, function ($query) use ($params) {
+        // //         $query->where('bins.quantity', 0)
+        // //             ->where('bins.quantity_oh', 0);
+        // //     })
+        // //     ->when(!empty($params['types']), function ($query) use ($params) {
+        // //         $query->whereIn('spares.type', $params['types']);
+        // //     })
+        // //     ->when(!empty($params['cluster_id']), function ($query) use ($params) {
+        // //         $query->where('bins.cluster_id', $params['cluster_id']);
+        // //     })
+        // //     ->when(!empty($params['search_key']), function ($query) use ($params) {
+        // //         $searchKey = Utils::escapeLike($params['search_key']);
 
-        //         $query->where(function ($subQuery) use ($searchKey) {
-        //             $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-        //                 ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
-        //                 ->orWhere('spares.serial_no', 'LIKE', "%{$searchKey}%")
-        //                 ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
-        //         });
-        //     })
-        //     ->when(!empty($params['ignore_returned']), function ($query) use ($params) {
-        //         $query->where(function ($subQuery) {
-        //             $subQuery->whereNull('returned')
-        //                 ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
-        //         });
-        //     })
-        //     ->select(
-        //         'issue_cards.*',
-        //         'issue_cards.id as issue_card_id',
-        //         'spares.name as spare_name',
-        //         'spares.part_no',
-        //         'spares.material_no',
-        //         'spares.has_serial_no',
-        //         'spares.url',
-        //         'bins.row',
-        //         'bins.bin as bin_name',
-        //         'shelfs.name as shelf_name',
-        //         'clusters.name as cluster_name',
-        //         'torque_wrench_areas.area as veh_p_area',
-        //         'torque_wrench_areas.torque_value',
-        //         'spares.type as spare_type'
-        //     )
-        //     ->when(
-        //         !empty($params['no_pagination']),
-        //         function ($query) {
-        //             return $query->get();
-        //         },
-        //         function ($query) use ($params) {
-        //             return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
-        //         }
-        //     );
-        return $rawData;
+                $query->where(function ($subQuery) use ($searchKey) {
+                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
+                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%")
+                        ->orWhere('spares.serial_no', 'LIKE', "%{$searchKey}%")
+                        ->orWhere('spares.material_no', 'LIKE', "%{$searchKey}%");
+                });
+            })
+            ->when(!empty($params['ignore_returned']), function ($query) use ($params) {
+                $query->where(function ($subQuery) {
+                    $subQuery->whereNull('returned')
+                        ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
+                });
+            })
+            ->select(
+                'issue_cards.*',
+                'issue_cards.id as issue_card_id',
+                'spares.name as spare_name',
+                'spares.part_no',
+                'spares.material_no',
+                'spares.has_serial_no',
+                'spares.url',
+                'bins.row',
+                'bins.bin as bin_name',
+                'shelfs.name as shelf_name',
+                'clusters.name as cluster_name',
+                'torque_wrench_areas.area as veh_p_area',
+                'torque_wrench_areas.torque_value',
+                'spares.type as spare_type'
+            )
+            ->when(
+                !empty($params['no_pagination']),
+                function ($query) {
+                    return $query->get();
+                },
+                function ($query) use ($params) {
+                    return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+                }
+            );
+
         $data = Arr::get($params, 'no_pagination') ? $rawData : $rawData->getCollection();
         $binIds = $data->pluck('bin_id')->toArray();
         $configures = BinConfigure::whereIn('bin_id', $binIds)
@@ -302,15 +346,15 @@ class SpareService extends BaseService
             })
             ->toArray();
 
-        if (Arr::get($params, 'no_pagination')) {
-            return $data->transform(function ($record) use ($configures) {
-                return $this->transformReturnSpares($record, $configures);
-            });
-        }
+        // if (Arr::get($params, 'no_pagination')) {
+        //     return $data->transform(function ($record) use ($configures) {
+        //         return $this->transformReturnSpares($record, $configures);
+        //     });
+        // }
 
-        $rawData->getCollection()->transform(function ($record) use ($configures) {
-            return $this->transformReturnSpares($record, $configures);
-        });
+        // $rawData->getCollection()->transform(function ($record) use ($configures) {
+        //     return $this->transformReturnSpares($record, $configures);
+        // });
 
         return $rawData;
     }
@@ -771,38 +815,156 @@ class SpareService extends BaseService
     {
         $spares = array_get($params, 'spares', []);
         $userId = Arr::get($params, 'user_id');
+        $spare_ids = [];
         $data = [];
         foreach ($spares as $item) {
             $return = new ReturnSpare();
             $return->type = Consts::RETURN_TO_STORE;
             $return->bin_id = $item['bin_id'];
             $return->spare_id = $item['spare_id'];
+            $spare_ids[] = $item['spare_id'];
             $return->state = $item['state'];
             $return->quantity = $item['quantity'];
             $return->handover_id = Auth::id();
             $return->save();
 
             //unlock bin
-            $bin = Bin::find($return->bin_id);
-            if (!empty($bin)) {
+            $binSpareCollection = BinSpare::where('bin_id', $return->bin_id)->where('spare_id', $return->spare_id)->get();
+            if (!$binSpareCollection) {
+                throw new Exception("Bin with bin id = {$return->bin_id} is invalid.");
+            }
+            foreach ($binSpareCollection as $bin) {
                 $bin->is_processing = 0;
                 $bin->process_time = null;
                 $bin->process_by = null;
                 $bin->save();
             }
-            $this->updateQuantityInBin($return->bin_id, $return->quantity);
+            // $this->updateQuantityInBin($return->bin_id, $return->quantity);
+            $this->updateQuantityInBinSpare($return->bin_id, $return->spare_id, $return->quantity);
             $this->updateRemainQtyInTransaction($userId, Consts::TAKING_TRANSACTION_TYPE_RETURN, $return->quantity);
             $data[] = (object)[
                 'spare_id' => $item['spare_id'],
                 'bin_id' => $item['bin_id'],
             ];
+            $returnings = $this->getItemsHandover($return->bin_id, $return->spare_id, $userId);
+
+            if (!empty($returnings)) {
+                foreach ($returnings as $returns) {
+                    $inputQuantity = $item['quantity'];
+                    if (!$inputQuantity) {
+                        continue;
+                    }
+                    $remainQuantityInCard = BigNumber::new($returns->quantity)
+                        ->sub($returns->quantity_returned_store)
+                        ->toString();
+
+                    $returnedQuantity = BigNumber::new($returns->quantity_returned_store ?: 0)
+                        ->add($inputQuantity)
+                        ->toString();
+
+                    // equal or bigger.
+                    if (~BigNumber::new($inputQuantity)->comp($remainQuantityInCard)) {
+                        $returnedQuantity = $returns->quantity;
+                    }
+                    $returns->quantity_returned_store = $returnedQuantity;
+                    $returns->save();
+                }
+            }
+
+            $cards = $this->getIssueCards($return->bin_id, $return->spare_id);
+            if (!empty($cards)) {
+                foreach ($cards as $card) {
+                    $inputQuantity = $item['quantity'];
+                    if (!$inputQuantity) {
+                        continue;
+                    }
+
+                    $remainQuantityInCard = BigNumber::new($card->quantity)
+                        ->sub($card->returned_quantity)
+                        ->toString();
+
+                    $state = Consts::RETURNED_TYPE_PARTIAL;
+                    $returnedQuantity = BigNumber::new($card->returned_quantity ?: 0)
+                        ->add($inputQuantity)
+                        ->toString();
+
+                    // equal or bigger.
+                    if (~BigNumber::new($inputQuantity)->comp($remainQuantityInCard)) {
+                        $state = Consts::RETURNED_TYPE_ALL;
+                        $returnedQuantity = $card->quantity;
+                    }
+                    $card->returned = $state;
+                    $card->returned_quantity = $returnedQuantity;
+                    $card->save();
+                }
+            }
+
+            TrackingMo::where('bin_id', $return->bin_id)->where('spare_id', $return->spare_id)
+                ->delete();
+
+            $transaction_last = TakingTransaction::orderBy('created_at', 'desc')->limit(1)->first();
+            $binGet = Bin::find($item['bin_id']);
+            $cluster = Cluster::find($binGet->cluster_id);
+            $shelf = Shelf::find($binGet->shelf_id);
+            // $transaction_last = $transaction_last->toArray();
+            $bub_num = 0;
+            if (!empty($transaction_last)) {
+                $bub_num = $transaction_last->id + 1;
+            } else {
+                $bub_num = 1;
+            }
+            $data_transaction = [
+                'user_id' => 1,
+                'type' => 'issue',
+                'satus' => 'done',
+                'name' => 'trans#' . $bub_num,
+                'cabinet_id' => $binGet->shelf_id,
+                'bin_id' => $item['bin_id'],
+                'request_qty' => $item['quantity'],
+                'cluster_name' => $cluster->name,
+                'cabinet_name' => $shelf->name,
+                'bin_name' => $binGet->bin,
+                'total_qty' => 0,
+                'remain_qty' => 0,
+                'hardware_port' => 0,
+                'port_id' => 0,
+                'qty' => 0,
+                'pre_qty' => 0,
+                'changed_qty' => 0,
+                'part_number' => 0,
+            ];
+            $transaction_new = TakingTransaction::create($data_transaction);
+            $taking_transaction_detail = [
+                'taking_transaction_id' => $transaction_new->id,
+                'spare_id' => $item['spare_id'],
+                'listWO' => 'null'
+            ];
+            TakingTransactionDetail::create($taking_transaction_detail);
         }
 
-        ReturningSpareJob::dispatch(Auth::id(), $spares);
+        // ReturningSpareJob::dispatch(Auth::id(), $spares, $spare_ids);
 
         return $data;
     }
-
+    private function getIssueCards($binIds, $spare)
+    {
+        return IssueCard::where('bin_id', $binIds)->where('spare_id', $spare)
+            ->where(function ($query) {
+                $query->whereNull('returned')
+                    ->orWhere('returned', Consts::RETURNED_TYPE_PARTIAL);
+            })
+            ->orderBy('created_at')
+            ->get();
+    }
+    private function getItemsHandover($binIds, $spare_id, $userId)
+    {
+        return ReturnSpare::where('bin_id', $binIds)->where('spare_id', $spare_id)
+            ->where('type', Consts::HAND_OVER)
+            ->where('receiver_id', $userId)
+            ->whereColumn('quantity', '<>', 'quantity_returned_store')
+            ->orderBy('created_at')
+            ->get();
+    }
     private function updateQuantityInBin($binId, $quantity)
     {
         $bin = Bin::find($binId);
@@ -828,7 +990,7 @@ class SpareService extends BaseService
             $bin->quantity_oh = $newQuantity;
             $bin->quantity = $newQuantity;
             $bin->save();
-    
+
             return $bin;
         }
     }
@@ -2734,7 +2896,6 @@ class SpareService extends BaseService
                 'qty' => 0,
                 'pre_qty' => 0,
                 'changed_qty' => 0,
-                // 'item_id' => 1,
                 'request_qty' => $request['request_qty'],
                 'user_id' => $request['user']['id'],
                 'type' => $request['type'],
@@ -2798,68 +2959,9 @@ class SpareService extends BaseService
                     ]);
                 }
             }
-            if(!empty($taking_transaction['spares'])){
-                $spareTypes = [
-                    [
-                        'accepted' => ['issue', 'return', 'replenish'],
-                        'type'     => 'all',
-                        'label'    => 'All',
-                    ],
-                    [
-                        'accepted' => ['issue', 'replenish'],
-                        'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                        'label'    => 'Consumable',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_DURABLE,
-                        'label'    => 'STEs',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                        'label'    => 'Perishable',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_AFES,
-                        'label'    => 'AFES',
-                    ],
-                    [
-                        'accepted' => ['issue', 'replenish'],
-                        'type'     => Consts::SPARE_TYPE_EUC,
-                        'label'    => 'EUC',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                        'label'    => 'Torque Wrench',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_OTHERS,
-                        'label'    => 'Others',
-                    ],
-                ];
-                foreach($taking_transaction['spares'] as $item){
-                    $type_item = $item['type'];
-                    $type_transaction = $request['type'];
-                    $found = false;
-                    foreach ($spareTypes as $spareType) {
-                        if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
-                            $item['label'] = $spareType['label'];
-                            $found = true;
-                        }
-                    }
-                    if (!$found) {
-                        $item['label'] = 'Unknown';
-                    }
-                }
-                
-            }
             $taking_transactions[] = $taking_transaction;
         }
-
+        
         return $taking_transactions;
     }
     // public function getReportByTnx($params = []){
@@ -2873,7 +2975,7 @@ class SpareService extends BaseService
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
-        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc');
+        $transactions = TakingTransaction::with('user')->select(['id', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc');
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -3070,9 +3172,11 @@ class SpareService extends BaseService
     public function getReportByLoan($request = [])
     {
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
-        $date = isset($request['issued_date']) ? $request['issued_date'] : [];
-        $dateee = json_decode($date, true);
-        $transactions = TakingTransaction::with('user')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
+        if(!empty($date)){
+            $date = isset($request['issued_date']) ? $request['issued_date'] : [];
+            $dateee = json_decode($date, true);
+        }
+        $transactions = TakingTransaction::with('user')->select(['id','status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -3118,7 +3222,7 @@ class SpareService extends BaseService
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['returned_date']) ? $request['returned_date'] : [];
         $dateee = json_decode($date, true);
-        $transactions = TakingTransaction::with('user')->where('type', 'return')->select(['id', 'name', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc');
+        $transactions = TakingTransaction::with('user')->where('type', 'return')->select(['id','status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc');
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }

@@ -26,10 +26,11 @@ class IssueCard extends Model
     }
     public function bin()
     {
-        return $this->belongsTo(Bin::class);
+        return $this->belongsTo(Bin::class, 'bin_id', 'id');
     }
     public function spare()
     {
         return $this->belongsTo(Spare::class);
     }
+    
 }

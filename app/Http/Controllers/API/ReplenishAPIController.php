@@ -20,13 +20,13 @@ class ReplenishAPIController extends BaseController
 
     public function replenishManual(Request $request)
     {
-        $request->validate([
-            'spares'                        => 'required|array',
-            'spares.*.bin_id'               => 'required|exists:bins,id',
-            'spares.*.spare_id'             => 'required|exists:spares,id',
-            'spares.*.quantity'             => 'required',
-            // 'spares.*.configures'           => 'required|array'
-        ]);
+        // $request->validate([
+        //     'spares'                        => 'required|array',
+        //     'spares.*.bin_id'               => 'required|exists:bins,id',
+        //     'spares.*.spare_id'             => 'required|exists:spares,id',
+        //     'spares.*.quantity'             => 'required',
+        //     // 'spares.*.configures'           => 'required|array'
+        // ]);
 
         DB::beginTransaction();
         try {
