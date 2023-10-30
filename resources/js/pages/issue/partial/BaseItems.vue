@@ -24,7 +24,7 @@ export default {
       STEP,
       currentStep: STEP.CHOOSE_ITEMS,
       torqueAreas: [],
-      scanTakerModal: 'scan-taker-modal'
+      scanTakerModal: 'scan-taker-modal',
     }
   },
 
@@ -93,6 +93,7 @@ export default {
               }
             })
             .value()
+            console.log("this.data",this.data)
         })
     },
 
@@ -197,8 +198,9 @@ export default {
         .value()
     },
 
-    visibleTorqueArea (item) {
-      switch (item.type) {
+    visibleTorqueArea(item) {
+      console.log(item)
+      switch (item.spares.type) {
         // case Const.ITEM_TYPE.DURABLE.value:
         case Const.ITEM_TYPE.TORQUE_WRENCH.value:
           return true
@@ -221,7 +223,7 @@ export default {
       }
       rf.getRequest('AdminRequest').getTorqueAreas(params)
         .then(res => {
-          this.torqueAreas = res.data || []
+          return this.torqueAreas = res.data || []
         })
     },
 
