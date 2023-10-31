@@ -161,7 +161,6 @@ export default {
     },
 
     onClickFillReplenish (item) {
-      console.log("🚀 ~ file: BaseItemsManual.vue:164 ~ onClickFillReplenish ~ item:", item)
       this.selectedSpare = item
       this.$modal.show('replenish-form-modal', { spare: item })
     },

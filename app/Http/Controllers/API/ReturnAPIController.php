@@ -33,7 +33,7 @@ class ReturnAPIController extends BaseController
         }
     }
 
-    public function returnToStore(ReturnToStoreRequest $request)
+    public function returnToStore(Request $request)
     {
         DB::beginTransaction();
         try {

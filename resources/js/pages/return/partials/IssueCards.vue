@@ -24,11 +24,11 @@
           </div>
           <div class="info row">
             <div class="col-sm-7">
-              <div>Item Name: {{ item.spare_name }}</div>
-              <div>MPN: {{ item.material_no }}</div>
-              <div>SSN: {{ item.part_no }}</div>
-              <div>Bin#: {{ item.shelf_name }} - {{ item.row }} - {{ item.bin }}</div>
-              <div>Qty On Loan: {{ item.quantity_loan }}</div>
+              <div>Item Name: {{ item.spare.name }}</div>
+              <div>MPN: {{ item.spare.material_no }}</div>
+              <div>SSN: {{ item.spare.part_no }}</div>
+              <div>Bin#: {{ item.bin.shelf_id }} - {{ item.bin.row }} - {{ item.bin.bin }}</div>
+              <div>Qty On Loan: {{ item.quantity_loan || 0 }}</div>
             </div>
             <div class="col-sm-5">
               <div class="state">
@@ -93,10 +93,21 @@
                 <td><div>{{ item.spare.material_no }}</div></td>
                 <td><div>{{ item.spare.part_no }}</div></td>
                 <td><div>{{ item.spare.name }}</div></td>
-                <td><div>{{ item.cluster_name }} - {{ item.shelf_name }} - {{ item.row }} - {{ item.bin_name }}</div></td>
+                <td>
+                  <div v-if="item.bin && item.bin.shelf_id && item.bin && item.bin.row && item.bin && item.bin.bin">
+                    {{ item.bin.shelf_id }} - {{ item.bin.row }} - {{ item.bin.bin }}
+                  </div>
+                  <div v-else>N/A</div>
+                </td>
                 <td><div>{{ item.quantity_loan || 0 }}</div></td>
-                <td>{{ item.veh_p_area }}</td>
-                <td>{{ item.torque_value }}</td>
+                <td>
+                  <span v-if="item.torque_wrench_area && item.torque_wrench_area.area">{{ item.torque_wrench_area.area }}</span>
+                  <span v-else>N/A</span>
+                </td>
+                <td>
+                  <span v-if="item.torque_wrench_area && item.torque_wrench_area.torque_value">{{ item.torque_wrench_area.torque_value }}</span>
+                  <span v-else>N/A</span>
+                </td>
                 <td>
                   <div class="form-input">
                     <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
@@ -115,7 +126,7 @@
                   </div>
                 </td>
                 <td class="link-mo">
-                  <span v-if="item.spare_type == Const.ITEM_TYPE.TORQUE_WRENCH.value" class="btn btn-primary" @click.stop="onClickLinkMO(item)">WO/Svc#</span>
+                  <span v-if="item.spare.type == Const.ITEM_TYPE.TORQUE_WRENCH.value" class="btn btn-primary" @click.stop="onClickLinkMO(item)">WO/Svc#</span>
                 </td>
               </tr>
             </template>

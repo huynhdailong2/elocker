@@ -80,11 +80,11 @@ class TakingTransactionAPIController extends BaseController
             'total_qty' => 'numeric',
         ]);
 
-        // DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->spareService->createTransaction($params);
-            // DB::commit();
+            DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollBack();

@@ -22,7 +22,7 @@
         <tbody>
           <template v-if="noData">
             <tr>
-              <td colspan="5">There is no data.</td>
+              <td colspan="6">There is no data.</td>
             </tr>
           </template>
           <template v-else>
@@ -37,7 +37,11 @@
               <td><div>{{ item.locations.spares.part_no }}</div></td>
               <td><div>{{ item.locations.spares.name }}</div></td>
               <td><div>{{ item.cluster_name }} - {{ item.cabinet_name }} - {{ item.locations.bin.row }} - {{ item.locations.bin.bin }}</div></td>
-              <td><div>{{ item.bin_spare.quantity_oh || 0 }}</div></td>
+              <!-- <td><div>{{ item.bin_spare.quantity_oh || 0 }}</div></td> -->
+              <td>
+                  <span v-if="item.bin_spare && item.bin_spare.quantity_oh">{{ item.bin_spare.quantity_oh }}</span>
+                  <span v-else>0</span>
+                </td>
               <template v-if="replenishForm">
                 <td><div>{{ item.inputForm ? (item.inputForm.quantity || 0) : 0 }}</div></td>
                 <td>

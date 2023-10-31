@@ -21,4 +21,8 @@ class TrackingMo extends Model
         'returned_quantity',
         'issue_card_id',
     ];
+    public function torqueWrenchArea()
+    {
+        return $this->belongsTo(TorqueWrenchArea::class, 'torque_wrench_area_id');
+    }
 }

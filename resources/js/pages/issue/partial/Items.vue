@@ -141,7 +141,7 @@ export default {
     },
     onFilterByType(type) {
       this.selectedType = type;
-      return this.$refs.spares.data({ text: this.inputText, type: this.selectedType });
+      return this.$refs.spares.filter({ text: this.inputText, type: this.selectedType });
     },
   }
 }

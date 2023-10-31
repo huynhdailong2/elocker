@@ -20,6 +20,7 @@ class TransactionSpare extends Model
         'vehicle_num',
         'area_id',
         'area_name',
+        'request_qty',
     ];
     protected $hidden = ['listWO'];
     public function job_card()

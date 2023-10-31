@@ -32,5 +32,8 @@ class IssueCard extends Model
     {
         return $this->belongsTo(Spare::class);
     }
-    
+    public function torqueWrenchArea()
+    {
+        return $this->belongsTo(TorqueWrenchArea::class, 'torque_wrench_area_id');
+    }
 }

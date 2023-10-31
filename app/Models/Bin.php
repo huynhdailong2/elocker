@@ -33,9 +33,6 @@ class Bin extends Model
         'description',
         'is_drawer',
         'is_failed',
-        // 'is_processing',
-        // 'process_time',
-        // 'process_by',
         'cu_id',
         'lock_id',
     ];

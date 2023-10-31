@@ -1980,7 +1980,7 @@ class AdminService extends BaseService
         $spareId = Arr::get($params, 'spare_id');
         $value = Arr::get($params, 'value');
 
-        $bin = BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->get();
+        $bin = BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->first();
         // If bin does not exist
         if (!$bin) {
             throw new Exception('Bin does not exist');

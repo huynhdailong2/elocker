@@ -9,9 +9,11 @@ class TakingTransaction extends Model
     protected $table = 'taking_transactions';
 
     protected $fillable = [
+        'id',
         'status',
         'user_id',
         'type',
+        'name',
         'remain_qty',
         'bin_id',
         'cabinet_id',
@@ -36,6 +38,7 @@ class TakingTransaction extends Model
         'spares',
         'bin',
         'cabinet',
+        'request_qty',
         
     ];
     protected $appends = ['locations'];
