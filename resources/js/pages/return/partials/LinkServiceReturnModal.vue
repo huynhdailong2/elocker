@@ -326,7 +326,7 @@ export default {
         spare_id: this.spare.spare_id,
         user_id: this.userId,
         returned_type: 'mo',
-        tracking_mo: true,
+        tracking_mo: true
       }
       return rf.getRequest('SpareRequest').getSparesTorqueWrench(params)
     },

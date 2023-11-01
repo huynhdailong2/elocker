@@ -90,32 +90,33 @@
                     <span class="checkmark"></span>
                   </label>
                 </td>
-                <td><div>{{ item.spare.material_no }}</div></td>
-                <td><div>{{ item.spare.part_no }}</div></td>
-                <td><div>{{ item.spare.name }}</div></td>
-                <td>
+                <td style="white-space: nowrap;"><div>{{ item.spare.material_no }}</div></td>
+                <td style="white-space: nowrap;"><div>{{ item.spare.part_no }}</div></td>
+                <td style="white-space: nowrap;"><div>{{ item.spare.name }}</div></td>
+                <td style="white-space: nowrap;">
                   <div v-if="item.bin && item.bin.shelf_id && item.bin && item.bin.row && item.bin && item.bin.bin">
                     {{ item.bin.shelf_id }} - {{ item.bin.row }} - {{ item.bin.bin }}
                   </div>
                   <div v-else>N/A</div>
                 </td>
-                <td><div>{{ item.quantity_loan || 0 }}</div></td>
-                <td>
+                <td style="white-space: nowrap;"><div>{{ item.quantity_loan || 0 }}</div></td>
+                <td style="white-space: nowrap;">
                   <span v-if="item.torque_wrench_area && item.torque_wrench_area.area">{{ item.torque_wrench_area.area }}</span>
                   <span v-else>N/A</span>
                 </td>
-                <td>
+                <td style="white-space: nowrap;">
                   <span v-if="item.torque_wrench_area && item.torque_wrench_area.torque_value">{{ item.torque_wrench_area.torque_value }}</span>
                   <span v-else>N/A</span>
                 </td>
-                <td>
+                <td style="white-space: nowrap;">
                   <div class="form-input">
                     <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
                     <span class="number">{{ item.newQuantity }}</span>
+                    <!-- <input type="number" v-model="item.newQuantity" @input="onQuantityChange(item)" min="0" /> -->
                     <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
                   </div>
                 </td>
-                <td>
+                <td style="min-width: 300px;">
                   <div class="state">
                     <div class="btn btn-primary"
                         v-for="state in SPARE_STATE"
@@ -199,6 +200,9 @@
       }
     }
   }
+//   td {
+//   white-space: nowrap !important;
+// }
   .action {
     margin-top: 20px;
     text-align: right;

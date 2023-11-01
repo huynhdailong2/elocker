@@ -31,6 +31,7 @@ class IssueCard extends Model
     public function spare()
     {
         return $this->belongsTo(Spare::class);
+        // return $this->belongsToMany(Spare::class,'bin_spare', 'bin_id', 'spare_id')->withPivot(['quantity','quantity_oh', 'min', 'max', 'critical','is_processing','process_time','process_by']);
     }
     public function torqueWrenchArea()
     {

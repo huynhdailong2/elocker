@@ -278,7 +278,7 @@ class AdminService extends BaseService
 
     public function getSpares($params)
     {
-        return Spare::with('userAccessingSpares')
+        $spare_data = Spare::with('userAccessingSpares')
             ->when(!empty($params['search_key']), function ($query) use ($params) {
                 $searchKey = Utils::escapeLike($params['search_key']);
                 $query->where(function ($subQuery) use ($searchKey) {
@@ -302,15 +302,95 @@ class AdminService extends BaseService
                     return $query->orderBy('updated_at', 'desc');
                 }
             )
-            ->when(
-                !empty($params['no_pagination']),
-                function ($query) {
-                    return $query->get();
-                },
-                function ($query) use ($params) {
-                    return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+            ->get();
+            $spareTypes = [
+                [
+                    'accepted' => ['issue', 'return', 'replenish'],
+                    'type'     => 'all',
+                    'label'    => 'All',
+                ],
+                [
+                    'accepted' => ['issue', 'replenish'],
+                    'type'     => Consts::SPARE_TYPE_CONSUMABLE,
+                    'label'    => 'Consumable',
+                ],
+                [
+                    'accepted' => ['issue', 'return'],
+                    'type'     => Consts::SPARE_TYPE_DURABLE,
+                    'label'    => 'STEs',
+                ],
+                [
+                    'accepted' => ['issue', 'return'],
+                    'type'     => Consts::SPARE_TYPE_PERISHABLE,
+                    'label'    => 'Perishable',
+                ],
+                [
+                    'accepted' => ['issue', 'return'],
+                    'type'     => Consts::SPARE_TYPE_AFES,
+                    'label'    => 'AFES',
+                ],
+                [
+                    'accepted' => ['issue', 'replenish'],
+                    'type'     => Consts::SPARE_TYPE_EUC,
+                    'label'    => 'EUC',
+                ],
+                [
+                    'accepted' => ['issue', 'return'],
+                    'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
+                    'label'    => 'Torque Wrench',
+                ],
+                [
+                    'accepted' => ['issue', 'return'],
+                    'type'     => Consts::SPARE_TYPE_OTHERS,
+                    'label'    => 'Others',
+                ],
+            ];
+            $spare_datas = [];
+            
+            if(!empty($params['no_pagination'])){
+                $spare_data = $spare_data->toArray();
+                foreach ($spare_data as $key => $item) {
+                    $type_item = $item['type'];
+                    $found = false;
+                    foreach ($spareTypes as $spareType) {
+                        if ($type_item === $spareType['type']) {
+                            $item['label'] = $spareType['label'];
+                            $spare_data[$key] = $item;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if ($found == false) {
+                        $item['label'] = 'Unknown';
+                        $spare_data[$key] = $item;
+                    }
                 }
-            );
+                return $spare_data;
+            }else{
+                $spare_data = $spare_data->toArray();
+                foreach ($spare_data as $key => $item) {
+                    $type_item = $item['type'];
+                    $found = false;
+                    foreach ($spareTypes as $spareType) {
+                        if ($type_item === $spareType['type']) {
+                            $item['label'] = $spareType['label'];
+                            $spare_data[$key] = $item;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if ($found == false) {
+                        $item['label'] = 'Unknown';
+                        $spare_data[$key] = $item;
+                    }
+                }
+                $perPage = $params['limit'];
+                $page = $params['page'];
+                $currentPage = $page;
+                $perPage = $params['limit'];
+                $paginatedData = array_slice($spare_data, ($currentPage - 1) * $perPage, $perPage);
+                return new LengthAwarePaginator($paginatedData, count($spare_data), $perPage, $currentPage);
+            }
     }
 
     public function getSpareByMpn($params)
