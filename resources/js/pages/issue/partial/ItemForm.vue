@@ -184,7 +184,7 @@ export default {
     this.getVehicles()
   },
 
-   methods: {
+  methods: {
     getVehicles() {
       const params = {
         no_pagination: true
