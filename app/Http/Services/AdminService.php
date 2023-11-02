@@ -900,12 +900,12 @@ class AdminService extends BaseService
                     $configure->bin_id = $bin->id;
                 }
 
-                $configure->batch_no = $confInputs['batch_no'];
-                $configure->serial_no = $confInputs['serial_no'];
+                $configure->batch_no = $params['batch_no'];
+                $configure->serial_no = $params['serial_no'];
 
                 $chargeTime = !empty($confInputs['input_charge_time']) ? $confInputs['input_charge_time'] : NULL;
                 $configure->has_charge_time = !empty($confInputs['has_charge_time']) ? 1 : 0;
-                $configure->charge_time = !empty($chargeTime['HH']) ? $chargeTime['HH'] . ':' . $chargeTime['mm'] : NULL;
+                $configure->charge_time = !empty($params['charge_time']) ? $params['charge_time'] : NULL;
                 $configure->has_calibration_due = !empty($confInputs['has_calibration_due']) ? 1 : 0;
                 $configure->calibration_due = $confInputs['calibration_due'] ?? NULL;
                 $configure->has_expiry_date =  !empty($confInputs['has_expiry_date']) ? 1 : 0;

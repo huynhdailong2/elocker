@@ -52,7 +52,7 @@
                     <!--                      <div class="text">{{ props.item.card_num }}</div>-->
                     <!--                    </template>-->
                     <template>
-                      <div class="text">{{ props.item.card_num }}</div>
+                      <div class="text">{{ props.item.job_card.vehicle.vehicle_num }}</div>
                     </template>
                   </td>
                   <td>
@@ -74,7 +74,7 @@
                     </span>
                     </template>
                     <template v-else>
-                      <div class="text">{{ props.item.torque_area }}</div>
+                      <div class="text">{{ props.item.torque_wrench_area.area }}</div>
                     </template>
                   </td>
                   <td>
@@ -82,7 +82,7 @@
                       <div class="text">{{ getTorqValue(props.item.formInput.torque_id) }}</div>
                     </template>
                     <template v-else>
-                      <div class="text">{{ getTorqValue(props.item.torque_id) }}</div>
+                      <div class="text">{{ getTorqValue(props.item.torque_wrench_area.id) }}</div>
                     </template>
                   </td>
                   <td class="action">
@@ -324,6 +324,8 @@ export default {
     getSparesTorqueWrench(params) {
       params = {
         spare_id: this.spare.spare_id,
+        issue_card: this.spare.id,
+        bin_id: this.spare.bin_id,
         user_id: this.userId,
         returned_type: 'mo',
         tracking_mo: true
@@ -473,6 +475,7 @@ export default {
       rf.getRequest('SpareRequest').createLinkMO({
         'job_card_id': this.jobCard.id,
         'bin_id': this.spare.bin_id,
+        'issue_card_id': this.spare.id,
         'spare_id': this.spare.spare_id,
         'quantity': this.spare.newQuantity,
         'torque_wrench_area_id': this.confirmAreaId,

@@ -3935,15 +3935,18 @@ class SpareService extends BaseService
                 Consts::RETURNED_TYPE_LINK_MO,
             ]
         ], $params);
-        echo "<pre>";
-        var_dump($params);die();
         return $this->getIssueCardsBuilderBU($params);
     }
     private function getIssueCardsBuilderBU($params){
         $trackingMo = Arr::get($params, 'tracking_mo', false);
         $torqueWrench = array_get($params, 'torque_wrench', Consts::FALSE);
-        $fromTableName = 'tracking_mo';
-        $query = TrackingMo::join('job_cards', 'job_cards.id', "tracking_mo.job_card_id");
+        $bin_id = $params['bin_id'];
+        $spare_id = $params['spare_id'];
+        // var_dump($spare_id);die();
+        $issue_card_id = $params['issue_card'];
+        $query = TrackingMo::with('torqueWrenchArea','issueCard','jobCard')
+        ->where('bin_id', $bin_id)->where('spare_id', $spare_id)->where('issue_card_id',$issue_card_id)->get();
+        return $query;
     }
     private function getIssueCardsBuilder($params = [])
     {

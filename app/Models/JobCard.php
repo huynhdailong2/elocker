@@ -16,4 +16,8 @@ class JobCard extends Model
         'platform',
         'is_active',
     ];
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+    }
 }

@@ -25,4 +25,12 @@ class TrackingMo extends Model
     {
         return $this->belongsTo(TorqueWrenchArea::class, 'torque_wrench_area_id');
     }
+    public function issueCard()
+    {
+        return $this->belongsTo(IssueCard::class, 'issue_card_id');
+    }
+    public function jobCard()
+    {
+        return $this->belongsTo(JobCard::class, 'job_card_id')->with('vehicle');
+    }
 }
