@@ -94,8 +94,8 @@
                 <td style="white-space: nowrap;"><div>{{ item.spare.part_no }}</div></td>
                 <td style="white-space: nowrap;"><div>{{ item.spare.name }}</div></td>
                 <td style="white-space: nowrap;">
-                  <div v-if="item.bin && item.bin.shelf_id && item.bin && item.bin.row && item.bin && item.bin.bin">
-                    {{ item.bin.shelf_id }} - {{ item.bin.row }} - {{ item.bin.bin }}
+                  <div v-if="item.bin && item.bin.cluster && item.bin && item.bin.shelf && item.bin && item.bin.bin">
+                    {{ item.bin.cluster.name }} - {{ item.bin.shelf.name }} - {{ item.bin.row }} - {{ item.bin.bin }}
                   </div>
                   <div v-else>N/A</div>
                 </td>

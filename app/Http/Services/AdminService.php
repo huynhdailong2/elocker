@@ -303,94 +303,94 @@ class AdminService extends BaseService
                 }
             )
             ->get();
-            $spareTypes = [
-                [
-                    'accepted' => ['issue', 'return', 'replenish'],
-                    'type'     => 'all',
-                    'label'    => 'All',
-                ],
-                [
-                    'accepted' => ['issue', 'replenish'],
-                    'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                    'label'    => 'Consumable',
-                ],
-                [
-                    'accepted' => ['issue', 'return'],
-                    'type'     => Consts::SPARE_TYPE_DURABLE,
-                    'label'    => 'STEs',
-                ],
-                [
-                    'accepted' => ['issue', 'return'],
-                    'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                    'label'    => 'Perishable',
-                ],
-                [
-                    'accepted' => ['issue', 'return'],
-                    'type'     => Consts::SPARE_TYPE_AFES,
-                    'label'    => 'AFES',
-                ],
-                [
-                    'accepted' => ['issue', 'replenish'],
-                    'type'     => Consts::SPARE_TYPE_EUC,
-                    'label'    => 'EUC',
-                ],
-                [
-                    'accepted' => ['issue', 'return'],
-                    'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                    'label'    => 'Torque Wrench',
-                ],
-                [
-                    'accepted' => ['issue', 'return'],
-                    'type'     => Consts::SPARE_TYPE_OTHERS,
-                    'label'    => 'Others',
-                ],
-            ];
-            $spare_datas = [];
-            
-            if(!empty($params['no_pagination'])){
-                $spare_data = $spare_data->toArray();
-                foreach ($spare_data as $key => $item) {
-                    $type_item = $item['type'];
-                    $found = false;
-                    foreach ($spareTypes as $spareType) {
-                        if ($type_item === $spareType['type']) {
-                            $item['label'] = $spareType['label'];
-                            $spare_data[$key] = $item;
-                            $found = true;
-                            break;
-                        }
-                    }
-                    if ($found == false) {
-                        $item['label'] = 'Unknown';
+        $spareTypes = [
+            [
+                'accepted' => ['issue', 'return', 'replenish'],
+                'type'     => 'all',
+                'label'    => 'All',
+            ],
+            [
+                'accepted' => ['issue', 'replenish'],
+                'type'     => Consts::SPARE_TYPE_CONSUMABLE,
+                'label'    => 'Consumable',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_DURABLE,
+                'label'    => 'STEs',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_PERISHABLE,
+                'label'    => 'Perishable',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_AFES,
+                'label'    => 'AFES',
+            ],
+            [
+                'accepted' => ['issue', 'replenish'],
+                'type'     => Consts::SPARE_TYPE_EUC,
+                'label'    => 'EUC',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
+                'label'    => 'Torque Wrench',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_OTHERS,
+                'label'    => 'Others',
+            ],
+        ];
+        $spare_datas = [];
+
+        if (!empty($params['no_pagination'])) {
+            $spare_data = $spare_data->toArray();
+            foreach ($spare_data as $key => $item) {
+                $type_item = $item['type'];
+                $found = false;
+                foreach ($spareTypes as $spareType) {
+                    if ($type_item === $spareType['type']) {
+                        $item['label'] = $spareType['label'];
                         $spare_data[$key] = $item;
+                        $found = true;
+                        break;
                     }
                 }
-                return $spare_data;
-            }else{
-                $spare_data = $spare_data->toArray();
-                foreach ($spare_data as $key => $item) {
-                    $type_item = $item['type'];
-                    $found = false;
-                    foreach ($spareTypes as $spareType) {
-                        if ($type_item === $spareType['type']) {
-                            $item['label'] = $spareType['label'];
-                            $spare_data[$key] = $item;
-                            $found = true;
-                            break;
-                        }
-                    }
-                    if ($found == false) {
-                        $item['label'] = 'Unknown';
-                        $spare_data[$key] = $item;
-                    }
+                if ($found == false) {
+                    $item['label'] = 'Unknown';
+                    $spare_data[$key] = $item;
                 }
-                $perPage = $params['limit'];
-                $page = $params['page'];
-                $currentPage = $page;
-                $perPage = $params['limit'];
-                $paginatedData = array_slice($spare_data, ($currentPage - 1) * $perPage, $perPage);
-                return new LengthAwarePaginator($paginatedData, count($spare_data), $perPage, $currentPage);
             }
+            return $spare_data;
+        } else {
+            $spare_data = $spare_data->toArray();
+            foreach ($spare_data as $key => $item) {
+                $type_item = $item['type'];
+                $found = false;
+                foreach ($spareTypes as $spareType) {
+                    if ($type_item === $spareType['type']) {
+                        $item['label'] = $spareType['label'];
+                        $spare_data[$key] = $item;
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found == false) {
+                    $item['label'] = 'Unknown';
+                    $spare_data[$key] = $item;
+                }
+            }
+            $perPage = $params['limit'];
+            $page = $params['page'];
+            $currentPage = $page;
+            $perPage = $params['limit'];
+            $paginatedData = array_slice($spare_data, ($currentPage - 1) * $perPage, $perPage);
+            return new LengthAwarePaginator($paginatedData, count($spare_data), $perPage, $currentPage);
+        }
     }
 
     public function getSpareByMpn($params)
@@ -487,7 +487,7 @@ class AdminService extends BaseService
         //         }
         //     );
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
-        $transactions = TakingTransaction::with('user')->select(['id','status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
+        $transactions = TakingTransaction::with('user')->select(['id', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
         $transactions = $transactions->toArray();
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
@@ -544,7 +544,7 @@ class AdminService extends BaseService
                         ->orWhere('euc_box_spares.calibration_due', '>=', Carbon::now()->format('Y-m-d'));
                 })
                     // Do not get overdue items by expiry_date
-                    
+
                     ->where(function ($subQuery) {
                         $subQuery->whereNull('euc_box_spares.expiry_date')
                             ->orWhere('euc_box_spares.expiry_date', '>=', Carbon::now()->format('Y-m-d'));
@@ -1088,7 +1088,8 @@ class AdminService extends BaseService
 
     private function getJobCardBuilder($params)
     {
-        return JobCard::join('vehicles', 'vehicles.id', 'job_cards.vehicle_id')
+        return JobCard::with('vehicle')
+            ->join('vehicles', 'vehicles.id', 'job_cards.vehicle_id')
             ->when(!empty($params['job_card_id']), function ($query) use ($params) {
                 $query->where('job_cards.id', $params['job_card_id']);
             })
@@ -1120,8 +1121,23 @@ class AdminService extends BaseService
 
     public function getJobCards($params)
     {
-        return $this->getJobCardBuilder($params)
-            ->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+        $jobcardss = $this->getJobCardBuilder($params)->get();
+        $jobcards = $jobcardss->toArray();
+        $tempArray = [];
+        foreach ($jobcards as $item) {
+            $tempItem = $item;
+            $tempItem['vehicle_type'] = $item['vehicle']['vehicle_types']['name'];
+            $tempArray[] = $tempItem;
+            
+        }
+        foreach($tempArray as &$item2){
+            unset($item2['vehicle']);
+        }
+        $perPage = $params['limit'];
+        $page = $params['page'];
+        $currentPage = $page;
+        $paginatedData = array_slice($tempArray, ($currentPage - 1) * $perPage, $perPage);
+        return new LengthAwarePaginator($paginatedData, count($jobcards), $perPage, $currentPage);
     }
 
     public function getJobCardInfo($jobCardId)

@@ -35,10 +35,10 @@
 
       <div class="row" v-for="(item, index) in data">
         <div class=" col-1 border border-dark p-2 text-break text-center text-dark">{{ index + 1 }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.material_no }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spare_name }}</div>
-        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.shelf_name }} - {{ item.row }} - {{ item.bin }}</div>
+        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.spare.material_no }}</div>
+        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spare.part_no }}</div>
+        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spare.name }}</div>
+        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.bin.cluster.name }} - {{ item.bin.shelf.name }} - {{ item.bin.row }} - {{ item.bin.bin }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_loan || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.newQuantity || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.state | upperFirst }}</div>

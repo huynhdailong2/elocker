@@ -32,4 +32,8 @@ class Vehicle extends Model
         'status',
         'is_active',
     ];
+    public function vehicle_types()
+    {
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
+    }
 }

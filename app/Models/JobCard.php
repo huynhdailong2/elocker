@@ -18,6 +18,6 @@ class JobCard extends Model
     ];
     public function vehicle()
     {
-        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+        return $this->belongsTo(Vehicle::class, 'vehicle_id')->with('vehicle_types');
     }
 }

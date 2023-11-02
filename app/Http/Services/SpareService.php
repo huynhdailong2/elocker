@@ -282,7 +282,7 @@ class SpareService extends BaseService
     {
         $userId = array_get($params, 'user_id', Auth::id());
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        $rawData = IssueCard::with('taker', 'bin', 'spare', 'torqueWrenchArea')
+        $rawData = IssueCard::with('taker', 'bin', 'spare', 'torqueWrenchArea','binSpare')
             //     // $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
             //     //     ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
             //     //     ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
@@ -374,6 +374,9 @@ class SpareService extends BaseService
         //         }
         //     }
         // }
+        foreach($rawData as $item){
+            
+        }
         return $rawData;
     }
 

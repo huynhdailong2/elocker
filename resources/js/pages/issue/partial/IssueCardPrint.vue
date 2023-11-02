@@ -31,7 +31,7 @@
         <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.cluster.name }}-{{ item.shelf.name
               }}-{{item.row }}-{{ item.bin }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.spares.pivot.quantity_oh || 0 }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.spares.pivot.quantity_oh || 0 }}</div>
+        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.newQuantity || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.taker_name || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.torque_area }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.torque_value }}</div>
