@@ -28,11 +28,11 @@ class ReplenishAPIController extends BaseController
         //     // 'spares.*.configures'           => 'required|array'
         // ]);
 
-        DB::beginTransaction();
+        // DB::beginTransaction();
         try {
             $params = $request->all();
             $data = $this->spareService->replenishManual($params);
-            DB::commit();
+            // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
             DB::rollback();

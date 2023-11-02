@@ -327,6 +327,7 @@ export default {
         issue_card: this.spare.id,
         bin_id: this.spare.bin_id,
         user_id: this.userId,
+        taking_transaction_id: this.spare.taking_transaction_id,
         returned_type: 'mo',
         tracking_mo: true
       }
@@ -479,6 +480,7 @@ export default {
         'spare_id': this.spare.spare_id,
         'quantity': this.spare.newQuantity,
         'torque_wrench_area_id': this.confirmAreaId,
+        'taking_transaction_id': this.spare.taking_transaction_id,
         'taker_id': this.userId,
       })
         .then(res => {

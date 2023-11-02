@@ -90,6 +90,8 @@ class SpareService extends BaseService
             $type = ($spare->type == Consts::SPARE_TYPE_EUC) ? Consts::SPARE_TYPE_EUC : '';
 
             // switch ($type) {
+            $issueCard = [];
+            $trackingMo = [];
             switch ($type) {
                 case Consts::SPARE_TYPE_EUC:
                     $issueCard = IssueCard::create([
@@ -188,6 +190,11 @@ class SpareService extends BaseService
                         'listWO' => 'null',
                     ];
                     TransactionSpare::create($taking_transaction_detail);
+                    $data = [
+                        'taking_transaction_id' => $transaction_new->id,
+                    ];
+                    $trackingMoNew = TrackingMo::find($trackingMo->id)->update($data);
+                    $issueCardNew = IssueCard::find($issueCard->id)->update($data);
                     break;
             }
             $response[] = (object)[
@@ -205,7 +212,6 @@ class SpareService extends BaseService
             'returned' => Consts::RETURNED_TYPE_LINK_MO,
             'returned_quantity' => Arr::get($params, 'quantity', 0),
         ]);
-
         // Save issue card
         $issueCard = new IssueCard();
         $issueCard = $this->saveData($issueCard, $params);
@@ -390,7 +396,6 @@ class SpareService extends BaseService
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
-
         $spares = array_get($params, 'spares', []);
         foreach ($spares as $value) {
             $replenishmentSpare = new ReplenishmentSpare;
@@ -398,7 +403,8 @@ class SpareService extends BaseService
             $value['replenishment_id'] = $replenishment->id;
             $replenishmentSpare = $this->saveData($replenishmentSpare, $value);
 
-            $bin = Bin::where('id', $replenishmentSpare->bin_id)->first();
+            // $bin = Bin::where('id', $replenishmentSpare->bin_id)->first();
+            $bin = BinSpare::where('bin_id', $value['bin_id'])->where('spare_id', $value['spare_id'])->first();
             if ($bin) {
                 $bin->quantity_oh = BigNumber::new($bin->quantity_oh)->add($replenishmentSpare->quantity)->toString();
                 $bin->save();
@@ -414,7 +420,7 @@ class SpareService extends BaseService
             if (!empty($value['configures'])) {
                 $configures = array_get($value, 'configures', []);
             } else {
-                $configures = BinConfigure::where('bin_id', $replenishmentSpare->bin_id)
+                $configures = BinConfigure::where('bin_id', $replenishmentSpare->bin_id)->where('spare_id',$replenishmentSpare->spare_id)
                     ->get()
                     ->toArray();
             }
@@ -426,7 +432,38 @@ class SpareService extends BaseService
         }
         return $rs;
     }
+    private function saveReplenishmentSpareConfigures($data, $replenishmentSpare)
+    {
+        // hardcode only have 1 row
+        $first = collect($data)->first();
+        $data = [$first];
 
+        foreach ($data as $index => $value) {
+            $value['order'] = $index + 1;
+            $value['replenishment_spare_id'] = $replenishmentSpare->id;
+            $configure = new ReplenishmentSpareConfigure;
+            $this->saveData($configure, $value);
+        }
+    }
+    private function updateRemainQtyInTransaction($userId, $type, $quantity)
+    {
+        $transaction = TakingTransaction::where('user_id', $userId)
+            ->where('type', $type)
+            ->where('status', Consts::TAKING_TRANSACTION_STATUS_OPENED)
+            ->first();
+
+        if ($transaction) {
+            $remainQty = $transaction->remain_qty ?: $transaction->total_qty;
+            $remainQty -= $quantity;
+            $transaction->remain_qty = $remainQty > 0 ? $remainQty : 0;
+            if ($transaction->remain_qty == 0) {
+                $transaction->status = Consts::TAKING_TRANSACTION_STATUS_COMPLETED;
+                $transaction->remain_bins = json_encode([]);
+            }
+
+            $transaction->save();
+        }
+    }
     private function saveBinConfigures($data, $replenishmentSpare)
     {
         $binId = $replenishmentSpare->bin_id;
@@ -444,19 +481,7 @@ class SpareService extends BaseService
         }
     }
 
-    private function saveReplenishmentSpareConfigures($data, $replenishmentSpare)
-    {
-        // hardcode only have 1 row
-        $first = collect($data)->first();
-        $data = [$first];
-
-        foreach ($data as $index => $value) {
-            $value['order'] = $index + 1;
-            $value['replenishment_spare_id'] = $replenishmentSpare->id;
-            $configure = new ReplenishmentSpareConfigure;
-            $this->saveData($configure, $value);
-        }
-    }
+  
 
     public function getReplenishAutoList($params)
     {
@@ -2127,25 +2152,7 @@ class SpareService extends BaseService
             ->first();
     }
 
-    private function updateRemainQtyInTransaction($userId, $type, $quantity)
-    {
-        $transaction = TakingTransaction::where('user_id', $userId)
-            ->where('type', $type)
-            ->where('status', Consts::TAKING_TRANSACTION_STATUS_OPENED)
-            ->first();
-
-        if ($transaction) {
-            $remainQty = $transaction->remain_qty ?: $transaction->total_qty;
-            $remainQty -= $quantity;
-            $transaction->remain_qty = $remainQty > 0 ? $remainQty : 0;
-            if ($transaction->remain_qty == 0) {
-                $transaction->status = Consts::TAKING_TRANSACTION_STATUS_COMPLETED;
-                $transaction->remain_bins = json_encode([]);
-            }
-
-            $transaction->save();
-        }
-    }
+    
 
     private function updateBinsRemainInTransaction($userId, $type, array $remainBins = [])
     {
@@ -3131,7 +3138,7 @@ class SpareService extends BaseService
                         ];
                         if ($request['type'] == 'issue') {
                             $bin_sparess = BinSpare::where('bin_id', $request['locations'][0]['bin']['id'])->where('spare_id', $value['id'])->first();
-                            if(!$bin_sparess){
+                            if (!$bin_sparess) {
                                 throw new Exception("Please bin or spare does not exist");
                                 return;
                             }
@@ -3380,7 +3387,7 @@ class SpareService extends BaseService
                                         'taker_id' => Auth::id(),
                                         'euc_box_id' => null
                                     ]);
-    
+
                                     $trackingMo = TrackingMo::create(
                                         [
                                             'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
@@ -3428,7 +3435,7 @@ class SpareService extends BaseService
                                 $remainQuantityInCard = BigNumber::new($returns->quantity)
                                     ->sub($returns->quantity_returned_store)
                                     ->toString();
-    
+
                                 $returnedQuantity = BigNumber::new($returns->quantity_returned_store ?: 0)
                                     ->add($inputQuantity)
                                     ->toString();
@@ -3449,7 +3456,7 @@ class SpareService extends BaseService
                                 $remainQuantityInCard = BigNumber::new($card->quantity)
                                     ->sub($card->returned_quantity)
                                     ->toString();
-    
+
                                 $state = Consts::RETURNED_TYPE_PARTIAL;
                                 $returnedQuantity = BigNumber::new($card->returned_quantity ?: 0)
                                     ->add($inputQuantity)
@@ -3700,10 +3707,10 @@ class SpareService extends BaseService
     //             DB::raw(
     //                 "
     //                 CASE
-	//                 WHEN $fromTableName.quantity - $fromTableName.returned_quantity = 0 THEN 0
-	//                 WHEN DATEDIFF(NOW(), DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR)) = 0 and $fromTableName.created_at > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'),INTERVAL 16 HOUR) THEN 0
-	//                 WHEN NOW() > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR) THEN 1
-	//                 ELSE 0
+    //                 WHEN $fromTableName.quantity - $fromTableName.returned_quantity = 0 THEN 0
+    //                 WHEN DATEDIFF(NOW(), DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR)) = 0 and $fromTableName.created_at > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'),INTERVAL 16 HOUR) THEN 0
+    //                 WHEN NOW() > DATE_ADD(DATE_FORMAT($fromTableName.created_at, '%Y-%m-%d 00:00:00'), INTERVAL 16 HOUR) THEN 1
+    //                 ELSE 0
     //                 END as expired_return_time_sql"
     //             ),
     //         )
@@ -3937,15 +3944,16 @@ class SpareService extends BaseService
         ], $params);
         return $this->getIssueCardsBuilderBU($params);
     }
-    private function getIssueCardsBuilderBU($params){
+    private function getIssueCardsBuilderBU($params)
+    {
         $trackingMo = Arr::get($params, 'tracking_mo', false);
         $torqueWrench = array_get($params, 'torque_wrench', Consts::FALSE);
         $bin_id = $params['bin_id'];
         $spare_id = $params['spare_id'];
-        // var_dump($spare_id);die();
         $issue_card_id = $params['issue_card'];
-        $query = TrackingMo::with('torqueWrenchArea','issueCard','jobCard')
-        ->where('bin_id', $bin_id)->where('spare_id', $spare_id)->where('issue_card_id',$issue_card_id)->get();
+        $taking_transaction_id = $params['taking_transaction_id'];
+        $query = TrackingMo::with('torqueWrenchArea', 'issueCard', 'jobCard')
+            ->where('bin_id', $bin_id)->where('spare_id', $spare_id)->where('taking_transaction_id', $taking_transaction_id)->get();
         return $query;
     }
     private function getIssueCardsBuilder($params = [])

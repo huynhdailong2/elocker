@@ -17,7 +17,8 @@ class IssueCard extends Model
         'issuer_id',
         'taker_id',
         'returned',
-        'returned_quantity'
+        'returned_quantity',
+        'taking_transaction_id'
     ];
 
     public function taker()
@@ -32,6 +33,7 @@ class IssueCard extends Model
     {
         return $this->belongsTo(Spare::class);
         // return $this->belongsToMany(Spare::class,'bin_spare', 'bin_id', 'spare_id')->withPivot(['quantity','quantity_oh', 'min', 'max', 'critical','is_processing','process_time','process_by']);
+        // return $this->belongsTo(Spare::class,'bin_spare', 'bin_id', 'spare_id')->withPivot(['quantity','quantity_oh', 'min', 'max', 'critical','is_processing','process_time','process_by']);
     }
     public function torqueWrenchArea()
     {

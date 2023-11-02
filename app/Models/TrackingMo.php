@@ -20,6 +20,7 @@ class TrackingMo extends Model
         'returned',
         'returned_quantity',
         'issue_card_id',
+        'taking_transaction_id'
     ];
     public function torqueWrenchArea()
     {

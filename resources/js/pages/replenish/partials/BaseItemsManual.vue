@@ -122,11 +122,16 @@ export default {
       if (this.noSelectedData) {
         return
       }
-
+      console.log("this.selectedSpares",this.selectedSpares);
       const spares = chain(this.selectedSpares)
         .map(item => {
           const inputForm = item.inputForm
-          return { ...inputForm, bin_id: item.id, spare_id: item.spare_id }
+          console.log("🚀 ~ file: BaseItemsManual.vue:129 ~ onCheckout ~ inputForm:", inputForm);
+          return { ...inputForm, 
+            bin_id: item.bin_id, 
+            spare_id: item.bin_spare.spare_id,
+            taking_transaction_id: item.id,
+          }
         })
         .value()
 
