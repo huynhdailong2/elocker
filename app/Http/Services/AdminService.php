@@ -719,7 +719,7 @@ class AdminService extends BaseService
 
     public function getBins($params)
     {
-        return Bin::with('configures', 'spares')
+        $bin =  Bin::with('configures', 'spares')
             ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
             ->leftJoin('clusters', 'clusters.id', 'shelfs.cluster_id')
             // ->leftJoin('bin_configures', function($join)
@@ -791,7 +791,86 @@ class AdminService extends BaseService
                 '(CASE WHEN bins.quantity <= 0 THEN "Unavailable"
                     WHEN bins.status = "' . Consts::BIN_STATUS_UNASSIGNED . '" THEN "Unassigned"
                     ELSE "Available" END) AS status_lbl'
-            ))->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
+            ))->get();
+
+        // foreach ($bin as $iteems) {
+        //     $configures = json_decode($iteems['configures'], true);
+        //     foreach($configures as $item){
+
+        //     }
+        //     $spares = $iteems['spares'];
+        //     foreach ($spares as $iteem){
+
+        //     }
+        //         if (isset($iteem['spares']['pivot']) && !empty($iteem['spares']['pivot'])) {
+        //             $iteem['configures'] = $iteem['spares']['pivot']['quantity'];
+        //             $iteem['configures']['quantity_oh'] = $iteem['spares']['pivot']['quantity_oh'];
+        //             $iteem['configures']['min'] = $iteem['spares']['pivot']['min'];
+        //             $iteem['configures']['max'] = $iteem['spares']['pivot']['max'];
+        //             $iteem['configures']['critical'] = $iteem['spares']['pivot']['critical'];
+        //             $iteem['configures']['is_processing'] = $iteem['spares']['pivot']['is_processing'];
+        //             $iteem['configures']['process_time'] = $iteem['spares']['pivot']['process_time'];
+        //             $iteem['configures']['process_by'] = $iteem['spares']['pivot']['process_by'];
+        //         } else {
+        //             $iteem['configures']['quantity'] = null;
+        //             $iteem['configures']['quantity_oh'] = null;
+        //             $iteem['configures']['min'] = null;
+        //             $iteem['configures']['max'] = null;
+        //             $iteem['configures']['critical'] = null;
+        //             $iteem['configures']['is_processing'] = null;
+        //             $iteem['configures']['process_time'] = null;
+        //             $iteem['configures']['process_by'] = null;
+        //         }
+        // }
+        // foreach ($bin as &$iteems) {
+        //     // foreach($iteems['spares'] as $itemm){
+
+        //     // }
+        //     // $configures = json_decode($iteems['configures'], true);
+        //     // foreach($configures as $configure){
+
+        //     // }
+        //     // if (isset($iteems['spares']['pivot']) && !empty($iteems['spares']['pivot'])) {
+        //     //     $configures['pivot'] = $iteems['spares']['pivot'];
+        //     //     echo "vo";die();
+        //     // } else {
+        //     //     $configures['']['pivot'] =null;
+        //     // }
+        //     // $iteems['configures'] = json_encode($configures);
+
+        // }
+        // $results = array();
+       
+        foreach ($bin as $key => $iteems) {
+            $configures = $iteems['configures'];
+            $spares = $iteems['spares'];
+            foreach($configures  as $keyCon => $itemCOn){
+                $bin_id = $itemCOn['bin_id'];
+                $spare_id = $itemCOn['spare_id'];
+                $found = false;
+                foreach ($spares as $itemSpare) {
+                    $bin_id_S = $itemSpare['pivot']['bin_id'];
+                    $spare_id_S = $itemSpare['pivot']['spare_id'];
+        
+                    if ($bin_id == $bin_id_S && $spare_id_S == $spare_id) {
+                        $itemCOn['pivot'] = $itemSpare['pivot'];
+                        $found = true; // Đánh dấu đã tìm thấy bản ghi phù hợp
+                        break;
+                    }
+                }
+                if ($found) {
+                    // Nếu đã tìm thấy, thì dừng vòng lặp và xử lý bản ghi tiếp theo
+                    continue;
+                }
+            }
+        }
+        $bin = $bin->toArray();
+        $perPage = $params['limit'];
+        $page = $params['page'];
+        $currentPage = $page;
+        $paginatedData = array_slice($bin, ($currentPage - 1) * $perPage, $perPage);
+        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($bin), $perPage, $currentPage);
+        return $paginatedTransactions;
     }
     public function getBinId($params)
     {
@@ -1128,9 +1207,8 @@ class AdminService extends BaseService
             $tempItem = $item;
             $tempItem['vehicle_type'] = $item['vehicle']['vehicle_types']['name'];
             $tempArray[] = $tempItem;
-            
         }
-        foreach($tempArray as &$item2){
+        foreach ($tempArray as &$item2) {
             unset($item2['vehicle']);
         }
         $perPage = $params['limit'];
