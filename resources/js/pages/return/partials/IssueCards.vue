@@ -18,7 +18,7 @@
           :key="index"
           @click.prevent="onSelectBox(item)"
           :class="{ active: item.is_checked }"
-           v-if="item.visible" >
+          v-if="item.visible" >
           <div class="image">
             <img :src="item.url">
           </div>
@@ -111,11 +111,21 @@
                 <td style="white-space: nowrap;">
                   <div class="form-input">
                     <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
-                    <span class="number">{{ item.newQuantity }}</span>
-                    <!-- <input type="number" v-model="item.newQuantity" @input="onQuantityChange(item)" min="0" /> -->
+                    <input
+                      name="Quantitys"
+                      style="width: 50px; text-align: center;"
+                      type="text"
+                      v-model="item.newQuantity"
+                      v-validate="`required|numeric|min_value:0|max_value:${item.quantity_loan || 0}`"
+                      :data-vv-scope="`${item.scope}.Quantitys`"
+                    >
                     <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
                   </div>
+                  <span class="invalid-feedback" v-if="errors.has(`${item.scope}.Quantitys`)">
+                    {{ errors.first(`${item.scope}.Quantitys`) }}
+                  </span>
                 </td>
+
                 <td style="min-width: 300px;">
                   <div class="state">
                     <div class="btn btn-primary"
@@ -282,6 +292,7 @@ import CheckoutReturnModal from './CheckoutReturnModal'
 import LinkServiceReturnModal from './LinkServiceReturnModal'
 import SelectBoxesMixin from 'common/SelectBoxesMixin'
 import Const from 'common/Const';
+import Utils from "common/Utils";
 
 const MODE = {
   LIST: 'list',
@@ -356,7 +367,11 @@ export default {
         })
     },
 
-    onClickCheckout () {
+    async onClickCheckout() {
+      // this.resetError()
+      const hasError = await this.validateData()
+      if (!hasError) return
+      
       if (isEmpty(this.selectedSpares)) {
         return
       }
@@ -374,12 +389,14 @@ export default {
       this.$modal.show('link-service-return', { spare: item, userId: this.userId })
     },
 
-    onClickIncrease (item) {
+    onClickIncrease(item) {
+      // this.resetError()
       const number = item.newQuantity + 1
       this.$set(item, 'newQuantity', number <= item.quantity_loan ? number : item.quantity_loan)
     },
 
-    onClickDecrease (item) {
+    onClickDecrease(item) {
+      // this.resetError()
       const number = item.newQuantity - 1
       this.$set(item, 'newQuantity', number < 1 ? 0 : number)
     },
@@ -395,7 +412,20 @@ export default {
         const visible = includes(item.material_no, inputText) || includes(item.part_no, inputText)
         this.$set(item, 'visible', visible)
       })
-    }
+    },
+
+    async validateData() {
+      await Utils.asyncForEach(this.data, async (item, index) => {
+        this.errors.clear(item.scope);
+        await this.$validator.validate(`${item.scope}.*`);
+      });
+
+      if (this.errors.any()) {
+        return false;
+      }
+
+      return true;
+    },
   }
 }
 </script>

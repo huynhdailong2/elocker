@@ -63,6 +63,7 @@ export default {
     // this.$modal.show(this.scanTakerModal)
     this.getItemsForIssuing()
     this.getTorqueAreas()
+    console.log(this.data)
   },
 
   methods: {
@@ -89,7 +90,8 @@ export default {
                 scope: `row-${index + 1}`,
                 visible: true,
                 url: item.url || '/images/icons/no-image.png',
-                quantity: null
+                quantity: null,
+                newQuantity: item.spares.pivot.quantity,
               }
             })
             .value()
@@ -106,16 +108,17 @@ export default {
         .value()
     },
 
-    onClickIncrease (item) {
-      const max = item.quantity_oh
-
-      const number = item.quantity + 1
-      this.$set(item, 'quantity', number <= max ? number : max)
+    onClickIncrease(item) {
+      this.resetError()
+      const max = item.spares.pivot.quantity_oh
+      const number = item.newQuantity + 1
+      this.$set(item, 'newQuantity', number <= max ? number : max)
     },
 
-    onClickDecrease (item) {
-      const number = item.quantity - 1
-      this.$set(item, 'quantity', number < 1 ? 0 : number)
+    onClickDecrease(item) {
+      this.resetError()
+      const number = item.newQuantity - 1
+      this.$set(item, 'newQuantity', number < 1 ? 0 : number)
     },
 
     onCancel () {
@@ -133,6 +136,7 @@ export default {
 
     async onCheckout () {
       this.resetError()
+      await this.$validator.validateAll();
 
       if (this.noQuantity) {
         return

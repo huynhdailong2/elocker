@@ -43,9 +43,13 @@
           </div>
           <div class="form-input" v-if="issueFormStep">
             <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
-            <span class="number">{{ item.quantity }}</span>
+            <!-- <span class="number">{{ item.newQuantity }}</span> -->
+            <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.spares.pivot.quantity_oh || 0}`">
             <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
           </div>
+          <span style="text-align: center !important; font-weight: bold;" class="invalid-feedback" v-if="errors.has('Quantity')">
+            {{ errors.first("Quantity") }}
+          </span>
         </div>
       </div>
     </div>

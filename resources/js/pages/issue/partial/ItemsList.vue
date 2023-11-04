@@ -79,11 +79,14 @@
                 </div>
               </td>
               <td v-if="issueFormStep">
-                <div class="form-input">
-                  <span class="circle" @click.stop="onClickDecrease(item.spares.pivot)">-</span>
-                  <span class="number">{{ item.spares.pivot.quantity }}</span>
-                  <span class="circle" @click.stop="onClickIncrease(item.spares.pivot)">+</span>
+                <div style="gap: 8px" class="form-input">
+                  <span class="circle" @click.stop="onClickDecrease(item)">-</span>
+                  <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.spares.pivot.quantity_oh || 0}`">
+                  <span class="circle" @click.stop="onClickIncrease(item)">+</span>
                 </div>
+                <span class="invalid-feedback" v-if="errors.has('Quantity')">
+                  {{ errors.first("Quantity") }}
+                </span>
               </td>
               <td v-if="issueFormStep">
                 <template v-if="visibleTorqueArea(item)">
