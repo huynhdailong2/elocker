@@ -117,10 +117,13 @@
                       type="text"
                       v-model="item.newQuantity"
                       v-validate="`required|numeric|min_value:0|max_value:${item.quantity_loan || 0}`"
-                      :data-vv-scope="`${item.scope}.Quantitys`"
+                      :data-vv-scope="`${item.scope}`"
                     >
                     <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
                   </div>
+                  <!-- <span class="invalid-feedback" v-if="errors.has('Quantitys')">
+                    {{ errors.first("Quantitys") }}
+                  </span> -->
                   <span class="invalid-feedback" v-if="errors.has(`${item.scope}.Quantitys`)">
                     {{ errors.first(`${item.scope}.Quantitys`) }}
                   </span>
@@ -350,7 +353,7 @@ export default {
       rf.getRequest('SpareRequest').getSparesReturn(params)
         .then(res => {
           this.data = chain(res.data || [])
-            .map(item => {
+            .map((item, index) => {
               const quantity_loan = item.quantity - (item.returned_quantity || 0)
 
               return {
@@ -360,7 +363,8 @@ export default {
                 newQuantity: quantity_loan,
                 // quantity_loan: item.quantity - (item.returned_quantity || 0),
                 quantity_loan: quantity_loan,
-                state: SPARE_STATE.WORKING
+                state: SPARE_STATE.WORKING,
+                scope: `row-${index + 1}`,
               }
             })
             .value()
@@ -368,9 +372,14 @@ export default {
     },
 
     async onClickCheckout() {
-      // this.resetError()
-      const hasError = await this.validateData()
-      if (!hasError) return
+      await Utils.asyncForEach(this.data, async (item, index) => {
+        const scope = `${item.scope}.*`
+        await this.$validator.validate(scope)
+      })
+
+      if (this.errors.any()) {
+        return this.showError("Invalid field!");
+      }
       
       if (isEmpty(this.selectedSpares)) {
         return
@@ -414,18 +423,18 @@ export default {
       })
     },
 
-    async validateData() {
-      await Utils.asyncForEach(this.data, async (item, index) => {
-        this.errors.clear(item.scope);
-        await this.$validator.validate(`${item.scope}.*`);
-      });
+    // async validateData() {
+    //   await Utils.asyncForEach(this.data, async (item, index) => {
+    //     this.errors.clear(item.scope);
+    //     await this.$validator.validate(`${item.scope}.*`);
+    //   });
 
-      if (this.errors.any()) {
-        return false;
-      }
+    //   if (this.errors.any()) {
+    //     return false;
+    //   }
 
-      return true;
-    },
+    //   return true;
+    // },
   }
 }
 </script>
