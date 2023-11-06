@@ -63,7 +63,6 @@ export default {
     // this.$modal.show(this.scanTakerModal)
     this.getItemsForIssuing()
     this.getTorqueAreas()
-    console.log(this.data)
   },
 
   methods: {

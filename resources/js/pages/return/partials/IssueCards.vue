@@ -296,6 +296,7 @@ import LinkServiceReturnModal from './LinkServiceReturnModal'
 import SelectBoxesMixin from 'common/SelectBoxesMixin'
 import Const from 'common/Const';
 import Utils from "common/Utils";
+import RemoveErrorsMixin from "common/RemoveErrorsMixin";
 
 const MODE = {
   LIST: 'list',
@@ -317,7 +318,7 @@ export default {
     LinkServiceReturnModal,
   },
 
-  mixins: [SelectBoxesMixin],
+  mixins: [SelectBoxesMixin, RemoveErrorsMixin],
 
   data () {
     return {
@@ -372,6 +373,7 @@ export default {
     },
 
     async onClickCheckout() {
+      this.resetError()
       await Utils.asyncForEach(this.data, async (item, index) => {
         const scope = `${item.scope}.*`
         await this.$validator.validate(scope)
@@ -399,13 +401,13 @@ export default {
     },
 
     onClickIncrease(item) {
-      // this.resetError()
+      this.resetError()
       const number = item.newQuantity + 1
       this.$set(item, 'newQuantity', number <= item.quantity_loan ? number : item.quantity_loan)
     },
 
     onClickDecrease(item) {
-      // this.resetError()
+      this.resetError()
       const number = item.newQuantity - 1
       this.$set(item, 'newQuantity', number < 1 ? 0 : number)
     },
