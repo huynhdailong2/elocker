@@ -31,7 +31,7 @@
                     {{ item.bin.cluster.name }} - {{ item.bin.shelf.name }} - {{ item.bin.row }} - {{ item.bin.bin }}
                   </div>
                   <div v-else>Bin#: N/A</div>
-              <div>Qty On Loan: {{ item.quantity_loan || 0 }}</div>
+              <div>Qty On Loan: {{ item.quantity_loan || 1 }}</div>
             </div>
             <div class="col-sm-5">
               <div class="state">
@@ -102,7 +102,7 @@
                   </div>
                   <div v-else>N/A</div>
                 </td>
-                <td style="white-space: nowrap;"><div>{{ item.quantity_loan || 0 }}</div></td>
+                <td style="white-space: nowrap;"><div>{{ item.quantity_loan || 1 }}</div></td>
                 <td style="white-space: nowrap;">
                   <span v-if="item.torque_wrench_area && item.torque_wrench_area.area">{{ item.torque_wrench_area.area }}</span>
                   <span v-else>N/A</span>
@@ -119,7 +119,7 @@
                       style="width: 50px; text-align: center;"
                       type="text"
                       v-model="item.newQuantity"
-                      v-validate="`required|numeric|min_value:0|max_value:${item.quantity_loan || 0}`"
+                      v-validate="`required|numeric|min_value:1|max_value:${item.quantity_loan || 1}`"
                       :data-vv-scope="`${item.scope}`"
                     >
                     <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>

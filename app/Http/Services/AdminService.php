@@ -210,7 +210,7 @@ class AdminService extends BaseService
         $shelf = Shelf::find($params['id']);
         $shelf = $this->saveData($shelf, $params);
 
-        $this->saveBinsConfigure($shelf);
+        // $this->saveBinsConfigure($shelf);
         $this->forceOnlyOneMainCabinet($shelf);
 
         $params = [
