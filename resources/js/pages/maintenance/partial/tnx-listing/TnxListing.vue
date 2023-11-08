@@ -130,7 +130,7 @@
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.request_qty }}</div>
+              <div class="text ellipsis">{{ props.item.locations.spares.pivot.request_qty }}</div>
             </td>
             <td>
               <div class="text ellipsis" >

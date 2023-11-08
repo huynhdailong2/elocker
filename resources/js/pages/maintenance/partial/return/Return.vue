@@ -75,8 +75,8 @@
                 {{ props.item.locations.spares.part_no || "N/A" }}
               </div>
             </td>
-            <td :title="props.item.request_qty" >
-              <div class="text ellipsis">{{ props.item.request_qty }}</div>
+            <td :title="props.item.locations.spares.pivot.request_qty" >
+              <div class="text ellipsis">{{ props.item.locations.spares.pivot.request_qty }}</div>
             </td>
             <td :title="props.item.locations">
               <div class="text ellipsis" >{{ props.item.cluster_name }}-{{ props.item.cabinet_name

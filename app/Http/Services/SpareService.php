@@ -954,7 +954,7 @@ class SpareService extends BaseService
             }
             $data_transaction = [
                 'user_id' => 1,
-                'type' => 'issue',
+                'type' => 'return',
                 'satus' => 'done',
                 'name' => 'trans#' . $bub_num,
                 'cabinet_id' => $binGet->shelf_id,
