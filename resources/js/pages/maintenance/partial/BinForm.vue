@@ -526,7 +526,6 @@ export default {
           });
           this.resetForm();
           this.initConfigures();
-          console.log('this.items :>> ', this.items);
         }
       } else {
         this.showError("Have to choose an item!");
