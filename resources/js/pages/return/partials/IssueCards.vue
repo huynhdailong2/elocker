@@ -27,7 +27,10 @@
               <div>Item Name: {{ item.spare.name }}</div>
               <div>MPN: {{ item.spare.material_no }}</div>
               <div>SSN: {{ item.spare.part_no }}</div>
-              <div>Bin#: {{ item.bin.shelf_id }} - {{ item.bin.row }} - {{ item.bin.bin }}</div>
+              <div v-if="item.bin && item.bin.cluster && item.bin && item.bin.shelf && item.bin && item.bin.bin">Bin#:
+                    {{ item.bin.cluster.name }} - {{ item.bin.shelf.name }} - {{ item.bin.row }} - {{ item.bin.bin }}
+                  </div>
+                  <div v-else>Bin#: N/A</div>
               <div>Qty On Loan: {{ item.quantity_loan || 0 }}</div>
             </div>
             <div class="col-sm-5">
