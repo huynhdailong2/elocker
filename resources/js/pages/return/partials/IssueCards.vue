@@ -45,11 +45,25 @@
             </div>
           </div>
 
-          <div class="form-input">
-            <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
-            <span class="number">{{ item.newQuantity }}</span>
-            <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
+          <div>
+            <div class="form-input">
+              <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
+              <!-- <span class="number">{{ item.newQuantity }}</span> -->
+              <input
+                name="Quantitys"
+                style="width: 50px; text-align: center;"
+                type="text"
+                v-model="item.newQuantity"
+                v-validate="`required|numeric|min_value:1|max_value:${item.quantity_loan || 1}`"
+                :data-vv-scope="`${item.scope}`"
+              >
+              <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
+            </div>
+            <span style="text-align: center !important;" class="invalid-feedback" v-if="errors.has(`${item.scope}.Quantitys`)">
+              {{ errors.first(`${item.scope}.Quantitys`) }}
+            </span>
           </div>
+
           <div class="form-input">
             <span class="btn-mo" @click.stop="onClickLinkMO(item)">WO/Svc#</span>
           </div>
@@ -124,9 +138,6 @@
                     >
                     <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
                   </div>
-                  <!-- <span class="invalid-feedback" v-if="errors.has('Quantitys')">
-                    {{ errors.first("Quantitys") }}
-                  </span> -->
                   <span class="invalid-feedback" v-if="errors.has(`${item.scope}.Quantitys`)">
                     {{ errors.first(`${item.scope}.Quantitys`) }}
                   </span>
