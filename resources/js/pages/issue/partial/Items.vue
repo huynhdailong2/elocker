@@ -9,29 +9,53 @@
           placeholder="Item P/N"
           v-model="inputText"
           @keypress.enter="onClickSearch"
-          ref="inputText" >
+          ref="inputText"
+        />
       </div>
-      <button class="btn btn-primary" @click.stop="onClickSearch">Search</button>
+      <button class="btn btn-primary" @click.stop="onClickSearch">
+        Search
+      </button>
     </div>
 
     <ul class="list-type">
-      <li :class="{active: selectedType == type.value}" v-on:click="onFilterByType(type.value)" v-for="type in itemType">{{type.name}}</li>
+      <li
+        :class="{ active: selectedType == type.value }"
+        v-on:click="onFilterByType(type.value)"
+        v-for="type in itemType"
+      >
+        {{ type.name }}
+      </li>
     </ul>
 
     <div class="view">
-      <div class="option" :class="{active: selectedMode === MODE.LIST}" @click.stop="selectedMode = MODE.LIST">
-        <img src="/images/icons/icon-list.svg" width="20">
+      <div
+        class="option"
+        :class="{ active: selectedMode === MODE.LIST }"
+        @click.stop="selectedMode = MODE.LIST"
+      >
+        <img src="/images/icons/icon-list.svg" width="20" />
         <span>List</span>
       </div>
-      <div class="option" :class="{active: selectedMode === MODE.GRID}" @click.stop="selectedMode = MODE.GRID">
-        <img src="/images/icons/icon-grid.svg" width="20">
+      <div
+        class="option"
+        :class="{ active: selectedMode === MODE.GRID }"
+        @click.stop="selectedMode = MODE.GRID"
+      >
+        <img src="/images/icons/icon-grid.svg" width="20" />
         <span>Image</span>
       </div>
     </div>
 
-    <items-grid v-bind="$attrs" ref="spares" v-if="selectedMode === MODE.GRID" />
-    <items-list v-bind="$attrs" ref="spares" v-if="selectedMode === MODE.LIST" />
-
+    <items-grid
+      v-bind="$attrs"
+      ref="spares"
+      v-if="selectedMode === MODE.GRID"
+    />
+    <items-list
+      v-bind="$attrs"
+      ref="spares"
+      v-if="selectedMode === MODE.LIST"
+    />
   </div>
 </template>
 <style lang="scss" scoped>
@@ -76,7 +100,7 @@
     display: inline-flex;
     justify-content: flex-start;
     justify-items: center;
-    border: 1px solid #363A47;
+    border: 1px solid #363a47;
     li {
       padding: 5px 20px 8px;
       cursor: pointer;
@@ -86,63 +110,69 @@
       }
     }
     li:not(:first-child) {
-      border-left: 1px solid #363A47;
+      border-left: 1px solid #363a47;
     }
   }
 }
 </style>
 <script>
-import {chain, isEmpty, debounce, toLower} from 'lodash'
-import ItemsGrid from './ItemsGrid'
-import ItemsList from './ItemsList'
-import Const from 'common/Const'
+import { chain, isEmpty, debounce, toLower } from "lodash";
+import ItemsGrid from "./ItemsGrid";
+import ItemsList from "./ItemsList";
+import Const from "common/Const";
 
 const MODE = {
-  LIST: 'list',
-  GRID: 'grid'
-}
+  LIST: "list",
+  GRID: "grid",
+};
 
 export default {
   components: {
     ItemsGrid,
-    ItemsList
+    ItemsList,
   },
 
-  data () {
+  data() {
     return {
       MODE,
       selectedMode: MODE.LIST,
       inputText: null,
       itemType: [],
-      selectedType: '',
-    }
+      selectedType: "",
+    };
   },
 
   mounted() {
     let listTypeSystem = chain(Const.ITEM_TYPE)
-        .map(itemType => {
-          const value = toLower(itemType.value);
-          const name = itemType.name;
-          return { value, name }
-        })
-        .value()
-    this.itemType = [ ...[{name: 'All', value: ''}], ...listTypeSystem]
+      .map((itemType) => {
+        const value = toLower(itemType.value);
+        const name = itemType.name;
+        return { value, name };
+      })
+      .value();
+    this.itemType = [...[{ name: "All", value: "" }], ...listTypeSystem];
   },
 
   watch: {
     inputText: debounce(function () {
-      this.onClickSearch()
-    }, 400)
+      this.onClickSearch();
+    }, 400),
   },
 
   methods: {
-    onClickSearch () {
-      return this.$refs.spares.filter({ text: this.inputText, type: this.selectedType });
+    onClickSearch() {
+      return this.$refs.spares.filter({
+        text: this.inputText,
+        type: this.selectedType,
+      });
     },
     onFilterByType(type) {
       this.selectedType = type;
-      return this.$refs.spares.filter({ text: this.inputText, type: this.selectedType });
+      return this.$refs.spares.filter({
+        text: this.inputText,
+        type: this.selectedType,
+      });
     },
-  }
-}
+  },
+};
 </script>
