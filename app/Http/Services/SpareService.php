@@ -282,7 +282,7 @@ class SpareService extends BaseService
     {
         $userId = array_get($params, 'user_id', Auth::id());
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        $rawData = IssueCard::with('taker', 'bin', 'spare', 'torqueWrenchArea','binSpare')
+        $rawData = IssueCard::with('taker', 'bin', 'spare', 'torqueWrenchArea', 'binSpare')
             //     // $rawData = IssueCard::join('bins', 'bins.id', 'issue_cards.bin_id')
             //     //     ->leftJoin('torque_wrench_areas', 'torque_wrench_areas.id', 'issue_cards.torque_wrench_area_id')
             //     //     ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
@@ -374,8 +374,7 @@ class SpareService extends BaseService
         //         }
         //     }
         // }
-        foreach($rawData as $item){
-            
+        foreach ($rawData as $item) {
         }
         return $rawData;
     }
@@ -423,7 +422,7 @@ class SpareService extends BaseService
             if (!empty($value['configures'])) {
                 $configures = array_get($value, 'configures', []);
             } else {
-                $configures = BinConfigure::where('bin_id', $replenishmentSpare->bin_id)->where('spare_id',$replenishmentSpare->spare_id)
+                $configures = BinConfigure::where('bin_id', $replenishmentSpare->bin_id)->where('spare_id', $replenishmentSpare->spare_id)
                     ->get()
                     ->toArray();
             }
@@ -484,7 +483,7 @@ class SpareService extends BaseService
         }
     }
 
-  
+
 
     public function getReplenishAutoList($params)
     {
@@ -2155,7 +2154,7 @@ class SpareService extends BaseService
             ->first();
     }
 
-    
+
 
     private function updateBinsRemainInTransaction($userId, $type, array $remainBins = [])
     {
@@ -3494,75 +3493,20 @@ class SpareService extends BaseService
                     ]);
                 }
             }
-            $taking_transaction->makeHidden(['bin', 'cabinet', 'spares']);
             $taking_transaction->user;
-            if (!empty($taking_transaction['spares'])) {
-                $spareTypes = [
-                    [
-                        'accepted' => ['issue', 'return', 'replenish'],
-                        'type'     => 'all',
-                        'label'    => 'All',
-                    ],
-                    [
-                        'accepted' => ['issue', 'replenish'],
-                        'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                        'label'    => 'Consumable',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_DURABLE,
-                        'label'    => 'STEs',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                        'label'    => 'Perishable',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_AFES,
-                        'label'    => 'AFES',
-                    ],
-                    [
-                        'accepted' => ['issue', 'replenish'],
-                        'type'     => Consts::SPARE_TYPE_EUC,
-                        'label'    => 'EUC',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                        'label'    => 'Torque Wrench',
-                    ],
-                    [
-                        'accepted' => ['issue', 'return'],
-                        'type'     => Consts::SPARE_TYPE_OTHERS,
-                        'label'    => 'Others',
-                    ],
-                ];
-                foreach ($taking_transaction['spares'] as $key => $item) {
-                    $type_item = $item['type'];
-                    $type_transaction = $request['type'];
-                    $found = false;
-                    foreach ($spareTypes as $spareType) {
-                        if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
-                            $item['label'] = $spareType['label'];
-                            $item['bin_spare'] = BinSpare::where('bin_id', $taking_transaction['bin']['id'])->where('spare_id', $item['id'])->first();
-                            $taking_transaction['spares'][$key] = $item;
-                            $found = true;
-                            break;
-                        }
-                    }
-                    if ($found == false) {
-                        $item['label'] = 'Unknown';
-                        $item['bin_spare'] = null;
-                        $taking_transaction['spares'][$key] = $item;
-                    }
-                }
-                $taking_transaction['spares'] = $taking_transaction['spares'];
-            }
             $taking_transactions[] = $taking_transaction;
         }
-        return $taking_transactions;
+        $newDatas = [];
+        foreach ($taking_transactions as $transaction) {
+            $spares = $transaction['locations']['spares'];
+            foreach ($spares as $spare) {
+                $newTransaction = $transaction->toArray();
+                $newTransaction['spare_id'] = $spare['id'];
+                unset($newTransaction['locations']);
+                $newDatas[] = $newTransaction;
+            }
+        }
+        return $newDatas;
     }
     // public function getReportByTnx($params = []){
     //     return $this->getIssueCardsBuilder($params);
