@@ -55,15 +55,15 @@ class TakingTransaction extends Model
     }
     public function bin()
     {
-        return $this->belongsTo(Bin::class, 'bin_id');
+        return $this->belongsTo(Bin::class,  'taking_transaction_details', 'bin_id', 'id');
     }
     public function cabinet()
     {
-        return $this->belongsTo(Shelf::class, 'cabinet_id');
+        return $this->belongsTo(Shelf::class, 'taking_transaction_details','cabinet_id','id');
     }
     public function spares()
     {
-        return $this->belongsToMany(Spare::class, 'taking_transaction_details')->withPivot('job_card_id','job_name','request_qty', 'vehicle_id','vehicle_num','area_id','area_name', 'platform');
+        return $this->belongsToMany(Spare::class, 'taking_transaction_details')->withPivot('job_card_id','job_name','request_qty', 'vehicle_id','vehicle_num','area_id','area_name', 'platform','bin_id','cabinet_id','location');
     }
     public function user()
     {

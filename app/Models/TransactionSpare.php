@@ -21,6 +21,9 @@ class TransactionSpare extends Model
         'area_id',
         'area_name',
         'request_qty',
+        'cabinet_id',
+        'bin_id',
+        'location',
     ];
     protected $hidden = ['listWO'];
     public function job_card()

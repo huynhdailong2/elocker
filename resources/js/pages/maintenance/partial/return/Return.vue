@@ -79,13 +79,11 @@
               <div class="text ellipsis">{{ props.item.locations.spares.pivot.request_qty }}</div>
             </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis" >{{ props.item.cluster_name }}-{{ props.item.cabinet_name
-              }}-{{
-                  props.item.locations.bin.row }}-{{ props.item.bin_name }}</div>
+              <div class="text ellipsis" >{{ props.item.locations.spares.pivot.location || "N/A" }}</div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.type || "N/A"}}
+                {{ props.item.locations.spares.label || "N/A"}}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
@@ -109,8 +107,23 @@
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                <div>
-                  {{ props.item.locations.spares.type === 'consumable' ? 'I' : props.item.locations.spares.type === 'return' ? 'R' : 'L' }}
+                <div v-if="props.item.type === 'issue'">
+                    <span v-if="props.item.locations.spares.type === 'consumable'">
+                        {{ "I" }}
+                    </span>
+                    <span v-else>
+                        {{ "L" }}
+                    </span>
+                </div>
+                <div v-if="props.item.type === 'return'">
+                    <span>
+                        {{ "R" }}
+                    </span>
+                </div>
+                <div v-if="props.item.type === 'replenish'">
+                    <span>
+                        {{ "RP" }}
+                    </span>
                 </div>
               </div>
             </td>

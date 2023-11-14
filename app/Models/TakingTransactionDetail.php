@@ -19,7 +19,9 @@ class TakingTransactionDetail extends Model
         'area_name',
         'platform',
         'listWO',
-        'request_qty'
+        'request_qty',
+        'cabinet_id',
+        'bin_id',
     ];
     protected $hidden = [
         'listWO'
