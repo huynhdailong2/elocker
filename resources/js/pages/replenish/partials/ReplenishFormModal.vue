@@ -89,11 +89,11 @@
         </div>
       </div>
 
-     <bin-configures
+      <!-- <bin-configures
         :spare="spare"
         :data="inputForm.configures"
         ref="binConfigures"
-        v-if="visibleBinConfigure" />
+        v-if="visibleBinConfigure" /> -->
 
       <div class="row">
         <div class="col-sm-12 text-center">

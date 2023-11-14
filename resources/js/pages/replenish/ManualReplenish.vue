@@ -7,7 +7,7 @@
       <a class="nav-link"
         :class="{'active': selected === TABS.OTHER}"
         href="javascript:void(0)"
-        @click.stop="selected = TABS.OTHER">Consumables - Perishable - STEs
+        @click.stop="selected = TABS.OTHER">Consumables - Perishable - AFES
 
       </a>
       <a class="nav-link"

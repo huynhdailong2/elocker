@@ -122,16 +122,16 @@
               <div class="text">{{ props.item.drawer_name }}</div>
             </td>
 
-            <td>
-              <span class="ml-2" v-if="props.item.spares.length > 4">
+            <td style="width:350px">
+              <!-- <span style="margin: 5px 5px 5px 10px" class="" v-if="props.item.spares.length > 4">
                 {{
                   props.item.spares
                     .slice(0, 4)
                     .map((item) => item.name)
                     .join(", ")
                 }}, ...
-              </span>
-              <span class="ml-2" v-else>
+              </span> -->
+              <span style="padding: 5px 5px 5px 10px; display:block">
                 {{ props.item.spares.map((item) => item.name).join(", ") }}
               </span>
             </td>
