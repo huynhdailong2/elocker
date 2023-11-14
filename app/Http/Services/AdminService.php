@@ -2164,10 +2164,6 @@ class AdminService extends BaseService
         // If bin is processing
         $binSpareCollection = BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->get();
         foreach ($binSpareCollection as $bin) {
-            if ($bin->is_processing && $bin->process_by != $userId) {
-                $user = User::find($bin->process_by);
-                throw new Exception('Bin is locked by ' . $user->name);
-            }
             BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->update([
                 'is_processing' => 1,
                 'process_time' => Carbon::now(),
@@ -2182,10 +2178,6 @@ class AdminService extends BaseService
         // If bin is processing
         $binSpareCollection = BinSpare::where('bin_id', $binId)->where('spare_id', $spareId)->get();
         foreach ($binSpareCollection as $bin) {
-            if ($bin->is_processing && $bin->process_by != $userId) {
-                $user = User::find($bin->process_by);
-                throw new Exception('Bin is locked by ' . $user->name);
-            }
             $bin->update([
                 'is_processing' => 0,
                 'process_time' => null,
