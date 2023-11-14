@@ -3751,7 +3751,7 @@ class SpareService extends BaseService
                 return "Please enter ID transaction";
             }
         }
-        return $requestall;
+        return $requests;
     }
     // public function getReportByTnx($params = []){
     //     return $this->getIssueCardsBuilder($params);
