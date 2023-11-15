@@ -504,11 +504,7 @@ export default {
             spare_id: spare.id,
             name: spare.name,
             type: spare.type,
-            description:
-              this.inputForm.configures.length > 0 &&
-              this.inputForm.configures[0].description
-                ? this.inputForm.configures[0].description
-                : null,
+            description: spare.description,
             batch_no:
               this.inputForm.configures.length > 0 &&
               this.inputForm.configures[0].batch_no
