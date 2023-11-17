@@ -30,6 +30,7 @@ class Bin extends Model
         'min',
         'max',
         'critical',
+        'average',
         'description',
         'is_drawer',
         'is_failed',
