@@ -91,9 +91,11 @@
         <th class="text-center">Row</th>
         <th class="text-center">Bin</th>
         <th class="text-center">Drawer</th>
-        <th class="ml-2">Item Name</th>
-        <th class="ml-2">Total Items</th>
-        <th class="ml-2">Total Qty OH</th>
+        <th class="text-center">Item Name</th>
+        <th class="text-center">Total Items</th>
+        <th class="text-center">Total Qty OH</th>
+        <th class="text-center">Average</th>
+        <th class="text-center">Critical</th>
         <!-- <th class="text-center">Item Type</th>
         <th class="text-center">Calibration Due/Inspection</th>
         <th class="text-center">Expiry Date</th>
@@ -122,7 +124,8 @@
               <div class="text">{{ props.item.drawer_name }}</div>
             </td>
 
-            <td style="width:350px">
+            <td style="max-width:350px; padding: 5px 5px 5px 10px">
+
               <!-- <span style="margin: 5px 5px 5px 10px" class="" v-if="props.item.spares.length > 4">
                 {{
                   props.item.spares
@@ -131,7 +134,7 @@
                     .join(", ")
                 }}, ...
               </span> -->
-              <span style="padding: 5px 5px 5px 10px; display:block">
+              <span class="" style="display:block">
                 {{ props.item.spares.map((item) => item.name).join(", ") }}
               </span>
             </td>
@@ -142,6 +145,84 @@
               <div class="text">
                 {{ props.item.spares.reduce((total, row) => total + row.pivot.quantity_oh, 0) }}
               </div>
+            </td>
+            <td>
+              <div class="row-center-custom">
+                <template v-if="props.item.editingAverage">
+                  <div style="display:flex; align-items: center; justify-content: center; gap: 4px; padding: 0 10px">
+                    <input
+                      v-validate="`required|numeric|min_value:0`" 
+                      name="average" 
+                      class="input_edit"
+                      type="text" 
+                      v-model="props.item.average" />
+                    <button  @click.stop="onSubmitAverage(props.item, props.index)" style="background-color: transparent; border: none;" :disabled="errors.has('average')">
+                      <img
+                        src="/images/icons/icon-save.svg"
+                        width="22px"
+                      />
+                    </button>
+                    <button @click.stop="onCancelEditAverage(props.item)" style="background-color: transparent; border: none;" :disabled="errors.has('average')">
+                      <img
+                        src="/images/icons/icon-cancel.svg"
+                        width="22px"
+                      />
+                    </button>
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="" style="display:block">{{ props.item.average }}</span>
+                  <img
+                    src="/images/icons/icon-edit.svg"
+                    width="22px"
+                    @click.stop="onToggleAverage(props.item)"
+                  />
+                </template>
+              </div>
+              <template v-if="props.item.editingAverage">
+                <span style="padding : 0 10px" class="invalid-feedback" v-if="errors.has('average')">
+                    {{ errors.first("average") }}
+                </span>
+              </template>
+            </td>
+            <td>
+              <div class="row-center-custom">
+                <template v-if="props.item.editingCritical">
+                  <div style="display:flex; align-items: center; justify-content: center; gap: 4px; padding: 0 10px">
+                    <input
+                    v-validate="`required|numeric|min_value:0`" 
+                    name="critical" 
+                    class="input_edit"
+                    type="text" 
+                    v-model.lazy="props.item.critical" />
+                    <button  @click.stop="onSubmitCritical(props.item, props.index)" style="background-color: transparent; border: none;" :disabled="errors.has('critical')">
+                      <img
+                        src="/images/icons/icon-save.svg"
+                        width="22px"
+                      />
+                    </button>
+                    <button @click.stop="onCancelEditCritical(props.item)" style="background-color: transparent; border: none;" :disabled="errors.has('critical')">
+                      <img
+                        src="/images/icons/icon-cancel.svg"
+                        width="22px"
+                      />
+                    </button>
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="" style="display:block">{{ props.item.critical || 0}}</span>
+                  <img
+                    src="/images/icons/icon-edit.svg"
+                    width="22px"
+                    @click.stop="onToggleCritical(props.item)"
+                  />
+                </template>
+              </div>
+              <template v-if="props.item.editingCritical">
+                <span style="padding : 0 10px" class="invalid-feedback" v-if="errors.has('critical')">
+                    {{ errors.first("critical") }}
+                </span>
+              </template>
             </td>
             <!-- <td>
               <div class="text-center">
@@ -208,7 +289,7 @@
               </div>
             </td>
             <td class="action text-center">
-              <img
+              <img 
                 src="/images/icons/icon-edit.svg"
                 width="22px"
                 @click.stop="onClickEdit(props.item)"
@@ -252,6 +333,18 @@ $widthCell: 100px;
     }
   }
   .table-content {
+    .row-center-custom{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+    }
+    .input_edit {
+      padding: 0 10px;
+      width: 50px !important;
+      max-width: 350px !important;
+      margin: 10px 0;
+    }
     ::v-deep .box_table {
       td {
         padding: 0px;
@@ -288,7 +381,7 @@ $widthCell: 100px;
 </style>
 <script>
 import rf from "requestfactory";
-import { chain, cloneDeep, times, debounce, head } from "lodash";
+import { chain, cloneDeep, times, debounce, head, isEmpty } from "lodash";
 import EditBinModal from "./partial/EditBinModal";
 import RemoveErrorsMixin from "common/RemoveErrorsMixin";
 import Const from "common/Const";
@@ -462,6 +555,65 @@ export default {
           this.processErrors(error);
         });
     },
+
+    // handle average
+    onToggleAverage(item) {
+      this.$set(item, 'editingAverage', true);
+    },
+
+    onCancelEditAverage(item) {
+      this.$set(item, 'editingAverage', false);
+    },
+
+    onSubmitAverage(item, idx) {
+      const params = {
+        average: item.average,
+        critical: item.critical,
+        id:item.id
+      }
+      rf.getRequest("AdminRequest")
+        .patchBin(params)
+        .then((res) => {
+          this.showSuccess("Successfully!");
+          this.$set(item, 'editing', false);
+          this.$refs.datatable.refreshCurrentPage();
+          this.resetError();
+        })
+        .catch((error) => {
+          this.processErrors(error);
+      });
+    },
+    // close handle average
+
+    // handle Critical
+    onToggleCritical(item) {
+      this.$set(item, 'editingCritical', true);
+    },
+
+    onCancelEditCritical(item) {
+      this.$set(item, 'editingCritical', false);
+    },
+
+    onSubmitCritical(item, idx) {
+      const params = {
+        average: item.average,
+        critical: item.critical,
+        id: item.id
+      }
+      rf.getRequest("AdminRequest")
+        .patchBin(params)
+        .then((res) => {
+          this.showSuccess("Successfully!");
+          this.$set(item, 'editing', false);
+          this.$refs.datatable.refreshCurrentPage();
+          this.resetError();
+        })
+        .catch((error) => {
+          this.processErrors(error);
+      });
+    },
+    // close handle Critical
+
 
     onClickUnAssigned(record) {
       const _handler = () => {
