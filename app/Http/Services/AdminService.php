@@ -2411,4 +2411,20 @@ class AdminService extends BaseService
                 }
             );
     }
+    public function updateAverage($request){
+        $bin_id = $request['bin_id'];
+        $average = $request['average'];
+        $bin = Bin::find($bin_id);
+        $bin->average = $average;
+        $bin->save();
+        return $bin;
+    }
+    public function updateCritical($request){
+        $bin_id = $request['bin_id'];
+        $critical = $request['critical'];
+        $bin = Bin::find($bin_id);
+        $bin->critical = $critical;
+        $bin->save();
+        return $bin;
+    }
 }

@@ -1090,4 +1090,24 @@ class AdminAPIController extends BaseController
             return $this->sendError($ex, 200);
         }
     }
+    public function updateAverage(Request $request){
+        try {
+            $params = $request->all();
+            $data = $this->adminService->updateAverage($params);
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
+    public function updateCritical(Request $request){
+        try {
+            $params = $request->all();
+            $data = $this->adminService->updateCritical($params);
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
 }

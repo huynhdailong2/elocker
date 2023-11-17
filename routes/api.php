@@ -123,6 +123,8 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
              Route::get('/{id}', 'API\AdminAPIController@getBinId');
             Route::get('/dashboard', 'API\AdminAPIController@getBinsSummary');
             Route::put('/update', 'API\AdminAPIController@updateBin');
+            Route::put('/update-average', 'API\AdminAPIController@updateAverage');
+            Route::put('/update-critical', 'API\AdminAPIController@updateCritical');
             Route::put('/unassigned', 'API\AdminAPIController@unassignedBin');
             Route::put('/patch', 'API\AdminAPIController@patchBin');
             Route::put('/update-status-bins', 'API\AdminAPIController@updateStatusBins');
