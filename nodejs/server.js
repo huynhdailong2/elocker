@@ -34,7 +34,7 @@ const pool = mariadb.createPool({
 function setOnlineOffline(id, val) {
     pool.getConnection()
         .then(conn => {
-            conn.query('UPDATE clusters SET is_online = ? WHERE id = ?', [val, id])
+            conn.query('UPDATE clusters SET is_online = ?, updated_at = NOW() WHERE id = ?', [val, id])
                 .then(rows => {
                     console.log(rows);
                     conn.end();

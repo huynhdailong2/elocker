@@ -58,8 +58,8 @@
               </template>
             </td>
             <td>
-              <span v-if="props.item.is_online" class="online">Online</span>
-              <span v-else class="offline">Offline</span>
+              <div v-if="props.item.is_online" class="text online">Online</div>
+              <div v-else class="text offline">Offline</div>
             </td>
             <!-- <input type="checkbox" class="checkbox" v-model="item.checked"> -->
             <td>
