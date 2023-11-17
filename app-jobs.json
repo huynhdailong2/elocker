@@ -11,7 +11,7 @@
     },
     {
       "name"   : "elocker-node-server",
-      "script" : "./server.js",
+      "script" : "./nodejs/server.js",
       "autorestart" : true,
       "watch": false,
       "max_memory_restart": "100M"
