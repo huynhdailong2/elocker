@@ -13,6 +13,7 @@
           <th class="text-center">S/N</th>
           <th class="text-center">Cluster</th>
           <th class="text-center">Code</th>
+          <th class="text-center">Status</th>
           <th class="text-center">Is RFID</th>
           <th class="text-center">Is Virtual</th>
           <th>Action</th>
@@ -55,6 +56,10 @@
               <template v-else>
                 <div class="text">{{ props.item.code }}</div>
               </template>
+            </td>
+            <td>
+              <div v-if="props.item.is_online" class="text online">Online</div>
+              <div v-else class="text offline">Offline</div>
             </td>
             <!-- <input type="checkbox" class="checkbox" v-model="item.checked"> -->
             <td>
@@ -146,6 +151,14 @@ $widthCell: 150px;
           vertical-align: middle;
           text-align: center;
           line-height: 38px;
+        }
+        .online {
+          color: #4b4bff;
+          font-weight: bold;
+        }
+        .offline {
+          color: #c41d1d;
+          font-weight: bold;
         }
       }
     }

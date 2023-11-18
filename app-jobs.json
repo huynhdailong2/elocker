@@ -8,6 +8,13 @@
     {
       "name"   : "elocker-schedule",
       "script" : "./scheduler.js"
+    },
+    {
+      "name"   : "elocker-node-server",
+      "script" : "./nodejs/server.js",
+      "autorestart" : true,
+      "watch": false,
+      "max_memory_restart": "100M"
     }
   ]
 }
