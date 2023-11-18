@@ -151,7 +151,7 @@
                 <template v-if="props.item.editingAverage">
                   <div style="display:flex; align-items: center; justify-content: center; gap: 4px; padding: 0 10px">
                     <input
-                      v-validate="`required|numeric|min_value:0`" 
+                      v-validate="`required|numeric|min_value:1`" 
                       name="average" 
                       class="input_edit"
                       type="text" 
@@ -190,7 +190,7 @@
                 <template v-if="props.item.editingCritical">
                   <div style="display:flex; align-items: center; justify-content: center; gap: 4px; padding: 0 10px">
                     <input
-                    v-validate="`required|numeric|min_value:0`" 
+                    v-validate="`required|numeric|min_value:1`" 
                     name="critical" 
                     class="input_edit"
                     type="text" 
