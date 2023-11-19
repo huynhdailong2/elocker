@@ -147,21 +147,23 @@ class SpareService extends BaseService
                     $data_transaction = [
                         'user_id' => Auth::id(),
                         'type' => 'issue',
-                        'satus' => 'done',
-                        'job_card_id' => $value['job_card_id'],
-                        'name' => 'trans#' . $bub_num,
+                        'status' => 'done',
+                        'job_card_id' => ($value['job_card_id'])?$value['job_card_id']:null,
+                        'trans_id' => $bub_num,
                         'request_qty' => $value['newQuantity'],
                         'cluster_id' => $binGet->cluster_id,
                     ];
                     $transaction_new = Transaction::create($data_transaction);
                     $transaction_detail = [
-                        'taking_transaction_id' => $transaction_new->id,
-                        'request_qty' => $value['newQuantity'],
+                        'transaction_id' => $transaction_new->id,
+                        'quantity' => $value['newQuantity'],
                         'spare_id' => $value['spares']['id'],
+                        'row' => $binGet->row,
                         'job_card_id' =>  $value['job_card_id'],
                         'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                         'bin_id' => $value['configures'][0]['bin_id'],
                         'cabinet_id' => $binGet->shelf_id,
+                        'conditions' => 'working',
                     ];
                     TransactionDetail::create($transaction_detail);
                     $data = [
@@ -814,19 +816,23 @@ class SpareService extends BaseService
             $data_transaction = [
                 'user_id' => Auth::id(),
                 'type' => 'return',
-                'satus' => 'done',
-                'name' => 'trans#' . $bub_num,
-                'job_card_id' => $item['job_card_id'],
+                'status' => 'done',
+                'trans_id' => $bub_num,
+                'job_card_id' => isset($item['job_card_id'])?$item['job_card_id']:null,
                 'request_qty' => $item['quantity'],
                 'cluster_id' => $binGet->cluster_id,
             ];
             $transaction_new = Transaction::create($data_transaction);
             $transaction_detail = [
-                'taking_transaction_id' => $transaction_new->id,
-                'request_qty' => $item['quantity'],
+                'transaction_id' => $transaction_new->id,
+                'quantity' => $item['quantity'],
                 'spare_id' => $item['spare_id'],
+                'row' => $binGet->row,
+                'job_card_id' =>  isset($item['job_card_id'])?$item['job_card_id']:null,
+                'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                 'bin_id' => $item['bin_id'],
                 'cabinet_id' => $binGet->shelf_id,
+                'conditions' => null,
             ];
             TransactionDetail::create($transaction_detail);
         }
@@ -3450,7 +3456,11 @@ class SpareService extends BaseService
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['returned_date']) ? $request['returned_date'] : [];
         $dateee = json_decode($date, true);
-        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc');
+        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')
+        ->whereHas('transaction', function ($query) {
+            $query->where('type', 'return');
+        })
+        ->orderBy('created_at', 'desc');
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
