@@ -3348,7 +3348,14 @@ class SpareService extends BaseService
             $date = isset($request['issued_date']) ? $request['issued_date'] : [];
             $dateee = json_decode($date, true);
         }
-        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc')->get();
+        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc')
+        ->whereHas('transaction', function ($query) {
+            $query->where('type', 'issue');
+        })
+        ->whereHas('spares', function ($query) {
+            $query->where('type','!=', 'consumable');
+        });
+        $transactions = $transactions->get();
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
