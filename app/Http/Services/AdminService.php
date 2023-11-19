@@ -2084,27 +2084,6 @@ class AdminService extends BaseService
             'spare_eucs' => $eucboxes
         ];
     }
-
-    public function checkProcessingBin($params = [])
-    {
-        $binId = Arr::get($params, 'bin_id');
-        $value = Arr::get($params, 'value');
-
-        $bin = Bin::find($binId);
-        // If bin does not exist
-        if (!$bin) {
-            throw new Exception('Bin does not exist');
-        }
-
-        // Case lock processing
-        if ($value) {
-            $this->lockBinProcessing($bin, $params);
-        }
-        // Case unlock processing
-        else {
-            $this->unlockBinProcessing($bin, $params);
-        }
-    }
     public function checkProcessingBinSpare($params = [])
     {
         $binId = Arr::get($params, 'bin_id');
