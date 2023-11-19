@@ -88,7 +88,9 @@
         <template slot="body" slot-scope="props">
           <tr>
             <td >
-              <div class="text ellipsis">{{ props.item.transaction.trans_id || "N/A"}}</div>
+              <div class="text ellipsis">
+                {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}
+              </div>
             </td>
             <td>
               <div class="text ellipsis">{{ props.item.transaction.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
@@ -109,7 +111,7 @@
                 {{ props.item.job_card !== null ? props.item.job_card.platform : "N/A" }}
               </div>
             </td>
-            <td :title="props.item.locations">
+            <td :title="props.item.transaction.locations">
               <div class="text ellipsis" >  {{`${props.item.transaction.cluster.name || 'N/A'} - ${props.item.shelf.name || 'N/A'} - ${props.item.bin.row || 'N/A'} - ${props.item.bin.bin || 'N/A'}`}}</div>
             </td>
             <td>

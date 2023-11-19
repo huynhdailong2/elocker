@@ -59,68 +59,79 @@
           <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr :style="{ 'background-color': props.item.not_use ? '#f21501' : '' }">
-            <td :title="props.item.id" >
-              <div class="text ellipsis">{{ props.item.id }}</div>
+            <td :title="props.item.transaction.trans_id" >
+              <div class="text ellipsis">
+                  {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}
+              </div>
             </td>
             <td :title="props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')" >
-              <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
-            </td>
-            <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.name || "N/A" }}
+                {{ props.item.transaction.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.part_no || "N/A" }}
+                {{props.item.spares !== null ? props.item.spares.name : "N/A"}}
               </div>
-            </td>
-            <td :title="props.item.locations.spares.pivot.request_qty" >
-              <div class="text ellipsis">{{ props.item.locations.spares.pivot.request_qty }}</div>
-            </td>
-            <td :title="props.item.locations">
-              <div class="text ellipsis" >{{ props.item.locations.spares.pivot.location || "N/A" }}</div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.label || "N/A"}}
+                {{ props.item.spares !== null ? props.item.spares.part_no : "N/A" }}
+              </div>
+            </td>
+            <td :title="props.item.quantity" >
+              <div class="text ellipsis">
+                {{ props.item.quantity !== null ? props.item.quantity : "N/A" }}
+              </div>
+            </td>
+            <td>
+              <div class="text ellipsis" >
+                  {{`${props.item.transaction.cluster.name || 'N/A'} - ${props.item.shelf.name || 'N/A'} - ${props.item.bin.row || 'N/A'} - ${props.item.bin.bin || 'N/A'}`}}
+              </div>
+            </td>
+            <td>
+              <div class="text ellipsis">
+                {{ props.item.spares !== null ? props.item.spares.label : "N/A" }}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                {{ props.item.locations.spares.load_hydrostatic_test_due |dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
+                <!-- {{ props.item.locations.spares.load_hydrostatic_test_due |dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }} -->
+                N/A
               </div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                {{  props.item.locations.spares.calibration_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }}
+                <!-- {{  props.item.locations.spares.calibration_due | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }} -->
+                N/A
               </div>
             </td>
             
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                {{ props.item.locations.spares.expiry_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}
+                <!-- {{ props.item.locations.spares.expiry_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}} -->
+                N/A
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.user.name }}</div>
+              <div class="text ellipsis">{{props.item.user ? props.item.user.name : "N/A"}}</div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                <div v-if="props.item.type === 'issue'">
-                    <span v-if="props.item.locations.spares.type === 'consumable'">
+                <div v-if="props.item.transaction.type === 'issue'">
+                    <span v-if="props.item.spares.type === 'consumable'">
                         {{ "I" }}
                     </span>
                     <span v-else>
                         {{ "L" }}
                     </span>
                 </div>
-                <div v-if="props.item.type === 'return'">
+                <div v-if="props.item.transaction.type === 'return'">
                     <span>
                         {{ "R" }}
                     </span>
                 </div>
-                <div v-if="props.item.type === 'replenish'">
+                <div v-if="props.item.transaction.type === 'replenish'">
                     <span>
                         {{ "RP" }}
                     </span>
@@ -128,7 +139,7 @@
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.status }}</div>
+              <div class="text ellipsis">{{props.item.transaction ? props.item.transaction.status : "N/A" }}</div>
             </td>
             <td>
               <button class="btn btn-primary w_95px"
@@ -331,7 +342,7 @@ export default {
 
     onDataTableFinished () {
       this.data = this.$refs.datatable.rows
-      // Do something.
+      console.log(this.data)
     },
 
     onClickPrint () {

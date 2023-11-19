@@ -68,7 +68,7 @@ export default {
     },
 
     async onClickSubmit() {
-      let spare_id = this.data.locations.spares.id;
+      let spare_id = this.data.spares.id;
       // const returnSpareIds = [];
       // spares.forEach(spare => {
       //   returnSpareIds.push(spare.id);
