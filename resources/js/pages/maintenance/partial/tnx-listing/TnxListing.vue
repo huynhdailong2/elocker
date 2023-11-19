@@ -402,7 +402,6 @@ export default {
 
     onDataTableFinished() {
       this.data = this.$refs.datatable.rows
-      console.log(this.data)
     },
 
     onClickPrint() {

@@ -169,22 +169,6 @@
         </template>
       </data-table2>
     </div>
-<!--
-    <div class="text-right">
-      <button class="btn btn-primary"
-          v-if="replenishForm"
-          @click.stop="onCheckout"
-          :disabled="noSelectedData">
-          Checkout
-      </button>
-      <button class="btn btn-primary"
-          @click.stop="nextReplenishForm"
-          :disabled="noSelectedData" v-else >
-          Go to Cart
-      </button>
-    </div>
-
-    <replenish-form-modal @done="handleReplenishFormFinished"/> -->
     <div class="action d-flex">
       <div class="float-left">
         <button class="btn btn-primary" @click.stop="onClickShowEmailModal">
@@ -357,7 +341,6 @@ export default {
 
     onDataTableFinished () {
       this.data = this.$refs.datatable.rows
-      console.log("🚀 ~ file: Loan.vue:337 ~ onDataTableFinished ~ this.data:", this.data)
       // Do something.
       chain(this.data)
         .each(record => {
