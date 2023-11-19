@@ -88,74 +88,78 @@
         <template slot="body" slot-scope="props">
           <tr>
             <td >
-              <div class="text ellipsis">{{ props.item.id }}</div>
+              <div class="text ellipsis">{{ props.item.transaction.trans_id || "N/A"}}</div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
-                'DD-MM-YYYY') }}</div>
+              <div class="text ellipsis">{{ props.item.transaction.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A"}}</div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{  props.item.locations.spares.pivot.job_name || "N/A"}}
+                {{ props.item.job_card !== null ? props.item.job_card.wo : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{  props.item.locations.spares.pivot.vehicle_num|| "N/A" }}
+                {{ props.item.vehicle !== null ? props.item.vehicle.vehicle_num : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{  props.item.locations.spares.pivot.platform || "N/A"}}
+                {{ props.item.job_card !== null ? props.item.job_card.platform : "N/A" }}
               </div>
             </td>
             <td :title="props.item.locations">
-              <div class="text ellipsis" >{{ props.item.locations.spares.pivot.location || "N/A" }}</div>
+              <div class="text ellipsis" >  {{`${props.item.transaction.cluster.name || 'N/A'} - ${props.item.shelf.name || 'N/A'} - ${props.item.bin.row || 'N/A'} - ${props.item.bin.bin || 'N/A'}`}}</div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.label }}
+                {{ props.item.spares !== null ? props.item.spares.label : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.name }}
+                {{ props.item.spares !== null ? props.item.spares.name : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.locations.spares.part_no }}
+                {{ props.item.spares !== null ? props.item.spares.part_no : "N/A" }}
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.locations.spares.pivot.request_qty }}</div>
+              <div class="text ellipsis">
+                {{ props.item.quantity !== null ? props.item.quantity : "N/A" }}
+              </div>
             </td>
             <td>
               <div class="text ellipsis" >
                 <span>
-                  {{  props.item.locations.spares.pivot.area_name || "N/A" }}
+                  {{ props.item.torque_wrench_area !== null ? props.item.torque_wrench_area.area : "N/A" }}
                 </span>
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.user.name }}</div>
+              <div class="text ellipsis">
+                {{ props.item.transaction.user !== null ? props.item.transaction.user.name : "N/A" }}
+              </div>
             </td>
             <td>
               <div class="text ellipsis">
-                <div v-if="props.item.type === 'issue'">
-                    <span v-if="props.item.locations.spares.type === 'consumable'">
+                <div v-if="props.item.transaction.type === 'issue'">
+                    <span v-if="props.item.spares.type === 'consumable'">
                         {{ "I" }}
                     </span>
                     <span v-else>
                         {{ "L" }}
                     </span>
                 </div>
-                <div v-if="props.item.type === 'return'">
+                <div v-if="props.item.transaction.type === 'return'">
                     <span>
                         {{ "R" }}
                     </span>
                 </div>
-                <div v-if="props.item.type === 'replenish'">
+                <div v-if="props.item.transaction.type === 'replenish'">
                     <span>
                         {{ "RP" }}
                     </span>
@@ -391,7 +395,7 @@ export default {
 
     onDataTableFinished() {
       this.data = this.$refs.datatable.rows
-      // Do something.
+      console.log(this.data)
     },
 
     onClickPrint() {
