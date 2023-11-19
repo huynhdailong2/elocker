@@ -2550,23 +2550,17 @@ class SpareService extends BaseService
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
                             $updateIssueLocation = $this->updateIssueLocation($location, $taking_transaction);
-                            if ($updateIssueLocation) {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "done",
-                                ];
-                            } else {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "Something went wrong!",
-                                ];
-                            }
                         }
+                        $results[] = [
+                            'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
+                            'status' => true,
+                            'msg' => "done",
+                        ];
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];
@@ -2582,23 +2576,17 @@ class SpareService extends BaseService
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
                             $updateReturnLocation = $this->updateReturnLocation($location, $taking_transaction);
-                            if ($updateReturnLocation) {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "done",
-                                ];
-                            } else {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "Something went wrong!",
-                                ];
-                            }
                         }
+                        $results[] = [
+                            'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
+                            'status' => true,
+                            'msg' => "done",
+                        ];
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];
@@ -2621,23 +2609,18 @@ class SpareService extends BaseService
                         if ($replenishment) {
                             foreach ($request['locations'] as $location) {
                                 $updateReplenishLocation = $this->updateReplenishLocation($location, $taking_transaction, $replenishment);
-                                if ($updateReplenishLocation) {
-                                    $results[] = [
-                                        'trans_id' => $request['id'],
-                                        'status' => true,
-                                        'msg' => "done",
-                                    ];
-                                } else {
-                                    $results[] = [
-                                        'trans_id' => $request['id'],
-                                        'status' => true,
-                                        'msg' => "Something went wrong!",
-                                    ];
-                                }
+                            
                             }
+                            $results[] = [
+                                'trans_id' => $request['id'],
+                                'cluster_id' => $request['cluster_id'],
+                                'status' => true,
+                                'msg' => "done",
+                            ];
                         } else {
                             $results[] = [
                                 'trans_id' => $request['id'],
+                                'cluster_id' => $request['cluster_id'],
                                 'status' => true,
                                 'msg' => "Something went wrong!",
                             ];
@@ -2645,6 +2628,7 @@ class SpareService extends BaseService
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];
@@ -2663,23 +2647,18 @@ class SpareService extends BaseService
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
                             $processIssueLocation = $this->processIssueLocation($location, $taking_transaction);
-                            if ($processIssueLocation) {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "done",
-                                ];
-                            } else {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "Something went wrong!",
-                                ];
-                            }
+                            
                         }
+                        $results[] = [
+                            'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
+                            'status' => true,
+                            'msg' => "done",
+                        ];
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];
@@ -2696,23 +2675,17 @@ class SpareService extends BaseService
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
                             $processReturnLocation = $this->processReturnLocation($location, $taking_transaction);
-                            if ($processReturnLocation) {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "done",
-                                ];
-                            } else {
-                                $results[] = [
-                                    'trans_id' => $request['id'],
-                                    'status' => true,
-                                    'msg' => "Something went wrong!",
-                                ];
-                            }
                         }
+                        $results[] = [
+                            'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
+                            'status' => true,
+                            'msg' => "done",
+                        ];
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];
@@ -2736,23 +2709,17 @@ class SpareService extends BaseService
                         if ($replenishment) {
                             foreach ($request['locations'] as $location) {
                                 $processReplenishLocation = $this->processReplenishLocation($location, $taking_transaction, $replenishment);
-                                if ($processReplenishLocation) {
-                                    $results[] = [
-                                        'trans_id' => $request['id'],
-                                        'status' => true,
-                                        'msg' => "done",
-                                    ];
-                                } else {
-                                    $results[] = [
-                                        'trans_id' => $request['id'],
-                                        'status' => true,
-                                        'msg' => "Something went wrong!",
-                                    ];
-                                }
                             }
+                            $results[] = [
+                                'trans_id' => $request['id'],
+                                'cluster_id' => $request['cluster_id'],
+                                'status' => true,
+                                'msg' => "done",
+                            ];
                         } else {
                             $results[] = [
                                 'trans_id' => $request['id'],
+                                'cluster_id' => $request['cluster_id'],
                                 'status' => true,
                                 'msg' => "Something went wrong!",
                             ];
@@ -2760,6 +2727,7 @@ class SpareService extends BaseService
                     } else {
                         $results[] = [
                             'trans_id' => $request['id'],
+                            'cluster_id' => $request['cluster_id'],
                             'status' => true,
                             'msg' => "Something went wrong!",
                         ];

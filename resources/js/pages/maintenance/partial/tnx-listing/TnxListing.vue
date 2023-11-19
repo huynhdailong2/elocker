@@ -170,7 +170,8 @@
             </td>
             <td title="N/A">
               <div class="text ellipsis">
-                {{  props.item.configures.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A" }}
+                {{  props.item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                'DD-MM-YYYY') || "N/A" }}
               </div>
             </td>
           </tr>
