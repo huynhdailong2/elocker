@@ -120,13 +120,13 @@
             <td :title="props.item.transaction.user.name">
               <div class="text ellipsis">
                 {{ props.item.transaction.user !== null ? props.item.transaction.user.name : "N/A" }}
-                <!-- {{ props.item.user !== null ? props.item.user.name : "N/A" }} -->
               </div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
                 {{ props.item.configures.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A" }}
               </div>
+
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
