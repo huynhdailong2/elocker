@@ -125,14 +125,12 @@
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                <!-- {{ props.item.locations.spares.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')|| "N/A" }} -->
-                N/A
+                {{ props.item.configures.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A" }}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                <!-- {{  props.item.locations.spares.calibration_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')|| "N/A" }} -->
-                N/A
+                {{  props.item.configures.calibration_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY')|| "N/A" }}
               </div>
             </td>
             <td class="mw_110px maw_145x" >
@@ -159,8 +157,7 @@
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
-                <!-- {{ props.item.locations.spares.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A"}} -->
-                N/A
+                {{ props.item.configures.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A"}}
               </div>
             </td>
           </tr>

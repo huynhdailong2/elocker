@@ -98,17 +98,17 @@
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.job_card !== null ? props.item.job_card.wo : "N/A" }}
+                {{ props.item.job_card != null ? props.item.job_card.wo : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.vehicle !== null ? props.item.vehicle.vehicle_num : "N/A" }}
+                {{ props.item.vehicle != null ? props.item.vehicle.vehicle_num : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.job_card !== null ? props.item.job_card.platform : "N/A" }}
+                {{ props.item.job_card != null ? props.item.job_card.platform : "N/A" }}
               </div>
             </td>
             <td :title="props.item.transaction.locations">
@@ -116,34 +116,34 @@
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.spares !== null ? props.item.spares.label : "N/A" }}
+                {{ props.item.spares != null ? props.item.spares.label : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.spares !== null ? props.item.spares.name : "N/A" }}
+                {{ props.item.spares != null ? props.item.spares.name : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.spares !== null ? props.item.spares.part_no : "N/A" }}
+                {{ props.item.spares != null ? props.item.spares.part_no : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.quantity !== null ? props.item.quantity : "N/A" }}
+                {{ props.item.quantity != null ? props.item.quantity : "N/A" }}
               </div>
             </td>
             <td>
               <div class="text ellipsis" >
                 <span>
-                  {{ props.item.torque_wrench_area !== null ? props.item.torque_wrench_area.area : "N/A" }}
+                  {{ props.item.torque_wrench_area != null ? props.item.torque_wrench_area.area : "N/A" }}
                 </span>
               </div>
             </td>
             <td>
               <div class="text ellipsis">
-                {{ props.item.transaction.user !== null ? props.item.transaction.user.name : "N/A" }}
+                {{ props.item.transaction.user != null ? props.item.transaction.user.name : "N/A" }}
               </div>
             </td>
             <td>
@@ -169,7 +169,9 @@
               </div>
             </td>
             <td title="N/A">
-              <div class="text ellipsis">N/A</div>
+              <div class="text ellipsis">
+                {{  props.item.configures.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') || "N/A" }}
+              </div>
             </td>
           </tr>
         </template>
