@@ -39,10 +39,11 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesWriteOff"
           :limit="10"
-          :column="9"
+          :column="10"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
+          <th class="text-center">No.</th>
           <th class="text-center mw_110px maw_145x">Item Details</th>
           <th class="text-center">Part No</th>
           <th class="text-center">Quantity</th>
@@ -56,6 +57,7 @@
           </template>
         <template slot="body" slot-scope="props">
           <tr>
+            <td>{{ props.index + 1 }}</td>
             <td>
               <div class="text ellipsis" >
                 {{ props.item.spares.name }}

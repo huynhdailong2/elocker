@@ -39,10 +39,11 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesReportForReturns"
           :limit="10"
-          :column="14"
+          :column="15"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
+          <th class="text-center">No.</th>
           <th class="text-center">Trans ID</th>
           <th class="text-center">Trans Date</th>
           <th class="text-center">Item Details</th>
@@ -59,6 +60,7 @@
           <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr :style="{ 'background-color': props.item.not_use ? '#f21501' : '' }">
+            <td>{{ props.index + 1 }}</td>
             <td :title="props.item.transaction.trans_id" >
               <div class="text ellipsis">
                   {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}

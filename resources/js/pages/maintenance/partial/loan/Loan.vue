@@ -43,10 +43,11 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesReportByLoan"
           :limit="10"
-          :column="16"
+          :column="17"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
+          <th class="text-center">No.</th>
           <th class="text-center">Trans ID</th>
           <th class="text-center">WO/Svc#</th>
           <th class="text-center">Loan Date</th>
@@ -65,6 +66,7 @@
           <th class="text-center">Expiry Date</th>
         <template slot="body" slot-scope="props">
           <tr :class="{'bg-green': props.item.fully_returned, 'bg-red': props.item.expired_return_time }">
+            <td>{{ props.index + 1 }}</td>
             <td :title="props.item.id" >
               <div class="text ellipsis">
                 {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}

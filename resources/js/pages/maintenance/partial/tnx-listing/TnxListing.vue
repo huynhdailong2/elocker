@@ -69,8 +69,9 @@
       <button class="btn btn-primary" :disabled="disabled" @click.stop="onClickGenerate">Generate</button>
     </div>
     <div class="table-scroller mt-3 mb-3">
-      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="14" :widthTable="'100%'"
+      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="15" :widthTable="'100%'"
         @DataTable:finish="onDataTableFinished" ref="datatable">
+        <th class="text-center">NO.</th>
         <th class="text-center">Trans Id</th>
         <th class="text-center">Trans Date</th>
         <th class="text-center">WO#</th>
@@ -87,6 +88,7 @@
         <th class="text-center">Expiry</th>
         <template slot="body" slot-scope="props">
           <tr>
+            <td>{{ props.index + 1 }}</td>
             <td >
               <div class="text ellipsis">
                 {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}
