@@ -16,7 +16,6 @@ class Transaction extends Model
         'request_qty',
         'cluster_id',
         'user_id',
-        'status',
     ];
     public function transactionDetails()
     {

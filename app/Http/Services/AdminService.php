@@ -24,7 +24,8 @@ use App\Models\UserAccessingSpare;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\WriteOff;
-use App\Models\TakingTransaction;
+use App\Models\Transaction;
+use App\Models\TransactionDetail;
 use App\Traits\CustomQueryBuilder;
 use App\User;
 use App\Utils;
@@ -419,75 +420,8 @@ class AdminService extends BaseService
 
     public function getSparesAssignedBin($params = [])
     {
-        // // If params does not have excludeBinIds
-        // if (!Arr::get($params, 'excludeBinIds')) {
-        //     //            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
-        //     $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
-        // }
-
-        // // Does not get empty bin
-        // $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        // // Can replenishment (quantity = 0 and quantity_oh = 0)
-        // $canReplenishment = Arr::get($params, 'can_replenishment', false);
-
-        // return Bin::with('configures', 'spares', 'shelf', 'cluster')
-        //     // ->join('spares', 'spares.id', 'bin_configures.spare_id')
-        //     // ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-        //     // ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
-        //     // ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
-        //     ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
-        //     ->where('bins.is_failed', 0)
-        //     ->where('bins.is_processing', 0)
-        //     ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
-        //         $query->whereNotIn('bins.id', $params['excludeBinIds']);
-        //     })
-        //     ->when(!empty($params['binIds']), function ($query) use ($params) {
-        //         $query->whereIn('bins.id', $params['binIds']);
-        //     })
-        //     ->when(!empty($params['spareIds']), function ($query) use ($params) {
-        //         $query->whereIn('spares.id', $params['spareIds']);
-        //     })
-        //     // ->when(!empty($params['type']), function ($query) use ($params) {
-        //     //     $query->where('spares.type', $params['type']);
-        //     // })
-        //     // ->when(!empty($params['types']), function ($query) use ($params) {
-        //     //     $query->whereIn('spares.type', $params['types']);
-        //     // })
-        //     ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-        //         $query->where('bins.cluster_id', $params['cluster_id']);
-        //     })
-        //     ->when(!empty($params['search_key']), function ($query) use ($params) {
-        //         $searchKey = Utils::escapeLike($params['search_key']);
-        //         $query->where(function ($subQuery) use ($searchKey) {
-        //             $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-        //                 ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%");
-        //         });
-        //     })
-        //     ->when($ignoreEmpty, function ($query) {
-        //         $query->where('quantity_oh', '>', 0);
-        //     })
-        //     ->when($canReplenishment, function ($query) {
-        //         $query->where('quantity', 0)
-        //             ->where('quantity_oh', 0);
-        //     })
-        //     // ->when(empty($params['include_is_virtual']), function ($query) use ($params) {
-        //     //     $query->where('clusters.is_virtual', Consts::FALSE);
-        //     // })
-        //     // ->select('spares.*', 'bins.*', 'bins.id as bin_id', 'bins.bin as bin_name')
-        //     // ->addSelect('shelfs.name as shelf_name', 'clusters.name as cluster_name', 'spares.name as spare_name')
-        //     // ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
-        //     // ->addSelect('bin_configures.serial_no as serial_no')
-        //     ->when(
-        //         !empty($params['no_pagination']),
-        //         function ($query) {
-        //             return $query->get();
-        //         },
-        //         function ($query) use ($params) {
-        //             return $query->paginate(array_get($params, 'limit', Consts::DEFAULT_PER_PAGE));
-        //         }
-        //     );
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
-        $transactions = TakingTransaction::with('user')->select(['id', 'status', 'request_qty', 'user_id', 'type', 'cabinet_id', 'bin_id', 'bin_name', 'cluster_name', 'cabinet_name', 'updated_at', 'created_at'])->orderBy('created_at', 'desc')->get();
+        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc')->get();
         $transactions = $transactions->toArray();
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
@@ -498,35 +432,19 @@ class AdminService extends BaseService
             });
         }
         foreach ($transactions as $key => $value) {
-            if (!empty($value['locations']['spares'])) {
-                foreach ($value['locations']['spares'] as $value2) {
-                    if ($value2['type'] == Consts::SPARE_TYPE_CONSUMABLE) {
-                        unset($transactions[$key]);
-                    }
+            if (!empty($value['spares'])) {
+                if ($value['spares']['type'] != Consts::SPARE_TYPE_CONSUMABLE) {
+                    unset($transactions[$key]);
+                }
+                if ($value['spares']['type'] != 'perishable') {
+                    unset($transactions[$key]);
+                }
+                if ($value['spares']['type'] != 'afes') {
+                    unset($transactions[$key]);
                 }
             }
         }
-        $newData = [];
-        foreach ($transactions as $transaction) {
-            $spares = $transaction['locations']['spares'];
-            foreach ($spares as $spare) {
-                $newTransaction = $transaction;
-                $newTransaction['locations']['spares'] = $spare;
-                $newData[] = $newTransaction;
-            }
-        }
-        $newDatas = [];
-        foreach ($newData as $itme) {
-            $bin_new = $itme['locations']['bin']['id'];
-            $spare_new = $itme['locations']['spares']['id'];
-            $bin_spare = BinSpare::where('bin_id', $bin_new)->where('spare_id', $spare_new)->first();
-            $configures = BinConfigure::where('bin_id', $bin_new)->where('spare_id', $spare_new)->first();
-            $newTransaction = $itme;
-            $newTransaction['bin_spare'] = $bin_spare;
-            $newTransaction['configures'] = $configures;
-            $newDatas[] = $newTransaction;
-        }
-        return $newDatas;
+        return $transactions;
     }
 
     public function getEucAssignedBox($params = [])
@@ -2226,26 +2144,19 @@ class AdminService extends BaseService
 
     public function getSparesAssignedBinn($params = [])
     {
-        // If params does not have excludeBinIds
         if (!Arr::get($params, 'excludeBinIds')) {
-            //            $params['excludeBinIds'] = $this->getNotWorkingReturnSpares()->pluck('bin_id')->toArray();
             $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
         }
 
         // Does not get empty bin
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        // Can replenishment (quantity = 0 and quantity_oh = 0)
         $canReplenishment = Arr::get($params, 'can_replenishment', false);
 
-        return Bin::with('configures', 'spares', 'shelf', 'cluster')
-            // ->join('spares', 'spares.id', 'bin_configures.spare_id')
-            // ->join('shelfs', 'shelfs.id', 'bins.shelf_id')
-            // ->leftJoin('bin_configures', 'bin_configures.bin_id', 'bins.id')
-            // ->leftJoin('clusters', 'clusters.id', 'bins.cluster_id')
+        $bin =  Bin::with('configures', 'spares', 'shelf', 'cluster')
             ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
-            ->where('bins.is_failed', 0)
-            // ->where('bins.is_processing', 0)
-            ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
+            ->where('bins.is_failed', 0)->get();
+            return $bin;
+            $bin->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
                 $query->whereNotIn('bins.id', $params['excludeBinIds']);
             })
             ->when(!empty($params['binIds']), function ($query) use ($params) {
@@ -2280,10 +2191,6 @@ class AdminService extends BaseService
             ->when(empty($params['include_is_virtual']), function ($query) use ($params) {
                 $query->where('clusters.is_virtual', Consts::FALSE);
             })
-            // ->select('spares.*', 'bins.*', 'bins.id as bin_id', 'bins.bin as bin_name')
-            // ->addSelect('shelfs.name as shelf_name', 'clusters.name as cluster_name', 'spares.name as spare_name')
-            // ->addSelect(DB::raw('CONCAT(clusters.name," - ",shelfs.name," - ",bins.row, " - ",bins.bin) as location'))
-            // ->addSelect('bin_configures.serial_no as serial_no')
             ->when(
                 !empty($params['no_pagination']),
                 function ($query) {
@@ -2386,11 +2293,13 @@ class AdminService extends BaseService
                     $currentPage = $page;
                     $perPage = $params['limit'];
                     $paginatedData = array_slice($newDatas, ($currentPage - 1) * $perPage, $perPage);
-                    return $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
+                     $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
+                     return $paginatedTransactions;
                 }
             );
     }
-    public function updateAverage($request){
+    public function updateAverage($request)
+    {
         $bin_id = $request['bin_id'];
         $average = $request['average'];
         $bin = Bin::find($bin_id);
@@ -2398,7 +2307,8 @@ class AdminService extends BaseService
         $bin->save();
         return $bin;
     }
-    public function updateCritical($request){
+    public function updateCritical($request)
+    {
         $bin_id = $request['bin_id'];
         $critical = $request['critical'];
         $bin = Bin::find($bin_id);
