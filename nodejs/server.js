@@ -52,7 +52,7 @@ function setOnlineOffline(id, val) {
 /**
  * Connect socket.io
  */
-const options = { allowEIO3: true };
+const options = { allowEIO3: true, path: '/health' };
 const io = require("socket.io")(server, options);
 /**
  * Listen on provided port, on all network interfaces.
