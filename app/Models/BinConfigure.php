@@ -21,12 +21,13 @@ class BinConfigure extends Model
         'has_load_hydrostatic_test_due',
         'load_hydrostatic_test_due'
     ];
-    // public function bins()
-    // {
-    //     return $this->belongsToMany(Bin::class);
-    // }
     public function spares()
     {
         return $this->belongsToMany(Spare::class);
+    }
+    public function transactionDetails()
+    {
+        return $this->belongsToMany(TransactionDetail::class, 'transaction_detail_bin_configure', 'bin_configure_id', 'transaction_detail_id')
+            ->withPivot('bin_id', 'spare_id');
     }
 }

@@ -42,10 +42,11 @@ class TransactionDetail extends Model
     }
     public function bin()
     {
-        return $this->belongsTo(Bin::class, 'bin_id');
+        return $this->belongsTo(Bin::class, 'bin_id')->with('configures','spares');
     }
     public function shelf()
     {
         return $this->belongsTo(Shelf::class, 'shelf_id');
     }
+    
 }

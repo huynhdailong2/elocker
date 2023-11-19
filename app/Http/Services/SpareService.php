@@ -148,7 +148,7 @@ class SpareService extends BaseService
                         'user_id' => Auth::id(),
                         'type' => 'issue',
                         'status' => 'done',
-                        'job_card_id' => ($value['job_card_id'])?$value['job_card_id']:null,
+                        'job_card_id' => ($value['job_card_id']) ? $value['job_card_id'] : null,
                         'trans_id' => $bub_num,
                         'request_qty' => $value['newQuantity'],
                         'cluster_id' => $binGet->cluster_id,
@@ -162,7 +162,7 @@ class SpareService extends BaseService
                         'job_card_id' =>  $value['job_card_id'],
                         'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                         'bin_id' => $value['configures'][0]['bin_id'],
-                        'cabinet_id' => $binGet->shelf_id,
+                        'shelf_id' => $binGet->shelf_id,
                         'conditions' => 'working',
                     ];
                     TransactionDetail::create($transaction_detail);
@@ -818,7 +818,7 @@ class SpareService extends BaseService
                 'type' => 'return',
                 'status' => 'done',
                 'trans_id' => $bub_num,
-                'job_card_id' => isset($item['job_card_id'])?$item['job_card_id']:null,
+                'job_card_id' => isset($item['job_card_id']) ? $item['job_card_id'] : null,
                 'request_qty' => $item['quantity'],
                 'cluster_id' => $binGet->cluster_id,
             ];
@@ -828,10 +828,10 @@ class SpareService extends BaseService
                 'quantity' => $item['quantity'],
                 'spare_id' => $item['spare_id'],
                 'row' => $binGet->row,
-                'job_card_id' =>  isset($item['job_card_id'])?$item['job_card_id']:null,
+                'job_card_id' =>  isset($item['job_card_id']) ? $item['job_card_id'] : null,
                 'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                 'bin_id' => $item['bin_id'],
-                'cabinet_id' => $binGet->shelf_id,
+                'shelf_id' => $binGet->shelf_id,
                 'conditions' => null,
             ];
             TransactionDetail::create($transaction_detail);
@@ -3278,6 +3278,7 @@ class SpareService extends BaseService
         }
         $paginatedTransactions = $transactions->get();
         $paginatedTransactionss = $paginatedTransactions->toArray();
+        // return $paginatedTransactionss;
         $spareTypes = [
             [
                 'accepted' => ['issue', 'return', 'replenish'],
@@ -3341,6 +3342,27 @@ class SpareService extends BaseService
             }
 
             $taking_transactions[] = $itemdata;
+        }
+        foreach ($taking_transactions as &$value) {
+            $bin_id = $value['bin_id'];
+            $spare_id = $value['spares']['id'];
+            if (isset($value['bin']) && isset($value['bin']['configures'])) {
+                $configures = $value['bin']['configures'];
+               
+                foreach ($configures as $key1 => $value2) {
+                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
+                        $value['configures'] = $value['bin']['configures'][$key1];
+                    }
+                }
+            }
+            if(isset($value['bin']) && isset($value['bin']['spares'])){
+                $binSpare = $value['bin']['spares'];
+                foreach ($binSpare as $key1 => $value2) {
+                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
+                        $value['bin_spare'] = $value['bin']['spares'][$key1];
+                    }
+                }
+            }
         }
         $perPage = $request['limit'];
         $page = $request['page'];
@@ -3442,6 +3464,27 @@ class SpareService extends BaseService
 
             $taking_transactions[] = $itemdata;
         }
+        foreach ($taking_transactions as &$value) {
+            $bin_id = $value['bin_id'];
+            $spare_id = $value['spares']['id'];
+            if (isset($value['bin']) && isset($value['bin']['configures'])) {
+                $configures = $value['bin']['configures'];
+               
+                foreach ($configures as $key1 => $value2) {
+                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
+                        $value['configures'] = $value['bin']['configures'][$key1];
+                    }
+                }
+            }
+            if(isset($value['bin']) && isset($value['bin']['spares'])){
+                $binSpare = $value['bin']['spares'];
+                foreach ($binSpare as $key1 => $value2) {
+                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
+                        $value['bin_spare'] = $value['bin']['spares'][$key1];
+                    }
+                }
+            }
+        }
         $perPage = $request['limit'];
         $page = $request['page'];
         $currentPage = $page;
@@ -3457,10 +3500,10 @@ class SpareService extends BaseService
         $date = isset($request['returned_date']) ? $request['returned_date'] : [];
         $dateee = json_decode($date, true);
         $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')
-        ->whereHas('transaction', function ($query) {
-            $query->where('type', 'return');
-        })
-        ->orderBy('created_at', 'desc');
+            ->whereHas('transaction', function ($query) {
+                $query->where('type', 'return');
+            })
+            ->orderBy('created_at', 'desc');
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
         }
@@ -3537,6 +3580,27 @@ class SpareService extends BaseService
             }
 
             $taking_transactions[] = $itemdata;
+        }
+        foreach ($taking_transactions as &$value) {
+            $bin_id = $value['bin_id'];
+            $spare_id = $value['spares']['id'];
+            if (isset($value['bin']) && isset($value['bin']['configures'])) {
+                $configures = $value['bin']['configures'];
+               
+                foreach ($configures as $key1 => $value2) {
+                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
+                        $value['configures'] = $value['bin']['configures'][$key1];
+                    }
+                }
+            }
+            if(isset($value['bin']) && isset($value['bin']['spares'])){
+                $binSpare = $value['bin']['spares'];
+                foreach ($binSpare as $key1 => $value2) {
+                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
+                        $value['bin_spare'] = $value['bin']['spares'][$key1];
+                    }
+                }
+            }
         }
         $perPage = $request['limit'];
         $page = $request['page'];
