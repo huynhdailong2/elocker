@@ -113,7 +113,7 @@ var ids = [];
 
 io.use(function (socket, next) {
     if (socket.handshake.query && socket.handshake.query.token) {
-        jwt.verify(socket.handshake.query.token, process.env.SECRET_KEY, function (err, decoded) {
+        jwt.verify(socket.handshake.query.token, process.env.SECRET_KEY, {ignoreExpiration: true}, function (err, decoded) {
             if (err) return next(new Error('Authentication error'));
             socket.decoded = decoded;
             next();
