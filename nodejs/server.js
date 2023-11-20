@@ -16,7 +16,11 @@ const port = normalizePort(process.env.NODE_PORT || '8889');
  * Create HTTP server.
  */
 
-const server = http.createServer();
+const server = http.createServer(function( req, res ){
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('OK!');
+});
 
 
 /**
