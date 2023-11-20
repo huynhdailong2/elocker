@@ -129,20 +129,23 @@ io.use(function (socket, next) {
 })
     .on('connection', function (socket) {
         // Connection now authenticated to receive further events
-        
-        socket.on('message', function (dt) {
-            if (dt.cluster_id) {
-                //update db for online
-                setOnlineOffline(dt.cluster_id, 1);
-                ids[socket.id] = dt.cluster_id
-            }
-            // io.emit('message', message);
-        });
-        socket.on('disconnect', () => {
-            console.log('Client disconnected!')
-            let id = ids[socket.id];
-            //update db for offline
-            setOnlineOffline(id, 0);
-            delete ids[socket.id];
-        });
+        try {
+            socket.on('message', function (dt) {
+                if (dt.cluster_id) {
+                    //update db for online
+                    setOnlineOffline(dt.cluster_id, 1);
+                    ids[socket.id] = dt.cluster_id
+                }
+                // io.emit('message', message);
+            });
+            socket.on('disconnect', () => {
+                console.log('Client disconnected!')
+                let id = ids[socket.id];
+                //update db for offline
+                setOnlineOffline(id, 0);
+                delete ids[socket.id];
+            });
+        } catch (err) {
+            console.error(err);
+        }
     });
