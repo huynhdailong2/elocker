@@ -19,6 +19,9 @@ class TransactionDetail extends Model
         'area_id',
         'quantity',
         'conditions',
+        'previous_qty',
+        'current_qty',
+        'changed_qty',
     ];
     public function jobCard()
     {

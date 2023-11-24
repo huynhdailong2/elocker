@@ -2609,7 +2609,6 @@ class SpareService extends BaseService
                         if ($replenishment) {
                             foreach ($request['locations'] as $location) {
                                 $updateReplenishLocation = $this->updateReplenishLocation($location, $taking_transaction, $replenishment);
-                            
                             }
                             $results[] = [
                                 'trans_id' => $request['id'],
@@ -2647,7 +2646,6 @@ class SpareService extends BaseService
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
                             $processIssueLocation = $this->processIssueLocation($location, $taking_transaction);
-                            
                         }
                         $results[] = [
                             'trans_id' => $request['id'],
@@ -2749,6 +2747,9 @@ class SpareService extends BaseService
                 'bin_id' => $locations['bin']['id'],
                 'spare_id' => $value['id'],
                 'quantity' => $value['quantity'],
+                'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                 'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -2827,6 +2828,9 @@ class SpareService extends BaseService
                 'bin_id' => $location['bin']['id'],
                 'spare_id' => $value['id'],
                 'quantity' => $value['quantity'],
+                'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                 'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -2910,6 +2914,9 @@ class SpareService extends BaseService
                 'bin_id' => $location['bin']['id'],
                 'spare_id' => $value['id'],
                 'quantity' => $value['quantity'],
+                'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                 'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -2960,6 +2967,9 @@ class SpareService extends BaseService
                 $transactionDetail->bin_id = $locations['bin']['id'];
                 $transactionDetail->spare_id =  $value['id'];
                 $transactionDetail->quantity =  $value['quantity'];
+                $transactionDetail->previous_qty =  isset($value['previous_qty']) ? $value['previous_qty'] : 0;
+                $transactionDetail->current_qty =  isset($value['current_qty']) ? $value['current_qty'] : 0;
+                $transactionDetail->changed_qty =  isset($value['changed_qty']) ? $value['changed_qty'] : 0;
                 $transactionDetail->job_card_id =  !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null;
                 $transactionDetail->vehicle_id =  !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null;
                 $transactionDetail->area_id =  !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null;
@@ -2973,6 +2983,9 @@ class SpareService extends BaseService
                     'bin_id' => $locations['bin']['id'],
                     'spare_id' => $value['id'],
                     'quantity' => $value['quantity'],
+                    'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                    'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                    'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                     'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                     'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                     'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -3054,6 +3067,9 @@ class SpareService extends BaseService
                 $transactionDetail->bin_id = $location['bin']['id'];
                 $transactionDetail->spare_id =  $value['id'];
                 $transactionDetail->quantity =  $value['quantity'];
+                $transactionDetail->previous_qty =  isset($value['previous_qty']) ? $value['previous_qty'] : 0;
+                $transactionDetail->current_qty =  isset($value['current_qty']) ? $value['current_qty'] : 0;
+                $transactionDetail->changed_qty =  isset($value['changed_qty']) ? $value['changed_qty'] : 0;
                 $transactionDetail->job_card_id =  !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null;
                 $transactionDetail->vehicle_id =  !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null;
                 $transactionDetail->area_id =  !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null;
@@ -3067,6 +3083,9 @@ class SpareService extends BaseService
                     'bin_id' => $location['bin']['id'],
                     'spare_id' => $value['id'],
                     'quantity' => $value['quantity'],
+                    'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                    'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                    'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                     'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                     'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                     'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -3151,6 +3170,9 @@ class SpareService extends BaseService
                 $transactionDetail->bin_id = $location['bin']['id'];
                 $transactionDetail->spare_id =  $value['id'];
                 $transactionDetail->quantity =  $value['quantity'];
+                $transactionDetail->previous_qty =  isset($value['previous_qty']) ? $value['previous_qty'] : 0;
+                $transactionDetail->current_qty =  isset($value['current_qty']) ? $value['current_qty'] : 0;
+                $transactionDetail->changed_qty =  isset($value['changed_qty']) ? $value['changed_qty'] : 0;
                 $transactionDetail->job_card_id =  !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null;
                 $transactionDetail->vehicle_id =  !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null;
                 $transactionDetail->area_id =  !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null;
@@ -3164,6 +3186,9 @@ class SpareService extends BaseService
                     'bin_id' => $location['bin']['id'],
                     'spare_id' => $value['id'],
                     'quantity' => $value['quantity'],
+                    'previous_qty' => isset($value['previous_qty']) ? $value['previous_qty'] : 0,
+                    'current_qty' => isset($value['current_qty']) ? $value['current_qty'] : 0,
+                    'changed_qty' => isset($value['changed_qty']) ? $value['changed_qty'] : 0,
                     'job_card_id' => !empty($value['listWO'][0]['wo_id']) ? $value['listWO'][0]['wo_id'] : null,
                     'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                     'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
@@ -3316,14 +3341,14 @@ class SpareService extends BaseService
             $spare_id = $value['spares']['id'];
             if (isset($value['bin']) && isset($value['bin']['configures'])) {
                 $configures = $value['bin']['configures'];
-               
+
                 foreach ($configures as $key1 => $value2) {
                     if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
                         $value['configures'] = $value['bin']['configures'][$key1];
                     }
                 }
             }
-            if(isset($value['bin']) && isset($value['bin']['spares'])){
+            if (isset($value['bin']) && isset($value['bin']['spares'])) {
                 $binSpare = $value['bin']['spares'];
                 foreach ($binSpare as $key1 => $value2) {
                     if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
@@ -3349,12 +3374,12 @@ class SpareService extends BaseService
             $dateee = json_decode($date, true);
         }
         $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc')
-        ->whereHas('transaction', function ($query) {
-            $query->where('type', 'issue');
-        })
-        ->whereHas('spares', function ($query) {
-            $query->where('type','!=', 'consumable');
-        });
+            ->whereHas('transaction', function ($query) {
+                $query->where('type', 'issue');
+            })
+            ->whereHas('spares', function ($query) {
+                $query->where('type', '!=', 'consumable');
+            });
         $transactions = $transactions->get();
         if (!empty($date)) {
             $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
@@ -3444,14 +3469,14 @@ class SpareService extends BaseService
             $spare_id = $value['spares']['id'];
             if (isset($value['bin']) && isset($value['bin']['configures'])) {
                 $configures = $value['bin']['configures'];
-               
+
                 foreach ($configures as $key1 => $value2) {
                     if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
                         $value['configures'] = $value['bin']['configures'][$key1];
                     }
                 }
             }
-            if(isset($value['bin']) && isset($value['bin']['spares'])){
+            if (isset($value['bin']) && isset($value['bin']['spares'])) {
                 $binSpare = $value['bin']['spares'];
                 foreach ($binSpare as $key1 => $value2) {
                     if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
@@ -3561,14 +3586,14 @@ class SpareService extends BaseService
             $spare_id = $value['spares']['id'];
             if (isset($value['bin']) && isset($value['bin']['configures'])) {
                 $configures = $value['bin']['configures'];
-               
+
                 foreach ($configures as $key1 => $value2) {
                     if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
                         $value['configures'] = $value['bin']['configures'][$key1];
                     }
                 }
             }
-            if(isset($value['bin']) && isset($value['bin']['spares'])){
+            if (isset($value['bin']) && isset($value['bin']['spares'])) {
                 $binSpare = $value['bin']['spares'];
                 foreach ($binSpare as $key1 => $value2) {
                     if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
