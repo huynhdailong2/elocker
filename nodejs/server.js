@@ -16,7 +16,11 @@ const port = normalizePort(process.env.NODE_PORT || '8889');
  * Create HTTP server.
  */
 
-const server = http.createServer();
+const server = http.createServer(function( req, res ){
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('OK!');
+});
 
 
 /**
@@ -113,7 +117,7 @@ var ids = [];
 
 io.use(function (socket, next) {
     if (socket.handshake.query && socket.handshake.query.token) {
-        jwt.verify(socket.handshake.query.token, process.env.SECRET_KEY, function (err, decoded) {
+        jwt.verify(socket.handshake.query.token, process.env.SECRET_KEY, {ignoreExpiration: true}, function (err, decoded) {
             if (err) return next(new Error('Authentication error'));
             socket.decoded = decoded;
             next();
@@ -125,20 +129,23 @@ io.use(function (socket, next) {
 })
     .on('connection', function (socket) {
         // Connection now authenticated to receive further events
-        
-        socket.on('message', function (dt) {
-            if (dt.cluster_id) {
-                //update db for online
-                setOnlineOffline(dt.cluster_id, 1);
-                ids[socket.id] = dt.cluster_id
-            }
-            // io.emit('message', message);
-        });
-        socket.on('disconnect', () => {
-            console.log('Client disconnected!')
-            let id = ids[socket.id];
-            //update db for offline
-            setOnlineOffline(id, 0);
-            delete ids[socket.id];
-        });
+        try {
+            socket.on('message', function (dt) {
+                if (dt.cluster_id) {
+                    //update db for online
+                    setOnlineOffline(dt.cluster_id, 1);
+                    ids[socket.id] = dt.cluster_id
+                }
+                // io.emit('message', message);
+            });
+            socket.on('disconnect', () => {
+                console.log('Client disconnected!')
+                let id = ids[socket.id];
+                //update db for offline
+                setOnlineOffline(id, 0);
+                delete ids[socket.id];
+            });
+        } catch (err) {
+            console.error(err);
+        }
     });
