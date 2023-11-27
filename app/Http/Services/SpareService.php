@@ -3049,7 +3049,7 @@ class SpareService extends BaseService
                             'taking_transaction_id' => $taking_transaction->id,
                         ]
                     );
-                    $this->updateQuantityInBinSpare($issueCard->bin_id, $issueCard->spare_id, -$issueCard->quantity);
+                    // $this->updateQuantityInBinSpare($issueCard->bin_id, $issueCard->spare_id, -$issueCard->quantity);
                     break;
             }
         }
