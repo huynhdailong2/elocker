@@ -2145,6 +2145,7 @@ class AdminService extends BaseService
     public function getSparesAssignedBinn($params = [])
     {
         if (!Arr::get($params, 'excludeBinIds')) {
+            
             $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
         }
 
