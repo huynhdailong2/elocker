@@ -2145,7 +2145,6 @@ class AdminService extends BaseService
     public function getSparesAssignedBinn($params = [])
     {
         if (!Arr::get($params, 'excludeBinIds')) {
-            
             $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
         }
 
@@ -2153,11 +2152,10 @@ class AdminService extends BaseService
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
         $canReplenishment = Arr::get($params, 'can_replenishment', false);
 
-        $bin =  Bin::with('configures', 'spares', 'shelf', 'cluster')
+        return Bin::with('configures', 'spares', 'shelf', 'cluster')
             ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
-            ->where('bins.is_failed', 0)->get();
-            return $bin;
-            $bin->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
+            ->where('bins.is_failed', 0)
+            ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
                 $query->whereNotIn('bins.id', $params['excludeBinIds']);
             })
             ->when(!empty($params['binIds']), function ($query) use ($params) {
@@ -2294,8 +2292,7 @@ class AdminService extends BaseService
                     $currentPage = $page;
                     $perPage = $params['limit'];
                     $paginatedData = array_slice($newDatas, ($currentPage - 1) * $perPage, $perPage);
-                     $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
-                     return $paginatedTransactions;
+                    return $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
                 }
             );
     }
