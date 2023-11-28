@@ -99,7 +99,6 @@ export default {
               };
             })
             .value();
-          console.log("this.datas", this.data);
         });
     },
 

@@ -46,10 +46,10 @@
                 </div>
               </td>
               <td>
-                <div>{{ item.spares.name }}</div>
+                <div class="text ellipsis">{{ item.spares.name }}</div>
               </td>
               <td>
-                <div>
+                <div class="text ellipsis">
                   {{ item.cluster.name }}-{{ item.shelf.name
               }}-{{
                   item.row }}-{{ item.bin }}

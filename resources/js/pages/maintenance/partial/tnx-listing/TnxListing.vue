@@ -69,7 +69,7 @@
       <button class="btn btn-primary" :disabled="disabled" @click.stop="onClickGenerate">Generate</button>
     </div>
     <div class="table-scroller mt-3 mb-3">
-      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="15" :widthTable="'100%'"
+      <data-table2 :getData="getSparesReportByTnx" :limit="10" :column="16" :widthTable="'100%'"
         @DataTable:finish="onDataTableFinished" ref="datatable">
         <th class="text-center">NO.</th>
         <th class="text-center">Trans Id</th>
@@ -86,6 +86,7 @@
         <th class="text-center">By</th>
         <th class="text-center">Trans</th>
         <th class="text-center">Expiry</th>
+        <th class="text-center">User Agent</th>
         <template slot="body" slot-scope="props">
           <tr>
             <td class="text ellipsis">{{ props.realIndex }}</td>
@@ -174,6 +175,24 @@
               <div class="text ellipsis">
                 {{  props.item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}
+              </div>
+            </td>
+            <td>
+              <div class="text ellipsis">
+                <template v-if="props.item.user_agent != null">
+                  <div v-if="props.item.user_agent.includes('Mozilla')">
+                    <span class="text ellipsis">Web</span>
+                  </div>
+                  <div v-else-if="props.item.user_agent.includes('Postman')">
+                    <span class="text ellipsis">Local</span>
+                  </div>
+                  <div v-else>
+                    <span class="text ellipsis">Tablet</span>
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="text ellipsis">N/A</span>
+                </template>
               </div>
             </td>
           </tr>
@@ -364,7 +383,8 @@ export default {
     },
     disabled() {
       return isEmpty(this.tnxFromFormat) || isEmpty(this.tnxToFormat)
-    }
+    },
+
   },
 
   methods: {
@@ -402,6 +422,7 @@ export default {
 
     onDataTableFinished() {
       this.data = this.$refs.datatable.rows
+      console.log(this.data)
     },
 
     onClickPrint() {
