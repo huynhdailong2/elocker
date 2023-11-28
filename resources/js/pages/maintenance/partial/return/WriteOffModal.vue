@@ -68,7 +68,8 @@ export default {
     },
 
     async onClickSubmit() {
-      let spare_id = this.data.spares.id;
+      let spare_id = this.data.spare_id;
+      let bin_id = this.data.bin_id;
       // const returnSpareIds = [];
       // spares.forEach(spare => {
       //   returnSpareIds.push(spare.id);
@@ -83,6 +84,7 @@ export default {
 
       const params = {
         return_spare_id: spare_id,
+        return_bin_id: bin_id,
         reason: this.reason
       }
 

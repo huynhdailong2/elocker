@@ -3653,10 +3653,11 @@ class SpareService extends BaseService
     }
     public function writeOffSpare($params = [])
     {
-        $item = $params['return_spare_id'];
+        $spare_id = $params['return_spare_id'];
+        $bin_id = $params['return_bin_id'];
         // foreach ($params['return_spare_id'] as $item) {
         $returnedSpareCurrent = ReturnSpare::query()
-            ->where('spare_id', $item)
+            ->where('spare_id', $spare_id)->where('bin_id',$bin_id)
             ->first();
         if ($returnedSpareCurrent->write_off == Consts::TRUE) {
             return;

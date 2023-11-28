@@ -142,14 +142,6 @@
               <div class="text ellipsis">{{props.item.conditions !== null ? props.item.conditions : "N/A" }}</div>
             </td>
             <td>
-              <template v-if="props.item.conditions != 'working'">
-                <button class="btn btn-primary w_95px"
-                  @click.stop="onClickWriteOff(props.item)">
-                  Write Off
-                </button>
-              </template>
-            </td>
-            <td>
               <div class="text ellipsis">
                 <template v-if="props.item.user_agent != null">
                   <div v-if="props.item.user_agent.includes('Mozilla')">
@@ -167,6 +159,15 @@
                 </template>
               </div>
             </td>
+            <td>
+              <template v-if="props.item.conditions != 'working'">
+                <button class="btn btn-primary w_95px"
+                  @click.stop="onClickWriteOff(props.item)">
+                  Write Off
+                </button>
+              </template>
+            </td>
+           
           </tr>
         </template>
       </data-table2>
