@@ -43,7 +43,7 @@
     <div class="table-scroller mt-3 mb-3">
       <data-table2 :getData="getSparesReportByLoan"
           :limit="10"
-          :column="17"
+          :column="18"
           :widthTable="'100%'"
           @DataTable:finish="onDataTableFinished"
           ref="datatable">
@@ -64,6 +64,7 @@
           <th class="text-center">Calibration / Inspection Due</th>
           <th class="text-center">Trans</th>
           <th class="text-center">Expiry Date</th>
+          <th class="text-center">User Agent</th>
         <template slot="body" slot-scope="props">
           <tr :class="{'bg-green': props.item.fully_returned, 'bg-red': props.item.expired_return_time }">
             <td class="text ellipsis">{{ props.realIndex }}</td>
@@ -163,6 +164,24 @@
               <div class="text ellipsis">
                 {{ props.item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A"}}
+              </div>
+            </td>
+            <td>
+              <div class="text ellipsis">
+                <template v-if="props.item.user_agent != null">
+                  <div v-if="props.item.user_agent.includes('Mozilla')">
+                    <span class="text ellipsis">Web</span>
+                  </div>
+                  <div v-else-if="props.item.user_agent.includes('Postman')">
+                    <span class="text ellipsis">Local</span>
+                  </div>
+                  <div v-else>
+                    <span class="text ellipsis">Tablet</span>
+                  </div>
+                </template>
+                <template v-else>
+                  <span class="text ellipsis">N/A</span>
+                </template>
               </div>
             </td>
           </tr>
