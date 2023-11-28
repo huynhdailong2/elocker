@@ -60,7 +60,7 @@
           <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr :style="{ 'background-color': props.item.not_use ? '#f21501' : '' }">
-            <td>{{ props.index + 1 }}</td>
+            <td class="text ellipsis">{{ props.realIndex }}</td>
             <td :title="props.item.transaction.trans_id" >
               <div class="text ellipsis">
                   {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}
@@ -113,7 +113,7 @@
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{props.item.user ? props.item.user.name : "N/A"}}</div>
+              <div class="text ellipsis">{{props.item.transaction.user ? props.item.transaction.user.name : "N/A"}}</div>
             </td>
             <td class="mw_110px maw_145x" >
               <div class="text ellipsis">
@@ -138,13 +138,15 @@
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{props.item.transaction ? props.item.transaction.status : "N/A" }}</div>
+              <div class="text ellipsis">{{props.item.conditions !== null ? props.item.conditions : "N/A" }}</div>
             </td>
             <td>
-              <button class="btn btn-primary w_95px"
-                @click.stop="onClickWriteOff(props.item)">
-                Write Off
-              </button>
+              <template v-if="props.item.conditions != 'working'">
+                <button class="btn btn-primary w_95px"
+                  @click.stop="onClickWriteOff(props.item)">
+                  Write Off
+                </button>
+              </template>
             </td>
           </tr>
         </template>
