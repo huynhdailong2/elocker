@@ -420,31 +420,18 @@ class AdminService extends BaseService
 
     public function getSparesAssignedBin($params = [])
     {
-        $search_key = isset($request['search_key']) ? $request['search_key'] : '';
-        $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc')->get();
-        $transactions = $transactions->toArray();
-        if (!empty($search_key)) {
-            $transactions->where(function ($query) use ($search_key) {
-                $query->where('id', $search_key)
-                    ->orWhereHas('spares', function ($subquery) use ($search_key) {
-                        $subquery->where('part_no', 'LIKE', '%' . $search_key . '%');
-                    });
+        $params['typess'][0] = 'consumable';
+        $params['typess'][1] = 'perishable';
+        $params['typess'][2] = 'afes';
+        $search_key = isset($params['search_key']) ? $params['search_key'] : '';
+        $bin =  BinSpare::with('spares', 'bin')
+        ->when(!empty($params['typess']), function ($query) use ($params) {
+            $query->whereHas('spares', function ($subquery) use ($params) {
+                $subquery->where('type', $params['typess']);
             });
-        }
-        foreach ($transactions as $key => $value) {
-            if (!empty($value['spares'])) {
-                if ($value['spares']['type'] != Consts::SPARE_TYPE_CONSUMABLE) {
-                    unset($transactions[$key]);
-                }
-                if ($value['spares']['type'] != 'perishable') {
-                    unset($transactions[$key]);
-                }
-                if ($value['spares']['type'] != 'afes') {
-                    unset($transactions[$key]);
-                }
-            }
-        }
-        return $transactions;
+        });
+        return $bin->get();
+            
     }
 
     public function getEucAssignedBox($params = [])
