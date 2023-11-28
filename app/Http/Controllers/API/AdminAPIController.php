@@ -1110,4 +1110,14 @@ class AdminAPIController extends BaseController
             return $this->sendError($ex);
         }
     }
+    public function updateQuantityOh(Request $request){
+        try {
+            $params = $request->all();
+            $data = $this->adminService->updateQuantityOh($params);
+            return $this->sendResponse($data);
+        } catch (Exception $ex) {
+            logger()->error($ex);
+            return $this->sendError($ex);
+        }
+    }
 }
