@@ -10,11 +10,11 @@
         @click.stop="selected = TABS.OTHER">Consumables - Perishable - AFES
 
       </a>
-      <a class="nav-link"
+      <!-- <a class="nav-link"
         :class="{'active': selected === TABS.EUC}"
         href="javascript:void(0)"
         @click.stop="selected = TABS.EUC">EUC
-      </a>
+      </a> -->
     </nav>
 
     <div class="content">

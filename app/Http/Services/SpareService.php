@@ -718,7 +718,7 @@ class SpareService extends BaseService
         return $issueCardHistories;
     }
 
-    public function returnToStore($params)
+    public function returnToStore($params,$userAgent)
     {
         $spares = array_get($params, 'spares', []);
         $userId = Arr::get($params, 'user_id');
@@ -835,7 +835,8 @@ class SpareService extends BaseService
                 'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                 'bin_id' => $item['bin_id'],
                 'shelf_id' => $binGet->shelf_id,
-                'conditions' => null,
+                'conditions' => $item['state'],
+                'user_agent' => $userAgent,
             ];
             TransactionDetail::create($transaction_detail);
         }

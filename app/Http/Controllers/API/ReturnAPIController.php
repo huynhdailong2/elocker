@@ -38,7 +38,8 @@ class ReturnAPIController extends BaseController
         DB::beginTransaction();
         try {
             $params = $request->all();
-            $data = $this->spareService->returnToStore($params);
+            $userAgent = $request->server('HTTP_USER_AGENT');
+            $data = $this->spareService->returnToStore($params,$userAgent);
             DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {

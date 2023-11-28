@@ -26,7 +26,7 @@ class BinSpare extends Model
     } 
     public function bin()
     {
-        return $this->belongsTo(Bin::class,'bin_id');
+        return $this->belongsTo(Bin::class,'bin_id')->with('configures','cluster','shelf');
     }
     public $timestamps = true;
 }
