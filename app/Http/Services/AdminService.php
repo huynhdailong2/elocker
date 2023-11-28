@@ -2314,4 +2314,16 @@ class AdminService extends BaseService
         $bin->save();
         return $bin;
     }
+    public function updateQuantityOh($request)
+    {
+        $requests = $request['data'];
+        $data = [];
+        foreach ($requests as $item) {
+           $bin_spare =  BinSpare::where('bin_id', $item['bin_id'])->where('spare_id', $item['spare_id'])->first();
+           $bin_spare->quantity_oh = $item['quantity_oh'];
+           $bin_spare->save();
+           $data[]= $bin_spare;
+        }
+        return $data;
+    }
 }

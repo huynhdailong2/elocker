@@ -246,4 +246,5 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
     Route::get('/notify-return-item-info', 'API\ReturnAPIController@getReturnItemInfo');
     Route::post('/check-processing-bin', 'API\AdminAPIController@checkProcessingBin');
     Route::post('/unlock-processing-bin', 'API\AdminAPIController@unlockProcessingBin');
+    Route::put('/spares/update-qty-oh', 'API\AdminAPIController@updateQuantityOh');
 });

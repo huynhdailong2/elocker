@@ -22,6 +22,7 @@ class TransactionDetail extends Model
         'previous_qty',
         'current_qty',
         'changed_qty',
+        'user_agent',
     ];
     public function jobCard()
     {
