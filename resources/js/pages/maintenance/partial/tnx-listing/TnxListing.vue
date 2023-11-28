@@ -88,7 +88,7 @@
         <th class="text-center">Expiry</th>
         <template slot="body" slot-scope="props">
           <tr>
-            <td>{{ props.index + 1 }}</td>
+            <td class="text ellipsis">{{ props.realIndex }}</td>
             <td >
               <div class="text ellipsis">
                 {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}

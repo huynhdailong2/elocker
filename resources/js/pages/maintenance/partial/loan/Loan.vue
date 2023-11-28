@@ -66,7 +66,7 @@
           <th class="text-center">Expiry Date</th>
         <template slot="body" slot-scope="props">
           <tr :class="{'bg-green': props.item.fully_returned, 'bg-red': props.item.expired_return_time }">
-            <td>{{ props.index + 1 }}</td>
+            <td class="text ellipsis">{{ props.realIndex }}</td>
             <td :title="props.item.id" >
               <div class="text ellipsis">
                 {{props.item.transaction ? props.item.transaction.trans_id : "N/A"}}

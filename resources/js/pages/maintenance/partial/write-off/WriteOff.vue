@@ -57,7 +57,7 @@
           </template>
         <template slot="body" slot-scope="props">
           <tr>
-            <td>{{ props.index + 1 }}</td>
+            <td class="text ellipsis">{{ props.realIndex }}</td>
             <td>
               <div class="text ellipsis" >
                 {{ props.item.spares.name }}
