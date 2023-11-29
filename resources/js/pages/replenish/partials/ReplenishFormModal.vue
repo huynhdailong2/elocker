@@ -20,7 +20,7 @@
             type="text"
             class="input"
             disabled
-            :value="`${spare.bin.cluster.name} - ${ spare.bin.row } - ${ spare.bin.bin }`">
+            :value="`${spare.bin.cluster.name} - ${spare.bin.shelf.name} - ${ spare.bin.row } - ${ spare.bin.bin }`">
         </div>
         <div class="col-sm-3">
           <label>Item Name:</label>
@@ -188,7 +188,6 @@ export default {
       }
 
       this.initConfigures()
-      console.log(this.spare)
     },
 
     close () {

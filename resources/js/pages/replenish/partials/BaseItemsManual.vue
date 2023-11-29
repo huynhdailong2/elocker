@@ -32,7 +32,7 @@ export default {
   },
 
   computed: {
-    selectedSpares () {
+    selectedSpares() {
       return chain(this.data)
         .filter(item => item.is_checked || includes(this.selectedItems, item.id))
         .value()
@@ -118,7 +118,7 @@ export default {
         .value()
     },
 
-    async onCheckout () {
+    async onCheckout() {
       if (this.noSelectedData) {
         return
       }
@@ -130,10 +130,11 @@ export default {
             // spare_id: item.bin_spare.spare_id,
             spare_id: item.spare_id,
             taking_transaction_id: item.id,
+            quantity: +item?.inputForm?.quantity ?? 0
+
           }
         })
         .value()
-
       const callback = async () => {
         try {
           await rf.getRequest('SpareRequest').replenishManual({ spares })
@@ -144,7 +145,6 @@ export default {
           this.processAndToastFirstError(error)
         }
       }
-
 
       this.confirmAction({ callback })
     },
