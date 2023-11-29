@@ -191,26 +191,17 @@ export default {
     filter({ text, type }) {
       chain(this.data)
         .each((item) => {
-          // search
           if ((!text || isEmpty(text)) && type == "") {
             this.$set(item, "visible", true);
             return;
           } 
-
           // filter
-
-          // const visible =
-          //   includes(toLower(item.material_no), toLower(text)) ||
-          //   includes(toLower(item.part_no), toLower(text)) ||
-          //   includes(toLower(item.name), toLower(text));
-          // const visibleType = type ? item.type == type : true;
-          // this.$set(item, "visible", visible && visibleType);
-
-          if (type === '' || item.spares.type === type) {
-            this.$set(item, "visible", true);
-          } else {
-            this.$set(item, "visible", false);
-          }
+          const visible =
+            includes(toLower(item.spares.material_no), toLower(text)) ||
+            includes(toLower(item.spares.part_no), toLower(text)) ||
+            includes(toLower(item.spares.name), toLower(text));
+          const visibleType = type ? item.spares.type == type : true;
+          this.$set(item, "visible", visible && visibleType);
         })
         .value();
     },
