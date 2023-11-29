@@ -3659,6 +3659,7 @@ class SpareService extends BaseService
         $returnedSpareCurrent = ReturnSpare::query()
             ->where('spare_id', $spare_id)->where('bin_id',$bin_id)
             ->first();
+            // return $returnedSpareCurrent;
         if ($returnedSpareCurrent->write_off == Consts::TRUE) {
             return;
         }
@@ -3671,32 +3672,28 @@ class SpareService extends BaseService
                 $subQuery->whereNull('return_spares.write_off')
                     ->orWhere('return_spares.write_off', Consts::FALSE);
             })
-            ->get();
-        foreach ($returnedSpares as $returnedSpare) {
-            $returnedSpare->write_off = Consts::TRUE;
-            $returnedSpare->save();
-            $bin = Bin::find($returnedSpare->bin_id);
-            $cluster = Cluster::find($bin['cluster_id']);
-            $shelf = Shelf::find($bin['shelf_id']);
-            $writeOff = WriteOff::create([
-                'return_spare_id' => $returnedSpare->id,
-                'bin_id' => $returnedSpare->bin_id,
-                'bin_name' => $bin['bin'],
-                'cluster_name' => $cluster['name'],
-                'cabinet_name' => $shelf['name'],
-                'spare_id' => $returnedSpare->spare_id,
-                'quantity' => $returnedSpare->quantity,
-                'reason' => $params['reason'],
-                'user_id' => Auth::id(),
-            ]);
+            ->first();
+        $returnedSpares->write_off = Consts::TRUE;
+        $returnedSpares->save();
+        $bin = Bin::find($bin_id);
+        $cluster = Cluster::find($bin['cluster_id']);
+        $shelf = Shelf::find($bin['shelf_id']);
+        $writeOff = WriteOff::create([
+            'return_spare_id' => $returnedSpares->id,
+            'bin_id' => $bin_id,
+            'bin_name' => $bin['bin'],
+            'cluster_name' => $cluster['name'],
+            'cabinet_name' => $shelf['name'],
+            'spare_id' => $spare_id,
+            'quantity' => $returnedSpares->quantity,
+            'reason' => $params['reason'],
+            'user_id' => Auth::id(),
+        ]);
 
-            /** @var Bin $bin */
-            $bin = Bin::query()->where('id', $returnedSpare->bin_id)->first();
-            $bin->quantity_oh = $bin->quantity;
-
-            $bin->save();
-        }
-        // }
+        /** @var Bin $bin */
+        $bin = Bin::query()->where('id', $returnedSpares->bin_id)->first();
+        $bin->quantity_oh = $bin->quantity;
+        $bin->save();
         return true;
     }
     public function getSparesTorqueWrench($params = [])

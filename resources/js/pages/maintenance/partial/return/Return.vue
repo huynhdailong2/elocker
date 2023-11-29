@@ -57,8 +57,8 @@
           <th class="text-center">Return By</th>
           <th class="text-center">Trans</th>
           <th class="text-center">Status</th>
-          <th class="text-center">Action</th>
           <th class="text-center">User Agent</th>
+          <th class="text-center">Action</th>
         <template slot="body" slot-scope="props">
           <tr :style="{ 'background-color': props.item.not_use ? '#f21501' : '' }">
             <td class="text ellipsis">{{ props.realIndex }}</td>
@@ -167,7 +167,7 @@
                 </button>
               </template>
             </td>
-           
+        
           </tr>
         </template>
       </data-table2>

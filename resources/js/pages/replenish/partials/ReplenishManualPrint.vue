@@ -23,8 +23,8 @@
         <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.material_no }}</div>
         <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.part_no }}</div>
         <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.spares.name }}</div>
-        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.cluster_name }} - {{
-          item.shelf_name }} - {{ item.locations.bin.row }} - {{ item.locations.bin.bin }}</div>
+        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.bin.cluster.name }} - {{
+          item.bin.shelf.name  }} - {{ item.bin.row }} - {{ item.bin.bin }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ getQtyRl(item) || 0 }}</div>
       </div>

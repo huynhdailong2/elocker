@@ -20,7 +20,7 @@
             type="text"
             class="input"
             disabled
-            :value="`${spare.cabinet_name} - ${ spare.locations.bin.row } - ${ spare.locations.bin.bin }`">
+            :value="`${spare.bin.cluster.name} - ${spare.bin.shelf.name} - ${ spare.bin.row } - ${ spare.bin.bin }`">
         </div>
         <div class="col-sm-3">
           <label>Item Name:</label>
@@ -28,7 +28,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.locations.spares.name">
+            :value="spare.spares.name">
         </div>
         <div class="col-sm-3">
           <label>Item P/N:</label>
@@ -36,7 +36,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.locations.spares.part_no">
+            :value="spare.spares.part_no">
         </div>
         <div class="col-sm-3">
           <label>Item Type:</label>
@@ -44,7 +44,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.locations.spares.type | upperFirst">
+            :value="spare.spares.type | upperFirst">
         </div>
       </div>
       <div class="row">
@@ -54,11 +54,12 @@
             type="text"
             class="input"
             disabled
-            :value="spare.bin_spare.quantity_oh || 0">
+            :value="spare.quantity_oh || 0">
         </div>
         <div class="col-sm-3">
           <label>Quantity RL:</label>
           <input
+            style="border: 0; background-color: #11131D;"
             type="text"
             class="input"
             :class="{'error': errors.has('quantity')}"
@@ -77,7 +78,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.bin_spare.min">
+            :value="spare.min">
         </div>
         <div class="col-sm-3">
           <label>Max:</label>
@@ -85,7 +86,7 @@
             type="text"
             class="input"
             disabled
-            :value="spare.bin_spare.max">
+            :value="spare.max">
         </div>
       </div>
 
@@ -153,7 +154,7 @@ export default {
         return 0
       }
 
-      const number = (this.spare.bin_spare.max || 0) - (this.spare.bin_spare.quantity_oh || 0)
+      const number = (this.spare.max || 0) - (this.spare.quantity_oh || 0)
       return number < 0 ? 0 : number
     },
 
@@ -180,7 +181,7 @@ export default {
     beforeOpen (event) {
       const { params } = event
       this.spare = params?.spare
-
+      
       this.inputForm = {
         ...this.inputForm,
         ...(this.spare.inputForm || {})
