@@ -3333,7 +3333,7 @@ class SpareService extends BaseService
             $found = false;
 
             foreach ($spareTypes as $spareType) {
-                if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
+                if ($type_item === $spareType['type']) {
                     $itemdata['spares']['label'] = $spareType['label'];
                     $found = true;
                     break;
@@ -3461,7 +3461,7 @@ class SpareService extends BaseService
             $found = false;
 
             foreach ($spareTypes as $spareType) {
-                if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
+                if ($type_item === $spareType['type']) {
                     $itemdata['spares']['label'] = $spareType['label'];
                     $found = true;
                     break;
@@ -3578,7 +3578,7 @@ class SpareService extends BaseService
             $found = false;
 
             foreach ($spareTypes as $spareType) {
-                if (in_array($type_transaction, $spareType['accepted']) && $type_item === $spareType['type']) {
+                if ($type_item === $spareType['type']) {
                     $itemdata['spares']['label'] = $spareType['label'];
                     $found = true;
                     break;
