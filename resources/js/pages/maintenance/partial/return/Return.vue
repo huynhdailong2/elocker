@@ -139,7 +139,7 @@
               </div>
             </td>
             <td>
-              <div class="text ellipsis">{{props.item.conditions !== null ? props.item.conditions : "N/A" }}</div>
+              <div class="text ellipsis" style="text-transform: capitalize;">{{props.item.conditions !== null ? props.item.conditions : "N/A" }}</div>
             </td>
             <td>
               <div class="text ellipsis">
@@ -148,10 +148,10 @@
                     <span class="text ellipsis">Web</span>
                   </div>
                   <div v-else-if="props.item.user_agent.includes('Postman')">
-                    <span class="text ellipsis">Local</span>
+                    <span class="text ellipsis">Postman</span>
                   </div>
                   <div v-else>
-                    <span class="text ellipsis">Tablet</span>
+                    <span class="text ellipsis">Local</span>
                   </div>
                 </template>
                 <template v-else>

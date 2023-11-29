@@ -184,10 +184,10 @@
                     <span class="text ellipsis">Web</span>
                   </div>
                   <div v-else-if="props.item.user_agent.includes('Postman')">
-                    <span class="text ellipsis">Local</span>
+                    <span class="text ellipsis">Postman</span>
                   </div>
                   <div v-else>
-                    <span class="text ellipsis">Tablet</span>
+                    <span class="text ellipsis">Local</span>
                   </div>
                 </template>
                 <template v-else>
