@@ -130,7 +130,7 @@ export default {
             // spare_id: item.bin_spare.spare_id,
             spare_id: item.spare_id,
             taking_transaction_id: item.id,
-            quantity: +item?.inputForm?.quantity ?? 0
+            quantity: +inputForm?.quantity || 0
 
           }
         })
