@@ -7,16 +7,16 @@
         @click.prevent="onSelectBox(item)"
         :class="{ active: item.is_checked }"
         :style="{width: replenishForm ? '300px' : '200px'}"
-         v-if="item.visible" >
+        v-if="item.visible" >
         <div class="image">
           <img :src="item.url">
         </div>
         <div class="info">
-          <div>Item Name: {{ item.name }}</div>
-          <div>MPN: {{ item.material_no }}</div>
-          <div>SSN: {{ item.part_no }}</div>
-          <div>Qty OH: {{ item.quantity_oh || 0 }}</div>
-          <div>Bin#: {{ item.cluster_name }} - {{ item.shelf_name }} - {{ item.row }} - {{ item.bin }}</div>
+          <div>Item Name: {{ item.spares.name }}</div>
+          <div>MPN: {{ item.spares.material_no }}</div>
+          <div>SSN: {{ item.spares.part_no }}</div>
+          <div>Qty OH: {{ item.quantity_oh != null ? (item.quantity_oh || 0) : 0 }}</div>
+          <div>Bin#: {{`${item.bin.cluster.name || 'N/A'} - ${item.bin.shelf.name || 'N/A'} - ${item.bin.row || 'N/A'} - ${item.bin.bin || 'N/A'}`}}</div>
           <template v-if="replenishForm">
             <div>Quantity RL: {{ item.inputForm ? (item.inputForm.quantity || 0) : 0 }}</div>
             <div class="text-center mt-3">

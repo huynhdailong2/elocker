@@ -127,7 +127,8 @@ export default {
           const inputForm = item.inputForm
           return { ...inputForm, 
             bin_id: item.bin_id, 
-            spare_id: item.bin_spare.spare_id,
+            // spare_id: item.bin_spare.spare_id,
+            spare_id: item.spare_id,
             taking_transaction_id: item.id,
           }
         })

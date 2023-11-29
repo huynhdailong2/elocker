@@ -33,17 +33,20 @@
                   <span class="checkmark"></span>
                 </label>
               </td>
-              <td><div>{{ item.locations.spares.material_no }}</div></td>
-              <td><div>{{ item.locations.spares.part_no }}</div></td>
-              <td><div>{{ item.locations.spares.name }}</div></td>
-              <td><div>{{ item.cluster_name }} - {{ item.cabinet_name }} - {{ item.locations.bin.row }} - {{ item.locations.bin.bin }}</div></td>
+              <td><div>{{ item.spares.material_no }}</div></td>
+              <td><div>{{ item.spares.part_no }}</div></td>
+              <td><div>{{ item.spares.name }}</div></td>
+              <td><div class="text ellipsis" >  {{`${item.bin.cluster.name || 'N/A'} - ${item.bin.shelf.name || 'N/A'} - ${item.bin.row || 'N/A'} - ${item.bin.bin || 'N/A'}`}}</div></td>
               <!-- <td><div>{{ item.bin_spare.quantity_oh || 0 }}</div></td> -->
               <td>
-                  <span v-if="item.bin_spare && item.bin_spare.quantity_oh">{{ item.bin_spare.quantity_oh }}</span>
-                  <span v-else>0</span>
-                </td>
+                  <span>{{ item.quantity_oh != null ? (item.quantity_oh || 0) : 0 }}</span>
+              </td>
               <template v-if="replenishForm">
-                <td><div>{{ item.inputForm ? (item.inputForm.quantity || 0) : 0 }}</div></td>
+                <td>
+                  <span>
+                    {{ item.inputForm ? (item.inputForm.quantity || 0) : 0 }}
+                  </span>
+                </td>
                 <td>
                   <div><img src="/images/icons/icon-edit.svg" width="20" @click.stop="onClickFillReplenish(item)" /></div>
                 </td>
