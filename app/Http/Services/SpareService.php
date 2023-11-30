@@ -3695,6 +3695,7 @@ class SpareService extends BaseService
 
         /** @var Bin $bin */
         $bin = Bin::query()->where('id', $returnedSpares->bin_id)->first();
+        $this->updateQuantityInBinSpare($bin_id, $spare_id, $returnedSpares->quantity);
         $bin->quantity_oh = $bin->quantity;
         $bin->save();
         TransactionDetail::where('spare_id', $spare_id)->where('bin_id', $bin_id)->where('transaction_id', $params['transaction_id'])->delete();
