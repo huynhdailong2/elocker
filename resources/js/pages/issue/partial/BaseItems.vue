@@ -51,7 +51,7 @@ export default {
       }
 
       return !chain(this.selectedSpares)
-        .every((item) => !!item.spares.pivot.quantity)
+        .every((item) => !!item.spares.quantity)
         .value();
     },
 
@@ -95,7 +95,7 @@ export default {
                 visible: true,
                 url: item.url || "/images/icons/no-image.png",
                 quantity: null,
-                newQuantity: item.spares.pivot.quantity,
+                newQuantity: item.spares.quantity,
               };
             })
             .value();
@@ -113,7 +113,7 @@ export default {
 
     onClickIncrease(item) {
       this.resetError();
-      const max = item.spares.pivot.quantity_oh;
+      const max = item.quantity_oh;
       const number = item.newQuantity + 1;
       this.$set(item, "newQuantity", number <= max ? number : max);
     },
@@ -131,7 +131,7 @@ export default {
       chain(this.data)
         .each((item) => {
           this.$set(item, "visible", true);
-          this.$set(item, "spares.pivot.quantity", null);
+          this.$set(item, "spares.quantity", null);
           this.$set(item, "is_checked", false);
         })
         .value();

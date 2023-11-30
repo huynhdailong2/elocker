@@ -50,30 +50,30 @@
               </td>
               <td>
                 <div class="text ellipsis">
-                  {{ item.cluster.name }}-{{ item.shelf.name
+                  {{ item.bin.cluster.name }}-{{ item.bin.shelf.name
               }}-{{
-                  item.row }}-{{ item.bin }}
+                  item.bin.bin.row }}-{{ item.bin.bin }}
                 </div>
               </td>
               <td>
-                <div>{{ item.spares.pivot.quantity_oh || 0 }}</div>
+                <div>{{ item.quantity_oh || 0 }}</div>
               </td>
               <td>
-                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                <div v-for="(row, index) in item.bin.configures" :item="row" :index="index">
                   {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}
                 </div>
                 <!-- <div>{{ getCalibrationDueDate(item) | dateFormatter('YYYY-MM-DD')|| "N/A" }}</div> -->
               </td>
               <td>
-                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                <div v-for="(row, index) in item.bin.configures" :item="row" :index="index">
                   {{ row.load_hydrostatic_test_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}
                 </div>
                 <!-- <div>{{ getLoadHydrostaticDueDate(item) | dateFormatter('YYYY-MM-DD') || "N/A" }}</div> -->
               </td>
               <td>
-                <div v-for="(row, index) in item.configures" :item="row" :index="index">
+                <div v-for="(row, index) in item.bin.configures" :item="row" :index="index">
                   {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}
                 </div>
@@ -81,7 +81,7 @@
               <td v-if="issueFormStep">
                 <div style="gap: 8px" class="form-input">
                   <span class="circle" @click.stop="onClickDecrease(item)">-</span>
-                  <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.spares.pivot.quantity_oh || 0}`">
+                  <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.quantity_oh || 0}`">
                   <span class="circle" @click.stop="onClickIncrease(item)">+</span>
                 </div>
                 <span class="invalid-feedback" v-if="errors.has('Quantity')">

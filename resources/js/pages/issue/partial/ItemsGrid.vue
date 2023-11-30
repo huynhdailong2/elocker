@@ -15,12 +15,12 @@
           <div>Item Name: {{ item.spares.name }}</div>
           <div>MPN: {{ item.spares.material_no ||"N/A" }}</div>
           <div>Part No: {{ item.spares.part_no ||"N/A"}}</div>
-          <div>Qty OH: {{ item.spares.pivot.quantity_oh || 0 }}</div>
-          <div  v-for="(row, index) in item.configures" :item="row" :index="index">Calibration Due/Inspection: {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+          <div>Qty OH: {{ item.quantity_oh || 0 }}</div>
+          <div  v-for="(row, index) in item.bin.configures" :item="row" :index="index">Calibration Due/Inspection: {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}</div>
-          <div v-for="(row, index) in item.configures" :item="row" :index="index">Load/Hydrostatic Test Due: {{ row.load_hydrostatic_test_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+          <div v-for="(row, index) in item.bin.configures" :item="row" :index="index">Load/Hydrostatic Test Due: {{ row.load_hydrostatic_test_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}</div>
-          <div v-for="(row, index) in item.configures" :item="row" :index="index">Expiry Date:  {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+          <div v-for="(row, index) in item.bin.configures" :item="row" :index="index">Expiry Date:  {{ row.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}</div>
           <div>Location:  {{ item.cluster.name }}-{{ item.shelf.name
               }}-{{item.row }}-{{ item.bin }}</div>
@@ -44,7 +44,7 @@
           <div class="form-input" v-if="issueFormStep">
             <span class="circle" @click.prevent.stop="onClickDecrease(item)">-</span>
             <!-- <span class="number">{{ item.newQuantity }}</span> -->
-            <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.spares.pivot.quantity_oh || 0}`">
+            <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.spares.quantity_oh || 0}`">
             <span class="circle" @click.prevent.stop="onClickIncrease(item)">+</span>
           </div>
           <span style="text-align: center !important; font-weight: bold;" class="invalid-feedback" v-if="errors.has('Quantity')">

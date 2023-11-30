@@ -425,13 +425,12 @@ class AdminService extends BaseService
         $params['typess'][2] = 'afes';
         $search_key = isset($params['search_key']) ? $params['search_key'] : '';
         $bin =  BinSpare::with('spares', 'bin')
-        ->when(!empty($params['typess']), function ($query) use ($params) {
-            $query->whereHas('spares', function ($subquery) use ($params) {
-                $subquery->where('type', $params['typess']);
+            ->when(!empty($params['typess']), function ($query) use ($params) {
+                $query->whereHas('spares', function ($subquery) use ($params) {
+                    $subquery->where('type', $params['typess']);
+                });
             });
-        });
         return $bin->get();
-            
     }
 
     public function getEucAssignedBox($params = [])
@@ -2021,27 +2020,7 @@ class AdminService extends BaseService
     public function getItemsForIssuing($params = [])
     {
         $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
-        $sparesInBin = $this->getSparesAssignedBinn($params);
-        // $sparesInBinNotOverdue = $sparesInBin->filter(function ($item, $key) {
-        //     if ($item->configures->count()) {
-        //         $now = Carbon::now();
-        //         $configure = $item->configures->first();
-
-        //         if ($configure->has_calibration_due && $configure->calibration_due) {
-        //             return Carbon::parse($configure->calibration_due)->greaterThanOrEqualTo($now);
-        //         }
-
-        //         if ($configure->has_expiry_date && $configure->expiry_date) {
-        //             return Carbon::parse($configure->expiry_date)->greaterThanOrEqualTo($now);
-        //         }
-
-        //         if ($configure->has_load_hydrostatic_test_due && $configure->load_hydrostatic_test_due) {
-        //             return Carbon::parse($configure->load_hydrostatic_test_due)->greaterThanOrEqualTo($now);
-        //         }
-        //     };
-
-        //     return true;
-        // });
+        $sparesInBin = $this->getSparesAssignedBin2($params);
 
         $items = [
             // 'spare_bins' => $sparesInBinNotOverdue->values(),
@@ -2056,7 +2035,35 @@ class AdminService extends BaseService
         }
         return $items;
     }
-
+    public function getSparesAssignedBin2($params = [])
+    {
+        $params['typess'][0] = 'consumable';
+        $params['typess'][1] = 'durable';
+        $params['typess'][2] = 'perishable';
+        $params['typess'][3] = 'afes';
+        $params['typess'][4] = 'euc';
+        $params['typess'][5] = 'torque_wrench';
+        $params['typess'][6] = 'others';
+        $bin =  BinSpare::with('spares', 'bin')
+            ->when(!empty($params['typess']), function ($query) use ($params) {
+                $query->whereHas('spares', function ($subquery) use ($params) {
+                    $subquery->where('type', $params['typess']);
+                });
+            })->get();
+        $bins = $bin->toArray();
+        foreach ($bins as &$item) {
+            $bin_id = $item['bin_id'];
+            $spare_id = $item['spare_id'];
+            $filteredConfigures = [];
+            foreach ($item['bin']['configures'] as $key => $itemcon) {
+                if($itemcon['bin_id'] == $bin_id && $itemcon['spare_id'] == $spare_id){
+                    $filteredConfigures[] = $itemcon;
+                }
+            }
+            $item['bin']['configures'] = $filteredConfigures;
+        }
+        return $bins;
+    }
     public function getSparesAssignedBinn($params = [])
     {
         if (!Arr::get($params, 'excludeBinIds')) {
@@ -2234,165 +2241,11 @@ class AdminService extends BaseService
         $requests = $request['data'];
         $data = [];
         foreach ($requests as $item) {
-           $bin_spare =  BinSpare::where('bin_id', $item['bin_id'])->where('spare_id', $item['spare_id'])->first();
-           $bin_spare->quantity_oh = $item['quantity_oh'];
-           $bin_spare->save();
-           $data[]= $bin_spare;
+            $bin_spare =  BinSpare::where('bin_id', $item['bin_id'])->where('spare_id', $item['spare_id'])->first();
+            $bin_spare->quantity_oh = $item['quantity_oh'];
+            $bin_spare->save();
+            $data[] = $bin_spare;
         }
         return $data;
-    }
-    public function getSparesAssignedBin2($params = [])
-    {
-        if (!Arr::get($params, 'excludeBinIds')) {
-            $params['excludeBinIds'] = $this->getNotWorkingSpareIds();
-        }
-
-        // Does not get empty bin
-        $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
-        $canReplenishment = Arr::get($params, 'can_replenishment', false);
-
-    $bin =  BinSpare::with('spares', 'bin')
-            ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
-            ->where('bins.is_failed', 0)
-            ->when(!empty($params['excludeBinIds']), function ($query) use ($params) {
-                $query->whereNotIn('bins.id', $params['excludeBinIds']);
-            })
-            ->when(!empty($params['binIds']), function ($query) use ($params) {
-                $query->whereIn('bins.id', $params['binIds']);
-            })
-            ->when(!empty($params['spareIds']), function ($query) use ($params) {
-                $query->whereIn('spares.id', $params['spareIds']);
-            })
-            ->when(!empty($params['type']), function ($query) use ($params) {
-                $query->where('spares.type', $params['type']);
-            })
-            ->when(!empty($params['types']), function ($query) use ($params) {
-                $query->whereIn('spares.type', $params['types']);
-            })
-            ->when(!empty($params['cluster_id']), function ($query) use ($params) {
-                $query->where('bins.cluster_id', $params['cluster_id']);
-            })
-            ->when(!empty($params['search_key']), function ($query) use ($params) {
-                $searchKey = Utils::escapeLike($params['search_key']);
-                $query->where(function ($subQuery) use ($searchKey) {
-                    $subQuery->where('spares.name', 'LIKE', "%{$searchKey}%")
-                        ->orWhere('spares.part_no', 'LIKE', "%{$searchKey}%");
-                });
-            })
-            ->when($ignoreEmpty, function ($query) {
-                $query->where('quantity_oh', '>', 0);
-            })
-            ->when($canReplenishment, function ($query) {
-                $query->where('quantity', 0)
-                    ->where('quantity_oh', 0);
-            })
-            ->when(empty($params['include_is_virtual']), function ($query) use ($params) {
-                $query->where('clusters.is_virtual', Consts::FALSE);
-            })
-            ->when(
-                !empty($params['no_pagination']),
-                function ($query) {
-                    $querys = $query->get();
-                    $paginatedTransactionss = $querys->toArray();
-                    $newData = [];
-                    $newDatas = [];
-                    foreach ($paginatedTransactionss as $key1 => $transaction) {
-                        $spares = $transaction['spares'];
-                        $configures = $transaction['configures'];
-                        foreach ($spares as $spare) {
-                            $spareId = $spare['id'];
-                            $matchingConfigures = [];
-
-                            foreach ($configures as $configure) {
-                                if ($configure['spare_id'] == $spareId) {
-                                    $matchingConfigures[] = $configure;
-                                }
-                            }
-                            $newTransaction = $transaction;
-                            $newTransaction['spares'] = $spare;
-                            $newTransaction['configures'] = $matchingConfigures;
-                            $newData[] = $newTransaction;
-                        }
-                    }
-                    foreach ($newData as $iteem) {
-                        $issueCard = [];
-                        $trackingMo = [];
-                        $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-                        $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-
-                        if (!empty($issue_card)) {
-                            $issueCard = $issue_card;
-                        }
-                        if (!empty($tracking_mo)) {
-                            $trackingMo = $tracking_mo;
-                        }
-
-                        if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
-                            $newTransactions = $iteem;
-                            $newTransactions['issueCard'] = $issueCard;
-                            $newTransactions['trackingMo'] = $trackingMo;
-                            $newDatas[] = $newTransactions;
-                        }
-                    }
-
-                    return $newDatas;
-                },
-                function ($query) use ($params) {
-                    $query->get();
-                    $paginatedTransactionss = $query->toArray();
-                    $newData = [];
-                    $newDatas = [];
-                    foreach ($paginatedTransactionss as $key1 => $transaction) {
-                        $spares = $transaction['spares'];
-                        $configures = $transaction['configures'];
-
-                        foreach ($spares as $spare) {
-                            $spareId = $spare['id'];
-                            $matchingConfigures = [];
-
-                            foreach ($configures as $configure) {
-                                if ($configure['spare_id'] == $spareId) {
-                                    $matchingConfigures[] = $configure;
-                                }
-                            }
-
-                            if ($spare['pivot']['is_processing'] == 0) {
-                                $newTransaction = $transaction;
-                                $newTransaction['spares'] = $spare;
-                                $newTransaction['configures'] = $matchingConfigures;
-                                $newData[] = $newTransaction;
-                            } else {
-                                unset($paginatedTransactionss[$key1]);
-                            }
-                        }
-                    }
-                    foreach ($newData as $iteem) {
-                        $issueCard = [];
-                        $trackingMo = [];
-                        $issue_card = IssueCard::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-                        $tracking_mo = TrackingMo::where('bin_id', $iteem['configures'][0]['bin_id'])->where('spare_id', $iteem['spares']['id'])->first();
-
-                        if (!empty($issue_card)) {
-                            $issueCard = $issue_card;
-                        }
-                        if (!empty($tracking_mo)) {
-                            $trackingMo = $tracking_mo;
-                        }
-
-                        if ($iteem['spares']['pivot']['quantity_oh'] != 0) {
-                            $newTransactions = $iteem;
-                            $newTransactions['issueCard'] = $issueCard;
-                            $newTransactions['trackingMo'] = $trackingMo;
-                            $newDatas[] = $newTransactions;
-                        }
-                    }
-                    $perPage = $params['limit'];
-                    $page = $params['page'];
-                    $currentPage = $page;
-                    $perPage = $params['limit'];
-                    $paginatedData = array_slice($newDatas, ($currentPage - 1) * $perPage, $perPage);
-                    return $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($newDatas), $perPage, $currentPage);
-                }
-            );
     }
 }

@@ -58,7 +58,7 @@
             <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spares.name }}</td>
             <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.cluster.name }}-{{ item.shelf.name
               }}-{{item.row }}-{{ item.bin }}</td>
-            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spares.pivot.quantity_oh || 0 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spares.quantity_oh || 0 }}</td>
             <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.newQuantity || 0 }}</td>
             <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.taker_name || 0 }}</td>
             <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.torque_area }}</td>

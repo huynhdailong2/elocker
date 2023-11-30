@@ -260,6 +260,12 @@ class SpareService extends BaseService
     public function getIssueCardHistories($params)
     {
         $userId = array_get($params, 'user_id', Auth::id());
+        $params['typess'][0] = 'durable';
+        $params['typess'][1] = 'others';
+        $params['typess'][2] = 'perishable';
+        $params['typess'][3] = 'afes';
+        $params['typess'][4] = 'torque_wrench';
+
         $ignoreEmpty = Arr::get($params, 'ignore_empty', false);
         $rawData = IssueCard::with('taker', 'bin', 'spare', 'torqueWrenchArea', 'binSpare')
             ->where('taker_id', $userId)
@@ -267,6 +273,11 @@ class SpareService extends BaseService
             ->where(function ($query) {
                 $query->where('quantity', '>', DB::raw('IFNULL(returned_quantity, 0)'))
                     ->orWhereNull('returned_quantity');
+            })
+            ->when(!empty($params['typess']), function ($query) use ($params) {
+                $query->whereHas('spare', function ($subquery) use ($params) {
+                    $subquery->whereIn('type', $params['typess']);
+                });
             })
             ->orderBy('created_at', 'desc')->get();
         return $rawData;
@@ -282,7 +293,7 @@ class SpareService extends BaseService
         return (object)$data;
     }
 
-    public function replenishManual($params)
+    public function replenishManual($params ,$userAgent)
     {
         $rs = [];
         $replenishment = Replenishment::create([
@@ -322,6 +333,40 @@ class SpareService extends BaseService
             }
 
             $rs[] = $replenishmentSpare;
+            $transaction_last = Transaction::orderBy('created_at', 'desc')->limit(1)->first();
+            $binGet = Bin::find($value['bin_id']);
+            $bub_num = 0;
+            if (!empty($transaction_last)) {
+                $bub_num = $transaction_last->id + 1;
+            } else {
+                $bub_num = 1;
+            }
+            $data_transaction = [
+                'user_id' => Auth::id(),
+                'type' => 'issue',
+                'status' => 'done',
+                'job_card_id' => ($value['job_card_id']) ? $value['job_card_id'] : null,
+                'trans_id' => $bub_num,
+                'request_qty' => $bin->quantity_oh,
+                'cluster_id' => $binGet->cluster_id,
+            ];
+            $transaction_new = Transaction::create($data_transaction);
+            $transaction_detail = [
+                'transaction_id' => $transaction_new->id,
+                'quantity' => $bin->quantity_oh,
+                'spare_id' => $value['spare_id'],
+                'row' => $binGet->row,
+                'job_card_id' =>  isset($value['job_card_id']) ? $value['job_card_id'] : null,
+                'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
+                'bin_id' => $value['spare_id'],
+                'shelf_id' => $binGet->shelf_id,
+                'conditions' => 'working',
+                'user_agent' => $userAgent,
+            ];
+            TransactionDetail::create($transaction_detail);
+            $data = [
+                'taking_transaction_id' => $transaction_new->id,
+            ];
         }
         return $rs;
     }
@@ -735,7 +780,7 @@ class SpareService extends BaseService
             $return->handover_id = Auth::id();
             $return->save();
             //unlock bin
-            if($item['state'] == "working" || $item['state'] == "finished"){
+            if ($item['state'] == "working" || $item['state'] == "finished") {
                 $this->updateQuantityInBinSpare($return->bin_id, $return->spare_id, $return->quantity);
                 $this->updateRemainQtyInTransaction($userId, Consts::TAKING_TRANSACTION_TYPE_RETURN, $return->quantity);
             }
@@ -749,8 +794,8 @@ class SpareService extends BaseService
                 $bin->process_by = null;
                 $bin->save();
             }
-            
-           
+
+
             $data[] = (object)[
                 'spare_id' => $item['spare_id'],
                 'bin_id' => $item['bin_id'],

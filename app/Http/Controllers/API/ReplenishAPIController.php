@@ -31,7 +31,8 @@ class ReplenishAPIController extends BaseController
         // DB::beginTransaction();
         try {
             $params = $request->all();
-            $data = $this->spareService->replenishManual($params);
+            $userAgent = $request->server('HTTP_USER_AGENT');
+            $data = $this->spareService->replenishManual($params,$userAgent);
             // DB::commit();
             return $this->sendResponse($data);
         } catch (Exception $ex) {
