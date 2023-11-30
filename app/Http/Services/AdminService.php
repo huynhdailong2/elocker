@@ -2044,10 +2044,10 @@ class AdminService extends BaseService
         $params['typess'][4] = 'euc';
         $params['typess'][5] = 'torque_wrench';
         $params['typess'][6] = 'others';
-        $bin =  BinSpare::with('spares', 'bin')
+        $bin = BinSpare::with('spares', 'bin')
             ->when(!empty($params['typess']), function ($query) use ($params) {
                 $query->whereHas('spares', function ($subquery) use ($params) {
-                    $subquery->where('type', $params['typess']);
+                    $subquery->whereIn('type', $params['typess']);
                 });
             })->get();
         $bins = $bin->toArray();
