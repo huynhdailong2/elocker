@@ -160,7 +160,8 @@
               </div>
             </td>
             <td>
-              <template v-if="props.item.conditions != 'working' && props.item.conditions != 'finished'">
+              <!-- <template v-if="props.item.conditions != 'working' && props.item.conditions != 'finished'"> -->
+              <template v-if="props.item.conditions != 'working'">
                 <button class="btn btn-primary w_95px"
                   @click.stop="onClickWriteOff(props.item)">
                   Write Off
