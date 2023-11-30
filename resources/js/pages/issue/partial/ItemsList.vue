@@ -10,7 +10,7 @@
             </label>
           </th>
           <th>MPN</th>
-          <th>SSN</th>
+          <th>Part No</th>
           <th>Item Details</th>
           <th>Location</th>
           <th>Qty OH</th>

@@ -14,7 +14,7 @@
         <div class="info">
           <div>Item Name: {{ item.spares.name }}</div>
           <div>MPN: {{ item.spares.material_no ||"N/A" }}</div>
-          <div>SSN: {{ item.spares.part_no ||"N/A"}}</div>
+          <div>Part No: {{ item.spares.part_no ||"N/A"}}</div>
           <div>Qty OH: {{ item.spares.pivot.quantity_oh || 0 }}</div>
           <div  v-for="(row, index) in item.configures" :item="row" :index="index">Calibration Due/Inspection: {{ row.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}</div>
