@@ -77,11 +77,11 @@ class SpareService extends BaseService
         $this->adminService = new AdminService;
     }
 
-    public function issueCard($params ,$userAgent =null)
+    public function issueCard($params, $userAgent = null)
     {
         $spares = array_get($params, 'spares', []);
         $response = [];
-       
+
         foreach ($spares as $value) {
             $spare = Spare::find($value['spares']['id']);
             $type = ($spare->type == Consts::SPARE_TYPE_EUC) ? Consts::SPARE_TYPE_EUC : '';
@@ -718,7 +718,7 @@ class SpareService extends BaseService
         return $issueCardHistories;
     }
 
-    public function returnToStore($params,$userAgent)
+    public function returnToStore($params, $userAgent)
     {
         $spares = array_get($params, 'spares', []);
         $userId = Arr::get($params, 'user_id');
@@ -734,8 +734,11 @@ class SpareService extends BaseService
             $return->quantity = $item['quantity'];
             $return->handover_id = Auth::id();
             $return->save();
-
             //unlock bin
+            if($item['state'] == "working" || $item['state'] == "finished"){
+                $this->updateQuantityInBinSpare($return->bin_id, $return->spare_id, $return->quantity);
+                $this->updateRemainQtyInTransaction($userId, Consts::TAKING_TRANSACTION_TYPE_RETURN, $return->quantity);
+            }
             $binSpareCollection = BinSpare::where('bin_id', $return->bin_id)->where('spare_id', $return->spare_id)->get();
             if (!$binSpareCollection) {
                 throw new Exception("Bin with bin id = {$return->bin_id} is invalid.");
@@ -746,8 +749,8 @@ class SpareService extends BaseService
                 $bin->process_by = null;
                 $bin->save();
             }
-            $this->updateQuantityInBinSpare($return->bin_id, $return->spare_id, $return->quantity);
-            $this->updateRemainQtyInTransaction($userId, Consts::TAKING_TRANSACTION_TYPE_RETURN, $return->quantity);
+            
+           
             $data[] = (object)[
                 'spare_id' => $item['spare_id'],
                 'bin_id' => $item['bin_id'],
@@ -2537,7 +2540,7 @@ class SpareService extends BaseService
                 ]
             );
     }
-    public function createTransaction($requests,$userAgent =null)
+    public function createTransaction($requests, $userAgent = null)
     {
         $results = [];
         foreach ($requests['data'] as $request) {
@@ -2553,7 +2556,7 @@ class SpareService extends BaseService
                     $taking_transaction->save();
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
-                            $updateIssueLocation = $this->updateIssueLocation($location, $taking_transaction,$userAgent);
+                            $updateIssueLocation = $this->updateIssueLocation($location, $taking_transaction, $userAgent);
                         }
                         $results[] = [
                             'trans_id' => $request['id'],
@@ -2579,7 +2582,7 @@ class SpareService extends BaseService
                     $taking_transaction->save();
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
-                            $updateReturnLocation = $this->updateReturnLocation($location, $taking_transaction,$userAgent);
+                            $updateReturnLocation = $this->updateReturnLocation($location, $taking_transaction, $userAgent);
                         }
                         $results[] = [
                             'trans_id' => $request['id'],
@@ -2612,7 +2615,7 @@ class SpareService extends BaseService
                         ]);
                         if ($replenishment) {
                             foreach ($request['locations'] as $location) {
-                                $updateReplenishLocation = $this->updateReplenishLocation($location, $taking_transaction, $replenishment,$userAgent);
+                                $updateReplenishLocation = $this->updateReplenishLocation($location, $taking_transaction, $replenishment, $userAgent);
                             }
                             $results[] = [
                                 'trans_id' => $request['id'],
@@ -2649,7 +2652,7 @@ class SpareService extends BaseService
                     ]);
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
-                            $processIssueLocation = $this->processIssueLocation($location, $taking_transaction ,$userAgent);
+                            $processIssueLocation = $this->processIssueLocation($location, $taking_transaction, $userAgent);
                         }
                         $results[] = [
                             'trans_id' => $request['id'],
@@ -2676,7 +2679,7 @@ class SpareService extends BaseService
                     ]);
                     if ($taking_transaction) {
                         foreach ($request['locations'] as $location) {
-                            $processReturnLocation = $this->processReturnLocation($location, $taking_transaction,$userAgent);
+                            $processReturnLocation = $this->processReturnLocation($location, $taking_transaction, $userAgent);
                         }
                         $results[] = [
                             'trans_id' => $request['id'],
@@ -2710,7 +2713,7 @@ class SpareService extends BaseService
                         ]);
                         if ($replenishment) {
                             foreach ($request['locations'] as $location) {
-                                $processReplenishLocation = $this->processReplenishLocation($location, $taking_transaction, $replenishment,$userAgent);
+                                $processReplenishLocation = $this->processReplenishLocation($location, $taking_transaction, $replenishment, $userAgent);
                             }
                             $results[] = [
                                 'trans_id' => $request['id'],
@@ -2740,7 +2743,7 @@ class SpareService extends BaseService
 
         return $results;
     }
-    private function processIssueLocation($locations, $taking_transaction,$userAgent)
+    private function processIssueLocation($locations, $taking_transaction, $userAgent)
     {
         foreach ($locations['spares'] as $value) {
             $bin = Bin::find($locations['bin']['id']);
@@ -2758,7 +2761,7 @@ class SpareService extends BaseService
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
                 'conditions' => ($value['status']) ? $value['status'] : null,
-                'user_agent'=>$userAgent
+                'user_agent' => $userAgent
             ]);
             $type = ($value['type'] == Consts::SPARE_TYPE_EUC) ? Consts::SPARE_TYPE_EUC : '';
             switch ($type) {
@@ -2822,7 +2825,7 @@ class SpareService extends BaseService
         }
         return true;
     }
-    private function processReturnLocation($location, $taking_transaction,$userAgent)
+    private function processReturnLocation($location, $taking_transaction, $userAgent)
     {
         foreach ($location['spares'] as $value) {
             $bin = Bin::find($location['bin']['id']);
@@ -2840,7 +2843,7 @@ class SpareService extends BaseService
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
                 'conditions' => ($value['status']) ? $value['status'] : null,
-                'user_agent'=>$userAgent
+                'user_agent' => $userAgent
             ]);
             $binSpareCollection = BinSpare::where('bin_id', $location['bin']['id'])->where('spare_id', $value['id'])->first();
             $return = ReturnSpare::create([
@@ -2909,7 +2912,7 @@ class SpareService extends BaseService
         return true;
     }
 
-    private function processReplenishLocation($location, $taking_transaction, $replenishment,$userAgent)
+    private function processReplenishLocation($location, $taking_transaction, $replenishment, $userAgent)
     {
         foreach ($location['spares'] as $value) {
             $bin = Bin::find($location['bin']['id']);
@@ -2927,7 +2930,7 @@ class SpareService extends BaseService
                 'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                 'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
                 'conditions' => ($value['status']) ? $value['status'] : null,
-                'user_agent'=>$userAgent
+                'user_agent' => $userAgent
             ]);
             $replenishmentSpare = ReplenishmentSpare::create([
                 'replenishment_id' => $replenishment->id,
@@ -2962,7 +2965,7 @@ class SpareService extends BaseService
         return true;
     }
     ///update
-    private function updateIssueLocation($locations, $taking_transaction ,$userAgent)
+    private function updateIssueLocation($locations, $taking_transaction, $userAgent)
     {
         foreach ($locations['spares'] as $value) {
             $bin = Bin::find($locations['bin']['id']);
@@ -3063,7 +3066,7 @@ class SpareService extends BaseService
         }
         return true;
     }
-    private function updateReturnLocation($location, $taking_transaction,$userAgent)
+    private function updateReturnLocation($location, $taking_transaction, $userAgent)
     {
         foreach ($location['spares'] as $value) {
             $bin = Bin::find($location['bin']['id']);
@@ -3167,7 +3170,7 @@ class SpareService extends BaseService
         }
         return true;
     }
-    private function updateReplenishLocation($location, $taking_transaction, $replenishment,$userAgent)
+    private function updateReplenishLocation($location, $taking_transaction, $replenishment, $userAgent)
     {
         foreach ($location['spares'] as $value) {
             $bin = Bin::find($location['bin']['id']);
@@ -3202,7 +3205,7 @@ class SpareService extends BaseService
                     'vehicle_id' => !empty($value['listWO'][0]['vehicle_id']) ? $value['listWO'][0]['vehicle_id'] : null,
                     'area_id' => !empty($value['listWO'][0]['area_id']) ? $value['listWO'][0]['area_id'] : null,
                     'conditions' => ($value['status']) ? $value['status'] : null,
-                   'user_agent'=> $userAgent
+                    'user_agent' => $userAgent
                 ]);
             }
             $replenishmentSpare = ReplenishmentSpare::create([
@@ -3657,9 +3660,9 @@ class SpareService extends BaseService
         $bin_id = $params['return_bin_id'];
         // foreach ($params['return_spare_id'] as $item) {
         $returnedSpareCurrent = ReturnSpare::query()
-            ->where('spare_id', $spare_id)->where('bin_id',$bin_id)
+            ->where('spare_id', $spare_id)->where('bin_id', $bin_id)
             ->first();
-            // return $returnedSpareCurrent;
+        // return $returnedSpareCurrent;
         if ($returnedSpareCurrent->write_off == Consts::TRUE) {
             return;
         }
@@ -3694,6 +3697,7 @@ class SpareService extends BaseService
         $bin = Bin::query()->where('id', $returnedSpares->bin_id)->first();
         $bin->quantity_oh = $bin->quantity;
         $bin->save();
+        TransactionDetail::where('spare_id', $spare_id)->where('bin_id', $bin_id)->where('transaction_id', $params['transaction_id'])->delete();
         return true;
     }
     public function getSparesTorqueWrench($params = [])
