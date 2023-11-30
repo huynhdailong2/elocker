@@ -51,7 +51,7 @@ export default {
       }
 
       return !chain(this.selectedSpares)
-        .every((item) => !!item.spares.quantity)
+        .every((item) => !!item.quantity_oh)
         .value();
     },
 
@@ -95,7 +95,7 @@ export default {
                 visible: true,
                 url: item.url || "/images/icons/no-image.png",
                 quantity: null,
-                newQuantity: item.spares.quantity,
+                newQuantity: item.quantity_oh,
               };
             })
             .value();
