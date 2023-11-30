@@ -427,7 +427,7 @@ class AdminService extends BaseService
         $bin =  BinSpare::with('spares', 'bin')
             ->when(!empty($params['typess']), function ($query) use ($params) {
                 $query->whereHas('spares', function ($subquery) use ($params) {
-                    $subquery->where('type', $params['typess']);
+                    $subquery->whereIn('type', $params['typess']);
                 });
             });
         return $bin->get();
