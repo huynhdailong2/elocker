@@ -3688,6 +3688,10 @@ class SpareService extends BaseService
         }
         $WriteOff = $data->get();
         $WriteOffs = $WriteOff->toArray();
+        return $this->hardCodeSpareType($WriteOffs,$request);
+        
+    }
+    public function hardCodeSpareType($data, $request){
         $spareTypes = [
             [
                 'type'     => 'all',
@@ -3723,9 +3727,9 @@ class SpareService extends BaseService
             ],
 
         ];
-        $Write_offs = [];
+        $dataReturn = [];
 
-        foreach ($WriteOffs as &$itemdata) {
+        foreach ($data as &$itemdata) {
             $type_item = $itemdata['spares']['type'];
             $found = false;
 
@@ -3741,13 +3745,13 @@ class SpareService extends BaseService
                 $itemdata['spares']['label'] = 'Unknown';
             }
 
-            $Write_offs[] = $itemdata;
+            $dataReturn[] = $itemdata;
         }
         $page = $request['page'];
         $currentPage = $page;
         $perPage = $request['limit'];
-        $paginatedData = array_slice($Write_offs, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($Write_offs), $perPage, $currentPage);
+        $paginatedData = array_slice($dataReturn, ($currentPage - 1) * $perPage, $perPage);
+        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($dataReturn), $perPage, $currentPage);
         return $paginatedTransactions;
     }
     public function unwriteOffSpare($request = [])
