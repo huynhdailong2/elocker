@@ -121,7 +121,7 @@ export default {
     onClickDecrease(item) {
       this.resetError();
       const number = item.newQuantity - 1;
-      this.$set(item, "newQuantity", number < 1 ? 0 : number);
+      this.$set(item, "newQuantity", number < 1 ? 1 : number);
     },
 
     onCancel() {

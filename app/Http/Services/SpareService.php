@@ -113,10 +113,10 @@ class SpareService extends BaseService
                     );
                     break;
                 default:
-                    $this->adminService->checkProcessingBinSpare(['user_id' => Auth::id(), 'bin_id' => $value['configures'][0]['bin_id'], 'spare_id' => $value['spares']['id'], 'value' => 1]);
+                    $this->adminService->checkProcessingBinSpare(['user_id' => Auth::id(), 'bin_id' => $value['bin_id'], 'spare_id' => $value['spares']['id'], 'value' => 1]);
                     $issueCard = IssueCard::create([
                         'job_card_id' => $value['job_card_id'],
-                        'bin_id' => $value['configures'][0]['bin_id'],
+                        'bin_id' => $value['bin_id'],
                         'spare_id' => $value['spares']['id'],
                         'quantity' => $value['newQuantity'],
                         'torque_wrench_area_id' => isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
@@ -128,7 +128,7 @@ class SpareService extends BaseService
                         [
                             'job_card_id' => $value['job_card_id'],
                             'issue_card_id' => $issueCard->id,
-                            'bin_id' => $value['configures'][0]['bin_id'],
+                            'bin_id' => $value['bin_id'],
                             'spare_id' => $value['spares']['id'],
                             'quantity' => $value['newQuantity'],
                             'torque_wrench_area_id' => isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
@@ -139,7 +139,7 @@ class SpareService extends BaseService
                     );
                     $this->updateQuantityInBinSpare($issueCard->bin_id, $issueCard->spare_id, -$issueCard->quantity);
                     $transaction_last = Transaction::orderBy('created_at', 'desc')->limit(1)->first();
-                    $binGet = Bin::find($value['configures'][0]['bin_id']);
+                    $binGet = Bin::find($value['bin_id']);
                     $bub_num = 0;
                     if (!empty($transaction_last)) {
                         $bub_num = $transaction_last->id + 1;
@@ -163,7 +163,7 @@ class SpareService extends BaseService
                         'row' => $binGet->row,
                         'job_card_id' =>  $value['job_card_id'],
                         'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
-                        'bin_id' => $value['configures'][0]['bin_id'],
+                        'bin_id' => $value['bin_id'],
                         'shelf_id' => $binGet->shelf_id,
                         'conditions' => 'working',
                         'user_agent' => $userAgent,
@@ -172,8 +172,8 @@ class SpareService extends BaseService
                     $data = [
                         'taking_transaction_id' => $transaction_new->id,
                     ];
-                    $trackingMoNew = TrackingMo::find($trackingMo->id)->update($data);
-                    $issueCardNew = IssueCard::find($issueCard->id)->update($data);
+                    TrackingMo::find($trackingMo->id)->update($data);
+                    IssueCard::find($issueCard->id)->update($data);
                     break;
             }
             $response[] = (object)[
@@ -343,9 +343,9 @@ class SpareService extends BaseService
             }
             $data_transaction = [
                 'user_id' => Auth::id(),
-                'type' => 'issue',
+                'type' => 'replenish',
                 'status' => 'done',
-                'job_card_id' => ($value['job_card_id']) ? $value['job_card_id'] : null,
+                'job_card_id' => isset($value['job_card_id']) ? $value['job_card_id'] : null,
                 'trans_id' => $bub_num,
                 'request_qty' => $bin->quantity_oh,
                 'cluster_id' => $binGet->cluster_id,
@@ -360,7 +360,7 @@ class SpareService extends BaseService
                 'area_id' =>  isset($value['torque_wrench_area_id']) ? $value['torque_wrench_area_id'] : null,
                 'bin_id' => $value['spare_id'],
                 'shelf_id' => $binGet->shelf_id,
-                'conditions' => 'working',
+                'conditions' => '',
                 'user_agent' => $userAgent,
             ];
             TransactionDetail::create($transaction_detail);

@@ -52,7 +52,7 @@
                 <div class="text ellipsis">
                   {{ item.bin.cluster.name }}-{{ item.bin.shelf.name
               }}-{{
-                  item.bin.bin.row }}-{{ item.bin.bin }}
+                  item.bin.row }}-{{ item.bin.bin }}
                 </div>
               </td>
               <td>
@@ -81,7 +81,7 @@
               <td v-if="issueFormStep">
                 <div style="gap: 8px" class="form-input">
                   <span class="circle" @click.stop="onClickDecrease(item)">-</span>
-                  <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:0|max_value:${item.quantity_oh || 0}`">
+                  <input name="Quantity" style="width: 50px; text-align: center;" type="text" v-model="item.newQuantity"  v-validate="`required|numeric|min_value:1|max_value:${item.quantity_oh || 1}`">
                   <span class="circle" @click.stop="onClickIncrease(item)">+</span>
                 </div>
                 <span class="invalid-feedback" v-if="errors.has('Quantity')">
