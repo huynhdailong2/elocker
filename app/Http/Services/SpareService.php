@@ -3329,101 +3329,9 @@ class SpareService extends BaseService
             });
         }
         $paginatedTransactions = $transactions->get();
-        $paginatedTransactionss = $paginatedTransactions->toArray();
-        // return $paginatedTransactionss;
-        $spareTypes = [
-            [
-                'accepted' => ['issue', 'return', 'replenish'],
-                'type'     => 'all',
-                'label'    => 'All',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                'label'    => 'Consumable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_DURABLE,
-                'label'    => 'STEs',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                'label'    => 'Perishable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_AFES,
-                'label'    => 'AFES',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_EUC,
-                'label'    => 'EUC',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                'label'    => 'Torque Wrench',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_OTHERS,
-                'label'    => 'Others',
-            ],
-
-        ];
-        $taking_transactions = [];
-
-        foreach ($paginatedTransactionss as &$itemdata) {
-            $type_item = $itemdata['spares']['type'];
-            $type_transaction = $itemdata['transaction']['type'];
-            $found = false;
-
-            foreach ($spareTypes as $spareType) {
-                if ($type_item === $spareType['type']) {
-                    $itemdata['spares']['label'] = $spareType['label'];
-                    $found = true;
-                    break;
-                }
-            }
-
-            if (!$found) {
-                $itemdata['spares']['label'] = 'Unknown';
-            }
-
-            $taking_transactions[] = $itemdata;
-        }
-        foreach ($taking_transactions as &$value) {
-            $bin_id = $value['bin_id'];
-            $spare_id = $value['spares']['id'];
-            if (isset($value['bin']) && isset($value['bin']['configures'])) {
-                $configures = $value['bin']['configures'];
-
-                foreach ($configures as $key1 => $value2) {
-                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
-                        $value['configures'] = $value['bin']['configures'][$key1];
-                    }
-                }
-            }
-            if (isset($value['bin']) && isset($value['bin']['spares'])) {
-                $binSpare = $value['bin']['spares'];
-                foreach ($binSpare as $key1 => $value2) {
-                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
-                        $value['bin_spare'] = $value['bin']['spares'][$key1];
-                    }
-                }
-            }
-        }
-        $perPage = $request['limit'];
-        $page = $request['page'];
-        $currentPage = $page;
-        $perPage = $request['limit'];
-        $paginatedData = array_slice($taking_transactions, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($taking_transactions), $perPage, $currentPage);
-
-        return $paginatedTransactions;
+        $transactions = $paginatedTransactions->toArray();
+        $paginatedTransactionss = $this->isConfigureBinSpare($transactions);
+        return $this->hardCodeSpareType($paginatedTransactionss,$request);
     }
     public function getReportByLoan($request = [])
     {
@@ -3452,106 +3360,8 @@ class SpareService extends BaseService
                     });
             });
         }
-        foreach ($transactions as $key => $value) {
-            if (!empty($value['spares'])) {
-                if ($value['spares']['type'] == Consts::SPARE_TYPE_CONSUMABLE) {
-                    unset($transactions[$key]);
-                }
-            }
-        }
-        $spareTypes = [
-            [
-                'accepted' => ['issue', 'return', 'replenish'],
-                'type'     => 'all',
-                'label'    => 'All',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                'label'    => 'Consumable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_DURABLE,
-                'label'    => 'STEs',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                'label'    => 'Perishable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_AFES,
-                'label'    => 'AFES',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_EUC,
-                'label'    => 'EUC',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                'label'    => 'Torque Wrench',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_OTHERS,
-                'label'    => 'Others',
-            ],
-
-        ];
-        $taking_transactions = [];
-
-        foreach ($transactions as &$itemdata) {
-            $type_item = $itemdata['spares']['type'];
-            $type_transaction = $itemdata['transaction']['type'];
-            $found = false;
-
-            foreach ($spareTypes as $spareType) {
-                if ($type_item === $spareType['type']) {
-                    $itemdata['spares']['label'] = $spareType['label'];
-                    $found = true;
-                    break;
-                }
-            }
-
-            if (!$found) {
-                $itemdata['spares']['label'] = 'Unknown';
-            }
-
-            $taking_transactions[] = $itemdata;
-        }
-        foreach ($taking_transactions as &$value) {
-            $bin_id = $value['bin_id'];
-            $spare_id = $value['spares']['id'];
-            if (isset($value['bin']) && isset($value['bin']['configures'])) {
-                $configures = $value['bin']['configures'];
-
-                foreach ($configures as $key1 => $value2) {
-                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
-                        $value['configures'] = $value['bin']['configures'][$key1];
-                    }
-                }
-            }
-            if (isset($value['bin']) && isset($value['bin']['spares'])) {
-                $binSpare = $value['bin']['spares'];
-                foreach ($binSpare as $key1 => $value2) {
-                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
-                        $value['bin_spare'] = $value['bin']['spares'][$key1];
-                    }
-                }
-            }
-        }
-        $perPage = $request['limit'];
-        $page = $request['page'];
-        $currentPage = $page;
-        $perPage = $request['limit'];
-        $paginatedData = array_slice($taking_transactions, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($taking_transactions), $perPage, $currentPage);
-
-        return $paginatedTransactions;
+        $paginatedTransactionss = $this->isConfigureBinSpare($transactions);
+        return $this->hardCodeSpareType($paginatedTransactionss,$request);
     }
     public function getReportForReturns($request = [])
     {
@@ -3576,98 +3386,8 @@ class SpareService extends BaseService
         }
         $paginatedTransactions = $transactions->get();
         $paginatedTransactionss = $paginatedTransactions->toArray();
-        $spareTypes = [
-            [
-                'accepted' => ['issue', 'return', 'replenish'],
-                'type'     => 'all',
-                'label'    => 'All',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_CONSUMABLE,
-                'label'    => 'Consumable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_DURABLE,
-                'label'    => 'STEs',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_PERISHABLE,
-                'label'    => 'Perishable',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_AFES,
-                'label'    => 'AFES',
-            ],
-            [
-                'accepted' => ['issue', 'replenish'],
-                'type'     => Consts::SPARE_TYPE_EUC,
-                'label'    => 'EUC',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
-                'label'    => 'Torque Wrench',
-            ],
-            [
-                'accepted' => ['issue', 'return'],
-                'type'     => Consts::SPARE_TYPE_OTHERS,
-                'label'    => 'Others',
-            ],
-
-        ];
-        $taking_transactions = [];
-
-        foreach ($paginatedTransactionss as &$itemdata) {
-            $type_item = $itemdata['spares']['type'];
-            $type_transaction = $itemdata['transaction']['type'];
-            $found = false;
-
-            foreach ($spareTypes as $spareType) {
-                if ($type_item === $spareType['type']) {
-                    $itemdata['spares']['label'] = $spareType['label'];
-                    $found = true;
-                    break;
-                }
-            }
-
-            if (!$found) {
-                $itemdata['spares']['label'] = 'Unknown';
-            }
-
-            $taking_transactions[] = $itemdata;
-        }
-        foreach ($taking_transactions as &$value) {
-            $bin_id = $value['bin_id'];
-            $spare_id = $value['spares']['id'];
-            if (isset($value['bin']) && isset($value['bin']['configures'])) {
-                $configures = $value['bin']['configures'];
-
-                foreach ($configures as $key1 => $value2) {
-                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
-                        $value['configures'] = $value['bin']['configures'][$key1];
-                    }
-                }
-            }
-            if (isset($value['bin']) && isset($value['bin']['spares'])) {
-                $binSpare = $value['bin']['spares'];
-                foreach ($binSpare as $key1 => $value2) {
-                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
-                        $value['bin_spare'] = $value['bin']['spares'][$key1];
-                    }
-                }
-            }
-        }
-        $perPage = $request['limit'];
-        $page = $request['page'];
-        $currentPage = $page;
-        $perPage = $request['limit'];
-        $paginatedData = array_slice($taking_transactions, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($taking_transactions), $perPage, $currentPage);
-        return $paginatedTransactions;
+        $paginatedTransactionss = $this->isConfigureBinSpare($paginatedTransactionss);
+        return $this->hardCodeSpareType($paginatedTransactionss,$request);
     }
     public function getSparesWriteOff($request = [])
     {
@@ -3690,6 +3410,30 @@ class SpareService extends BaseService
         $WriteOffs = $WriteOff->toArray();
         return $this->hardCodeSpareType($WriteOffs,$request);
         
+    }
+    public function isConfigureBinSpare($transactions){
+        foreach ($transactions as &$value) {
+            $bin_id = $value['bin_id'];
+            $spare_id = $value['spares']['id'];
+            if (isset($value['bin']) && isset($value['bin']['configures'])) {
+                $configures = $value['bin']['configures'];
+
+                foreach ($configures as $key1 => $value2) {
+                    if ($bin_id == $value2['bin_id'] || $spare_id == $value2['spare_id']) {
+                        $value['configures'] = $value['bin']['configures'][$key1];
+                    }
+                }
+            }
+            if (isset($value['bin']) && isset($value['bin']['spares'])) {
+                $binSpare = $value['bin']['spares'];
+                foreach ($binSpare as $key1 => $value2) {
+                    if ($bin_id == $value2['pivot']['bin_id'] || $spare_id == $value2['pivot']['spare_id']) {
+                        $value['bin_spare'] = $value['bin']['spares'][$key1];
+                    }
+                }
+            }
+        }
+        return $transactions;
     }
     public function hardCodeSpareType($data, $request){
         $spareTypes = [
@@ -3728,7 +3472,6 @@ class SpareService extends BaseService
 
         ];
         $dataReturn = [];
-
         foreach ($data as &$itemdata) {
             $type_item = $itemdata['spares']['type'];
             $found = false;
