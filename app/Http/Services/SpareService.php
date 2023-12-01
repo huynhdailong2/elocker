@@ -3686,54 +3686,46 @@ class SpareService extends BaseService
                     });
             });
         }
-        $paginatedTransactions = $data->get();
-        $paginatedTransactionss = $paginatedTransactions->toArray();
+        $WriteOff = $data->get();
+        $WriteOffs = $WriteOff->toArray();
         $spareTypes = [
             [
-                'accepted' => ['issue', 'return', 'replenish'],
                 'type'     => 'all',
                 'label'    => 'All',
             ],
             [
-                'accepted' => ['issue', 'replenish'],
                 'type'     => Consts::SPARE_TYPE_CONSUMABLE,
                 'label'    => 'Consumable',
             ],
             [
-                'accepted' => ['issue', 'return'],
                 'type'     => Consts::SPARE_TYPE_DURABLE,
                 'label'    => 'STEs',
             ],
             [
-                'accepted' => ['issue', 'return'],
                 'type'     => Consts::SPARE_TYPE_PERISHABLE,
                 'label'    => 'Perishable',
             ],
             [
-                'accepted' => ['issue', 'return'],
                 'type'     => Consts::SPARE_TYPE_AFES,
                 'label'    => 'AFES',
             ],
             [
-                'accepted' => ['issue', 'replenish'],
                 'type'     => Consts::SPARE_TYPE_EUC,
                 'label'    => 'EUC',
             ],
             [
-                'accepted' => ['issue', 'return'],
                 'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
                 'label'    => 'Torque Wrench',
             ],
             [
-                'accepted' => ['issue', 'return'],
                 'type'     => Consts::SPARE_TYPE_OTHERS,
                 'label'    => 'Others',
             ],
 
         ];
-        $taking_transactions = [];
+        $Write_offs = [];
 
-        foreach ($paginatedTransactionss as &$itemdata) {
+        foreach ($WriteOffs as &$itemdata) {
             $type_item = $itemdata['spares']['type'];
             $found = false;
 
@@ -3749,14 +3741,13 @@ class SpareService extends BaseService
                 $itemdata['spares']['label'] = 'Unknown';
             }
 
-            $taking_transactions[] = $itemdata;
+            $Write_offs[] = $itemdata;
         }
-        $perPage = $request['limit'];
         $page = $request['page'];
         $currentPage = $page;
         $perPage = $request['limit'];
-        $paginatedData = array_slice($taking_transactions, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($taking_transactions), $perPage, $currentPage);
+        $paginatedData = array_slice($Write_offs, ($currentPage - 1) * $perPage, $perPage);
+        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($Write_offs), $perPage, $currentPage);
         return $paginatedTransactions;
     }
     public function unwriteOffSpare($request = [])
