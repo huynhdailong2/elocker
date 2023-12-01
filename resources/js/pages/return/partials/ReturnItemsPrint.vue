@@ -22,7 +22,7 @@
         </h2>
       </div>
 
-      <div class="row" style="background-color: #b3c6e7;">
+      <!-- <div class="row" style="background-color: #b3c6e7;">
         <div class="border border-dark p-2 text-break text-center text-dark col-1">S/N</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-1">MPN</div>
         <div class="border border-dark p-2 text-break text-center text-dark col-2">SSN</div>
@@ -42,7 +42,33 @@
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_loan || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.newQuantity || 0 }}</div>
         <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.state | upperFirst }}</div>
+      </div> -->
+
+      <div class="row">
+        <table class="" style="width: 100%;">
+          <tr>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">S/N</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">MPN</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">SSN</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">Description</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">Bin #</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">Qty On Loan</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">Qty Return</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-weight: bold; font-size: 12px;">Item Sate</th>
+          </tr>
+          <tr v-for="(item, index) in data">
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ index + 1 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spare.material_no }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spare.part_no }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.spare.name }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.bin.cluster.name }} - {{ item.bin.shelf.name }} - {{ item.bin.row }} - {{ item.bin.bin }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.quantity_loan || 0 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.newQuantity || 0 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark" style="font-weight: bold; font-size: 12px;">{{ item.state | upperFirst }}</td>
+          </tr>
+        </table>
       </div>
+
     </div>
   </div>
 </template>
