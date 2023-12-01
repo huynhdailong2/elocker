@@ -3686,9 +3686,77 @@ class SpareService extends BaseService
                     });
             });
         }
+        $paginatedTransactions = $data->get();
+        $paginatedTransactionss = $paginatedTransactions->toArray();
+        $spareTypes = [
+            [
+                'accepted' => ['issue', 'return', 'replenish'],
+                'type'     => 'all',
+                'label'    => 'All',
+            ],
+            [
+                'accepted' => ['issue', 'replenish'],
+                'type'     => Consts::SPARE_TYPE_CONSUMABLE,
+                'label'    => 'Consumable',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_DURABLE,
+                'label'    => 'STEs',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_PERISHABLE,
+                'label'    => 'Perishable',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_AFES,
+                'label'    => 'AFES',
+            ],
+            [
+                'accepted' => ['issue', 'replenish'],
+                'type'     => Consts::SPARE_TYPE_EUC,
+                'label'    => 'EUC',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_TORQUE_WRENCH,
+                'label'    => 'Torque Wrench',
+            ],
+            [
+                'accepted' => ['issue', 'return'],
+                'type'     => Consts::SPARE_TYPE_OTHERS,
+                'label'    => 'Others',
+            ],
+
+        ];
+        $taking_transactions = [];
+
+        foreach ($paginatedTransactionss as &$itemdata) {
+            $type_item = $itemdata['spares']['type'];
+            $found = false;
+
+            foreach ($spareTypes as $spareType) {
+                if ($type_item === $spareType['type']) {
+                    $itemdata['spares']['label'] = $spareType['label'];
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (!$found) {
+                $itemdata['spares']['label'] = 'Unknown';
+            }
+
+            $taking_transactions[] = $itemdata;
+        }
         $perPage = $request['limit'];
         $page = $request['page'];
-        $paginatedTransactions = $data->paginate($perPage, ['*'], 'page', $page);
+        $currentPage = $page;
+        $perPage = $request['limit'];
+        $paginatedData = array_slice($taking_transactions, ($currentPage - 1) * $perPage, $perPage);
+        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($taking_transactions), $perPage, $currentPage);
         return $paginatedTransactions;
     }
     public function unwriteOffSpare($request = [])

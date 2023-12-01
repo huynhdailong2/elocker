@@ -87,7 +87,7 @@
               <div class="text ellipsis">{{ props.item.created_at | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
             </td>
             <td>
-              <div class="text ellipsis">{{ props.item.spares.type }}</div>
+              <div class="text ellipsis">{{ props.item.spares.label }}</div>
             </td>
             <template v-if="isSuperAdmin">
             <td>
