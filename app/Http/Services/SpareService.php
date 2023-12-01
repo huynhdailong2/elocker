@@ -3709,9 +3709,9 @@ class SpareService extends BaseService
             ->where('spare_id', $spare_id)->where('bin_id', $bin_id)
             ->first();
         // return $returnedSpareCurrent;
-        if ($returnedSpareCurrent->write_off == Consts::TRUE) {
-            return;
-        }
+        // if ($returnedSpareCurrent->write_off == Consts::TRUE) {
+        //     return;
+        // }
         $returnedSpares = ReturnSpare::query()
             ->where('bin_id', $returnedSpareCurrent->bin_id)
             ->where('spare_id', $returnedSpareCurrent->spare_id)

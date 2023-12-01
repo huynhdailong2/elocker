@@ -196,12 +196,10 @@ export default {
             return;
           } 
           // filter
-          const visible =
-            includes(toLower(item.spares.material_no), toLower(text)) ||
-            includes(toLower(item.spares.part_no), toLower(text)) ||
-            includes(toLower(item.spares.name), toLower(text));
-          const visibleType = type ? item.spares.type == type : true;
-          this.$set(item, "visible", visible && visibleType);
+          const visible = (item.spares.part_no.toLowerCase().indexOf(text.toLowerCase()) === 0);
+const visibleType = type ? item.spares.type == type : true;
+this.$set(item, "visible", visible && visibleType);
+
         })
         .value();
     },

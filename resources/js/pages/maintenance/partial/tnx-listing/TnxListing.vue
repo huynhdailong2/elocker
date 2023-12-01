@@ -172,10 +172,14 @@
               </div>
             </td>
             <td title="N/A">
-              <div class="text ellipsis">
+              <div class="text ellipsis" v-if="props.item.configures != null && props.item.configures.expiry_date">
                 {{  props.item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
                 'DD-MM-YYYY') || "N/A" }}
               </div>
+              <div class="text ellipsis" v-else>
+                {{"N/A" }}
+              </div>
+              
             </td>
             <td>
               <div class="text ellipsis">
