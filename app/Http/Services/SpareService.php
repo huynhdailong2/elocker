@@ -695,6 +695,7 @@ class SpareService extends BaseService
             ->join('clusters', 'clusters.id', 'shelfs.cluster_id')
             ->where('bins.status', Consts::BIN_STATUS_ASSIGNED)
             ->whereIn('spares.type', $types)
+            
             ->select(
                 'bins.*',
                 'spares.*',
