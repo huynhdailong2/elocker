@@ -1,38 +1,75 @@
 <table>
     <thead>
-    <tr>
-        <th>S/N</th>
-        {{-- <th>WO#</th> --}}
-        <th>Trans Date</th>
-        {{-- <th>Vehicle#</th>
-        <th>Platform</th> --}}
-        <th>Item Details</th>
-        <th>Part No</th>
-        <th>Quantity</th>
-        {{-- <th>Area Use</th> --}}
-        <th>Return By</th>
-        <th>Trans</th>
-        <th>Expiry Date</th>
-        <th>Calibration Date</th>
-    </tr>
+        <tr>
+            <th>S/N</th>
+            <th>Trans Date</th>
+            <th>Item Details</th>
+            <th>Part #</th>
+            <th>Quantity</th>
+            <th>Location</th>
+            <th>Item type</th>
+            <th>Load/Hydrostatic Test Due</th>
+            <th>Expiry Date</th>
+            <th>Calibration Date</th>
+            <th>Return By</th>
+            <th>Trans</th>
+            <th>Status</th>
+        </tr>
     </thead>
     <tbody>
-    @foreach ($data as $index => $value)
-        <tr>
-            <td>{{ $index + 1 }}</td>
-            {{-- <td>{{ $value->wo }}</td> --}}
-            {{-- <td>{{ utcToClient($value->returned_date) }}</td> --}}
-            {{-- <td>{{ $value->vehicle_num }}</td>
-            <td>{{ $value->platform }}</td> --}}
-            {{-- <td>{{ $value->spare_name }}</td>
-            <td>{{ $value->part_no }}</td>
-            <td>{{ $value->quantity }}</td> --}}
-            {{-- <td>{{ $value->torque_area }}</td> --}}
-            {{-- <td>{{ $value->returned_by }}</td>
-            <td>{{ $value->tnx }}</td>
-            <td>{{ utcToClient($value->expiry_date, 'd/m/Y') }}</td>
-            <td>{{ utcToClient($value->calibration_due, 'd/m/Y') }}</td> --}}
-        </tr>
-    @endforeach
+        @foreach ($data as $index => $value)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ utcToClient($value['created_at']) }}</td>
+                <td>{{ $value['spares']['name'] }}</td>
+                <td>{{ $value['spares']['part_no'] }}</td>
+                <td>{{ $value['quantity'] }}</td>
+                <td>
+                    {{ $value['transaction']['cluster']['name'] ?: 'N/A' }} -
+                    {{ $value['shelf']['name'] ?: 'N/A' }} -
+                    {{ $value['bin']['row'] ?: 'N/A' }} -
+                    {{ $value['bin']['bin'] ?: 'N/A' }}
+                </td>
+                <td>{{ $value['spares'] != null ? $value['spares']['label'] : 'N/A' }}</td>
+                <td>
+                    @if (!is_null(optional($value['configures']['load_hydrostatic_test_due'])->format('Y-m-d H:i:s')))
+                        {{ optional($value['configures']['load_hydrostatic_test_due'])->format('d-m-Y H:i:s') }}
+                    @else
+                        N/A
+                    @endif
+                </td>
+                <td>
+                    @if (!is_null(optional($value['configures']['expiry_date'])->format('Y-m-d H:i:s')))
+                        {{ optional($value['configures']['expiry_date'])->format('d-m-Y H:i:s') }}
+                    @else
+                        N/A
+                    @endif
+                </td>
+                <td>
+                    @if (!is_null(optional($value['configures']['calibration_due'])->format('Y-m-d H:i:s')))
+                        {{ optional($value['configures']['calibration_due'])->format('d-m-Y H:i:s') }}
+                    @else
+                        N/A
+                    @endif
+                </td>
+                <td>{{ $value['transaction']['user']['name'] }}</td>
+                <td>
+                    @if ($value['transaction']['type'] === 'issue')
+                        @if ($value['spares']['type'] === 'consumable')
+                            {{ 'I' }}
+                        @else
+                            {{ 'L' }}
+                        @endif
+                    @elseif ($value['transaction']['type'] === 'return')
+                        {{ 'R' }}
+                    @elseif ($value['transaction']['type'] === 'replenish')
+                        {{ 'RP' }}
+                    @endif
+                </td>
+                <td>
+                    {{ $value['conditions'] != null ? $value['conditions'] : 'N/A' }}
+                </td>
+            </tr>
+        @endforeach
     </tbody>
 </table>

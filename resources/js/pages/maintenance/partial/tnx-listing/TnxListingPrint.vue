@@ -1,134 +1,145 @@
 <template>
-  <div id="tnx-items-print"
-    :class="{'d-none': !isPrinting, 'd-block': isPrinting}"
-    v-if="isPrinting">
+  <div id="tnx-items-print" :class="{ 'd-none': !isPrinting, 'd-block': isPrinting }" v-if="isPrinting">
 
     <div class="container mt-3">
       <div class="row">
-      <h2 class="mb-4">
-        <span class="font-weight-bold">Trans Listing Count</span>
-      </h2>
+        <h2 class="mb-4">
+          <span class="font-weight-bold">Trans Listing Count</span>
+        </h2>
       </div>
 
       <div class="row">
         <table class="" style="width: 100%;">
           <tr>
+            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">NO.</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Trans Date</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">WO#</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Vehicle#</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Platform</th>
+            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Location</th>
+            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Item Type</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Item Details</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Part No</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Quantity</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Area Use</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Issue By</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Issue To</th>
+            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">By</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Trans</th>
             <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px; width: 45px;">Expiry</th>
           </tr>
           <tr v-for="(item, index) in data">
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.issued_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.wo }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.vehicle_num }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.platform }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.spare_name }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.part_no }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.quantity }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.torque_area }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.issued_by }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.issued_to }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.tnx }}</td>
-            <td class=" border text-break text-center" style="font-size: 12px;">{{ 'N/A' }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ index + 1 }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.transaction.created_at |
+              dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.job_card != null ?
+              item.job_card.wo : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.vehicle != null ?
+              item.vehicle.vehicle_num : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.job_card != null ?
+              item.job_card.platform : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;"> {{ `${item.transaction.cluster.name ||
+              'N/A'} - ${item.shelf.name || 'N/A'} - ${item.bin.row || 'N/A'} - ${item.bin.bin || 'N/A'}` }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;"> {{ item.spares != null ?
+              item.spares.label : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.spares != null ? item.spares.name
+              : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.spares != null ?
+              item.spares.part_no : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.quantity != null ? item.quantity :
+              "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.torque_wrench_area != null ?
+              item.torque_wrench_area.area : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">{{ item.transaction.user != null ?
+              item.transaction.user.name : "N/A" }}</td>
+            <td class=" border text-break text-center" style="font-size: 12px;">
+              <div v-if="item.transaction.type === 'issue'">
+                <span v-if="item.spares.type === 'consumable'">
+                  {{ "I" }}
+                </span>
+                <span v-else>
+                  {{ "L" }}
+                </span>
+              </div>
+              <div v-if="item.transaction.type === 'return'">
+                <span>
+                  {{ "R" }}
+                </span>
+              </div>
+              <div v-if="item.transaction.type === 'replenish'">
+                <span>
+                  {{ "RP" }}
+                </span>
+              </div>
+            </td>
+            <td class=" border text-break text-center" style="font-size: 12px;">
+              <div class="text ellipsis" v-if="item.configures != null && item.configures.expiry_date">
+                {{ item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss',
+                  'DD-MM-YYYY') || "N/A" }}
+              </div>
+              <div class="text ellipsis" v-else>
+                {{ "N/A" }}
+              </div>
+            </td>
+           
           </tr>
         </table>
       </div>
-
-<!--      <div class="row" style="background-color: #b3c6e7;">-->
-<!--        <div class="border text-break text-center col-1">Trans Date</div>-->
-<!--        <div class="border text-break text-center col-1">WO#</div>-->
-<!--        <div class="border text-break text-center col-1">Vehicle #</div>-->
-<!--        <div class="border text-break text-center col-1">Platform</div>-->
-<!--        <div class="border text-break text-center col-1">Item Details</div>-->
-<!--        <div class="border text-break text-center col-1">Part No</div>-->
-<!--        <div class="border text-break text-center col-1">Quantity</div>-->
-<!--        <div class="border text-break text-center col-1">Area Use</div>-->
-<!--        <div class="border text-break text-center col-1">Issue By</div>-->
-<!--        <div class="border text-break text-center col-1">Issue To</div>-->
-<!--        <div class="border text-break text-center col-1">Trans</div>-->
-<!--        <div class="border text-break text-center col-1">Expiry</div>-->
-<!--      </div>-->
-
-<!--      <div class="row" v-for="(item, index) in data">-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.issued_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.wo }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.vehicle_num }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.platform }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.spare_name }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.part_no }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.quantity }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.torque_area }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.issued_by }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.issued_to }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ item.tnx }}</div>-->
-<!--        <div class=" col-1 border text-break text-center">{{ 'N/A' }}</div>-->
-<!--      </div>-->
     </div>
   </div>
 </template>
 <script>
-  import moment from 'moment'
+import moment from 'moment'
 
-  export default {
-    props: {
-      config: {
-        type: Object,
-        default: () => { withoutQty: false }
-      },
+export default {
+  props: {
+    config: {
+      type: Object,
+      default: () => { withoutQty: false }
+    },
 
-      data: {
-        type: Array,
-        default: () => []
+    data: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  data() {
+    return {
+      isPrinting: false,
+      current: moment().format('DD-MM-YYYY HH:mm')
+    };
+  },
+
+  methods: {
+    print() {
+      this.isPrinting = true;
+      this.$nextTick(() => {
+        this.isPrinting = false;
+        this.htmlToPaper(() => {
+          this.$emit('CycleCount:closed');
+        });
+      })
+    },
+
+    htmlToPaper(callback) {
+      let
+        name = '_blank',
+        specs = ['fullscreen=yes', 'titlebar=yes', 'scrollbars=yes'],
+        replace = true,
+        styles = ['/css/print.css'];
+      specs = !!specs.length ? specs.join(',') : '';
+
+      const element = document.getElementById('tnx-items-print');
+
+      if (!element) {
+        this.isPrinting = false;
+        alert(`Element to print #tnx-items-print not found!`);
+        return;
       }
-    },
 
-    data() {
-      return {
-        isPrinting: false,
-        current: moment().format('DD-MM-YYYY HH:mm')
-      };
-    },
+      const url = '';
+      const win = window.open(url, name, specs, replace);
 
-    methods: {
-      print () {
-        this.isPrinting = true;
-        this.$nextTick(() => {
-          this.isPrinting = false;
-          this.htmlToPaper(() => {
-            this.$emit('CycleCount:closed');
-          });
-        })
-      },
-
-      htmlToPaper (callback) {
-        let
-          name = '_blank',
-          specs = ['fullscreen=yes','titlebar=yes', 'scrollbars=yes'],
-          replace = true,
-          styles = ['/css/print.css'];
-        specs = !!specs.length ? specs.join(',') : '';
-
-        const element = document.getElementById('tnx-items-print');
-
-        if(!element) {
-          this.isPrinting = false;
-          alert(`Element to print #tnx-items-print not found!`);
-          return;
-        }
-
-        const url = '';
-        const win = window.open(url, name, specs, replace);
-
-        win.document.write(`
+      win.document.write(`
           <html>
             <head>
               <title>Trans Listing Count - ${this.current}</title>
@@ -139,27 +150,27 @@
           </html>
         `);
 
-        this.addStyles(win, styles);
+      this.addStyles(win, styles);
 
-        setTimeout(() => {
-          win.document.close();
-          win.focus();
-          win.print();
-          win.close();
-          callback();
-        }, 1000);
-        return true;
-      },
+      setTimeout(() => {
+        win.document.close();
+        win.focus();
+        win.print();
+        win.close();
+        callback();
+      }, 1000);
+      return true;
+    },
 
-      addStyles (win, styles) {
-        styles.forEach(style => {
-          let link = win.document.createElement('link');
-          link.setAttribute('rel', 'stylesheet');
-          link.setAttribute('type', 'text/css');
-          link.setAttribute('href', style);
-          win.document.getElementsByTagName('head')[0].appendChild(link);
-        });
-      }
+    addStyles(win, styles) {
+      styles.forEach(style => {
+        let link = win.document.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('type', 'text/css');
+        link.setAttribute('href', style);
+        win.document.getElementsByTagName('head')[0].appendChild(link);
+      });
     }
   }
+}
 </script>

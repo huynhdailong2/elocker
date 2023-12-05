@@ -2,7 +2,6 @@
     <thead>
         <tr>
             <th>S/N</th>
-            <th>Trans Id</th>
             <th>Trans Date</th>
             <th>WO#</th>
             <th>Vehicle#</th>
@@ -16,14 +15,12 @@
             <th>Issue By</th>
             <th>Trans</th>
             <th>Expiry</th>
-            <th>User Agent</th>
         </tr>
     </thead>
     <tbody>
         @foreach ($data as $index => $value)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $value['transaction'] != null ? $value['transaction']['trans_id'] : 'N/A' }}</td>
                 <td>{{ utcToClient($value['created_at']) }}</td>
                 <td>{{ $value['job_card'] != null ? $value['job_card']['wo'] : 'N/A' }}</td>
                 <td>{{ $value['vehicle'] != null ? $value['vehicle']['vehicle_num'] : 'N/A' }} </td>
@@ -56,19 +53,6 @@
                 <td>
                     @if (!is_null(optional($value['configures']['expiry_date'])->format('Y-m-d H:i:s')))
                         {{ optional($value['configures']['expiry_date'])->format('d-m-Y H:i:s') }}
-                    @else
-                        N/A
-                    @endif
-                </td>
-                <td>
-                    @if ($value['user_agent'] != null)
-                        @if (str_contains($value['user_agent'], 'Mozilla'))
-                            Web
-                        @elseif(str_contains($value['user_agent'], 'Postman'))
-                            Postman
-                        @else
-                            Local
-                        @endif
                     @else
                         N/A
                     @endif
