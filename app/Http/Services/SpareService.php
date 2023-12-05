@@ -3292,15 +3292,16 @@ class SpareService extends BaseService
     // }
     public function getReportByTnx($request = [])
     {
+        
         $search_key = isset($request['search_key']) ? $request['search_key'] : '';
         $date = isset($request['issued_date']) ? $request['issued_date'] : [];
-        $dateee = json_decode($date, true);
+        $dates = json_decode($date, true);
         $cluster_id = isset($request['cluster_id']) ? $request['cluster_id'] : 0;
         $shelf_id = isset($request['shelf_id']) ? $request['shelf_id'] : 0;
         $bin_id = isset($request['bin_id']) ? $request['bin_id'] : 0;
         $transactions =  TransactionDetail::with('torqueWrenchArea', 'transaction', 'jobCard', 'vehicle', 'spares', 'bin', 'shelf')->orderBy('created_at', 'desc');
         if (!empty($date)) {
-            $transactions->whereBetween('created_at', [$dateee['start'], $dateee['end']]);
+            $transactions->whereBetween('created_at', [$dates['start'], $dates['end']]);
         }
         if (!empty($search_key)) {
             $transactions->where(function ($query) use ($search_key) {
@@ -3490,12 +3491,17 @@ class SpareService extends BaseService
 
             $dataReturn[] = $itemdata;
         }
-        $page = $request['page'];
-        $currentPage = $page;
-        $perPage = $request['limit'];
-        $paginatedData = array_slice($dataReturn, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($dataReturn), $perPage, $currentPage);
-        return $paginatedTransactions;
+        if(!empty($request['no_pagination'])){
+            return $dataReturn;
+        }else{
+            $page = $request['page'];
+            $currentPage = $page;
+            $perPage = $request['limit'];
+            $paginatedData = array_slice($dataReturn, ($currentPage - 1) * $perPage, $perPage);
+            $paginatedTransactions = new LengthAwarePaginator($paginatedData, count($dataReturn), $perPage, $currentPage);
+            return $paginatedTransactions;
+        }
+        
     }
     public function unwriteOffSpare($request = [])
     {

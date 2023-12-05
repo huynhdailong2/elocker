@@ -15,13 +15,13 @@
     @foreach ($data as $index => $value)
         <tr>
             <td>{{ $index + 1 }}</td>
-            <td>{{ $value->name }}</td>
+            {{-- <td>{{ $value->name }}</td>
             <td>{{ $value->part_no }}</td>
             <td>{{ $value->quantity }}</td>
             <td>{{ $value->location }}</td>
             <td>{{ $value->reason }}</td>
             <td>{{ $value->write_off_name }}</td>
-            <td>{{ utcToClient($value->created_at) }}</td>
+            <td>{{ utcToClient($value->created_at) }}</td> --}}
         </tr>
     @endforeach
     </tbody>

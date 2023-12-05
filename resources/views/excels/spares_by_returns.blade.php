@@ -21,17 +21,17 @@
         <tr>
             <td>{{ $index + 1 }}</td>
             {{-- <td>{{ $value->wo }}</td> --}}
-            <td>{{ utcToClient($value->returned_date) }}</td>
+            {{-- <td>{{ utcToClient($value->returned_date) }}</td> --}}
             {{-- <td>{{ $value->vehicle_num }}</td>
             <td>{{ $value->platform }}</td> --}}
-            <td>{{ $value->spare_name }}</td>
+            {{-- <td>{{ $value->spare_name }}</td>
             <td>{{ $value->part_no }}</td>
-            <td>{{ $value->quantity }}</td>
+            <td>{{ $value->quantity }}</td> --}}
             {{-- <td>{{ $value->torque_area }}</td> --}}
-            <td>{{ $value->returned_by }}</td>
+            {{-- <td>{{ $value->returned_by }}</td>
             <td>{{ $value->tnx }}</td>
             <td>{{ utcToClient($value->expiry_date, 'd/m/Y') }}</td>
-            <td>{{ utcToClient($value->calibration_due, 'd/m/Y') }}</td>
+            <td>{{ utcToClient($value->calibration_due, 'd/m/Y') }}</td> --}}
         </tr>
     @endforeach
     </tbody>
