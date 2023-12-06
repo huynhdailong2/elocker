@@ -76,6 +76,7 @@ Route::group(['middleware' => ['auth:api', 'log.requests', 'json.response']], fu
         Route::post('alert-weighing-system-schedule', 'API\SettingAPIController@saveAlertWeighingSystemSchedule');
         Route::post('save-by-key', 'API\SettingAPIController@saveByKey');
         Route::get('get-by-key', 'API\SettingAPIController@getByKey');
+        
     });
 
     Route::group(['prefix' => 'torque-areas'], function() {
