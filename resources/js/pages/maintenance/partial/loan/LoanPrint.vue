@@ -10,35 +10,66 @@
       </h2>
       </div>
 
-      <div class="row" style="background-color: #b3c6e7;">
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">WO#/Platform</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Trans Date</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Vehicle</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Item Details</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Part #</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Area Use</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Quantity</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Loan By/Loan To</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Trans</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Load/Hydrostatic Test Due</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Calibration Due</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Expiring Date</div>
+      <div class="row">
+        <table class="" style="width: 100%;">
+          <tr>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">No.</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">WO/Svc#</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Loan Date</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Return Date</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Vehicle</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Platform</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Location</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item type</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Details</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Part No</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Qty</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">By</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Load/Hydrostatic Test Due</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Calibration / Inspection Due</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Trans</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Expiry Date</th>
+          </tr>
+          <tr v-for="(item, index) in data">
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ index + 1 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.job_card !== null ? item.job_card.wo : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.transaction.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.transaction.updated_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.vehicle !== null ? item.vehicle.vehicle_num : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.job_card !== null ? item.job_card.platform : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;"> {{`${item.transaction.cluster.name || 'N/A'} - ${item.shelf.name || 'N/A'} - ${item.bin.row || 'N/A'} - ${item.bin.bin || 'N/A'}`}}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares !== null ? item.spares.label : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares !== null ? item.spares.name : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares !== null ? item.spares.part_no : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.quantity !== null ? item.quantity : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.transaction.user !== null ? item.transaction.user.name : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.configures.load_hydrostatic_test_due |dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.configures.calibration_due | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY')|| "N/A" }} </td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">     
+              <div v-if="item.transaction.type === 'issue'">
+                <span v-if="item.spares.type === 'consumable'">
+                    {{ "I" }}
+                </span>
+                <span v-else>
+                    {{ "L" }}
+                </span>
+              </div>
+              <div v-if="item.transaction.type === 'return'">
+                  <span>
+                      {{ "R" }}
+                  </span>
+              </div>
+              <div v-if="item.transaction.type === 'replenish'">
+                  <span>
+                      {{ "RP" }}
+                  </span>
+              </div>
+            </td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;"> {{ item.configures.expiry_date | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A"}}</td>
+          </tr>
+        </table>
       </div>
 
-      <div class="row" :class="{'bg-green': item.fully_returned, 'bg-red': item.expired_return_time }" v-for="(item, index) in data">
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.wo }}/{{ item.platform }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-center text-dark">{{ item.issued_date | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.vehicle_num }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.spare_name }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.torque_area }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.issued_by }}/{{ item.issued_to }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.tnx }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.load_hydrostatic_test_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.calibration_due | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.expiry_date | dateFormatter(Const.DATE_PATTERN, 'DD-MM-YYYY') }}</div>
-      </div>
     </div>
   </div>
 </template>

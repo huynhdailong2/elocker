@@ -37,30 +37,7 @@
             <td class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</td>
             <td class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.location }}</td>
           </tr>
-
         </table>
-
-        <!--        <div class="row" style="background-color: #b3c6e7;">-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Load/Hydrostatic Test Due</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Calibration Due</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Expiring Date</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Item Details</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Item Type</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Part No</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-1" style="background-color: #b3c6e7;">Quantity</div>-->
-        <!--          <div class="border border-dark p-2 text-break text-center text-dark col-2" style="background-color: #b3c6e7;">Item Location</div>-->
-        <!--        </div>-->
-
-        <!--        <div class="row is-refresh" v-for="(item, index) in data" :style="{ 'background-color': colorSpare(item) }">-->
-        <!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.load_hydrostatic_test_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
-        <!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.calibration_due | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
-        <!--          <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.expiry_date | dateFormatter('DD-MM-YYYY HH:mm', 'DD-MM-YYYY') }}</div>-->
-        <!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.name }}</div>-->
-        <!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ getLabelByType(item.item_type) }}</div>-->
-        <!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>-->
-        <!--          <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity_oh || 0 }}</div>-->
-        <!--          <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.location }}</div>-->
-        <!--        </div>-->
       </div>
     </div>
   </div>

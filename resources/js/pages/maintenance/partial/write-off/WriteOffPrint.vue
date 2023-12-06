@@ -10,31 +10,39 @@
       </h2>
       </div>
 
-      <div class="row" style="background-color: #b3c6e7;">
-        <div class="border border-dark p-2 text-break text-center text-dark col-2">Item Details</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Part No</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Quantity</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-2">Item location</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-3">Reason</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-1">Write Off By</div>
-        <div class="border border-dark p-2 text-break text-center text-dark col-2">Edited Time</div>
+      <div class="row">
+        <table class="" style="width: 100%;">
+          <tr>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">No.</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Details</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Part No</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Quantity</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Location</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Reason</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Write Off By</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Edited Time</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Type</th>
+          </tr>
+          <tr v-for="(item, index) in data">
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ index + 1 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares !== null ? item.spares.name : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares !== null ? item.spares.part_no : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.quantity || 0 }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.cluster_name || "N/A" }}-{{ item.cabinet_name || "N/A" }}-{{ item.bin.row || "N/A"}}-{{ item.bin_name || "N/A"}}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.reason !== null ? item.reason : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.user !== null ? item.user.name : "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.created_at | dateTimeFormatterLocal('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') || "N/A" }}</td>
+            <td class="border border-dark p-2 text-break text-center text-dark text ellipsis" style="font-size: 12px;">{{ item.spares ? item.spares.label : "N/A"  }}</td>
+          </tr>
+        </table>
       </div>
 
-      <div class="row" v-for="(item, index) in data">
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.name }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.part_no }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.quantity || 0 }}</div>
-        <div class=" col-2 border border-dark p-2 text-break text-dark text-center">{{ item.location }}</div>
-        <div class=" col-3 border border-dark p-2 text-break text-dark text-center">{{ item.reason }}</div>
-        <div class=" col-1 border border-dark p-2 text-break text-dark text-center">{{ item.write_off_name }}</div>
 
-        <div class=" col-2 border border-dark p-2 text-break text-center text-dark">{{ item.created_at | dateFormatter('YYYY-MM-DD HH:mm:ss', 'DD-MM-YYYY') }}</div>
-      </div>
     </div>
   </div>
 </template>
 <script>
-  import moment from 'moment'
+import moment from 'moment'
 
   export default {
     props: {
