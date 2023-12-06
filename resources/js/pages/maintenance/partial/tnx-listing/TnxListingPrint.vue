@@ -11,20 +11,20 @@
       <div class="row">
         <table class="" style="width: 100%;">
           <tr>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">NO.</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Trans Date</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">WO#</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Vehicle#</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Platform</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Location</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Item Type</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Item Details</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Part No</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Quantity</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Area Use</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">By</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px;">Trans</th>
-            <th style="background-color: #b3c6e7; font-weight: normal; font-size: 12px; width: 45px;">Expiry</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">NO.</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Trans Date</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">WO#</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Vehicle#</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Platform</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Location</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Type</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Item Details</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Part No</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Quantity</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Area Use</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">By</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Trans</th>
+            <th class="border border-dark p-2 text-break text-center text-dark" style="background-color: #b3c6e7; font-size: 12px;">Expiry</th>
           </tr>
           <tr v-for="(item, index) in data">
             <td class=" border text-break text-center" style="font-size: 12px;">{{ index + 1 }}</td>
